@@ -1,6 +1,6 @@
 
 
-function Auto() {
+function Profile() {
 
 
     return (
@@ -12,5 +12,5 @@ function Auto() {
     )
   }
   
-  export default Auto
+  export default Profile
   
