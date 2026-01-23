@@ -1,0 +1,31 @@
+body {
+    background-color: rgb(31, 17, 43);
+}
+
+.textbox1 {
+    width:85vw;
+    border:5px;
+    text-align: center;
+    resize: none;
+}
+
+.textbox2 {
+    width:85vw;
+    border:5px;
+    text-align: center;
+    resize: none;
+}
+
+.orient {
+    width: 20vw;
+    height: 7vh;
+    border-radius: 9px;
+    background-color: rgb(230, 33, 204);
+}
+
+.alliance {
+    width: 20vw;
+    height: 7vh;
+    border-radius: 9px;
+    background-color: rgb(50, 50, 201);
+}
