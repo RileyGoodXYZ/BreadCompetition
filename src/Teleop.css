@@ -1,8 +1,7 @@
 /* General Styles */
 body{
     text-align: center;
-    background-color: #2f1404;
-    color: white;
+    color: white; 
     display: flex;
     flex-direction: column;
     align-items: center;
