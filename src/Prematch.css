@@ -29,3 +29,7 @@ body {
     border-radius: 9px;
     background-color: rgb(50, 50, 201);
 }
+
+img {
+    width: 50vw;
+}

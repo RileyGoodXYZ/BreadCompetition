@@ -1,4 +1,5 @@
-import './Prematch.css'
+import './Prematch.css';
+import image from './assets/rebuiltField.png';
 
 function Prematch() {
 
@@ -30,6 +31,12 @@ function Prematch() {
         <button className='alliance'>
           Alliance
         </button>
+      <div>
+        <img
+        src={image} alt="rebuiltField.png"
+        />
+      </div>
+
 
       </div>
 
