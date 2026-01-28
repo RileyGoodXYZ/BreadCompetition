@@ -1,0 +1,22 @@
+.ContainerTime{
+    align-items: center;
+    grid-template-columns: repeat(2, 1fr);
+    display: grid;
+    column-gap: 2%;
+    margin: bottom 9px;
+
+}
+
+.Pass{
+ width:200px;
+}
+
+.Score{
+ width: 200px;
+}
+
+.ContainerTower{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 2%;
+}
