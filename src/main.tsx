@@ -14,7 +14,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
   <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<Prematch />} />
         <Route path="/prematch" element={<Prematch />} />
         <Route path="/auto" element={<Auto />} />
         <Route path="/teleop" element={<Teleop />} />
