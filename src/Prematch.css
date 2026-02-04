@@ -1,5 +1,5 @@
 body {
-    background-color: rgb(31, 17, 43);
+    background-color: rgb(25, 14, 34);
 }
 
 .textbox1 {
@@ -7,6 +7,7 @@ body {
     border:5px;
     text-align: center;
     resize: none;
+    margin: 5px;
 }
 
 .textbox2 {
@@ -14,22 +15,65 @@ body {
     border:5px;
     text-align: center;
     resize: none;
+    margin: 5px;
 }
 
 .orient {
-    width: 20vw;
+    width: 40vw;
     height: 7vh;
     border-radius: 9px;
-    background-color: rgb(230, 33, 204);
+    border-width: 4px;
+    background-color: rgb(87, 225, 209);
+    border-color: rgb(75, 162, 152);
+    margin: 5px;
 }
 
 .alliance {
-    width: 20vw;
+    width: 40vw;
     height: 7vh;
     border-radius: 9px;
-    background-color: rgb(50, 50, 201);
+    background-color: rgb(53, 53, 176);
+    border-width: 4px;
+    border-color: rgb(32, 32, 90);
+    margin: 5px;
 }
 
+.position1 {
+    background-color: rgb(243, 124, 185);
+    border-radius: 9px;
+    border-width: 4px;
+    border-color: rgb(170, 63, 118);
+    width: 20vw;
+    margin: 5px;
+}
+
+.position2 {
+    background-color: rgb(243, 124, 185);
+    border-radius: 9px;
+    border-width: 4px;
+    border-color: rgb(170, 63, 118);
+    width: 20vw;
+    margin: 5px;
+    
+}
+
+.position3 {
+    background-color: rgb(243, 124, 185);
+    border-radius: 9px;
+    border-width: 4px;
+    border-color: rgb(170, 63, 118);
+    width: 20vw;
+    margin: 5px;
+}
+
+.container2 {
+    display: flex;
+    flex-direction: column;
+}
+
+
 img {
-    width: 50vw;
+    width: 200px;
+    height: 150px;
+    margin: 5px;
 }

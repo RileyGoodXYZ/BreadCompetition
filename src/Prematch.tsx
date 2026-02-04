@@ -40,9 +40,17 @@ function Prematch() {
 
       </div>
 
-
-    
-     
+      <div className='container2'>
+        <button className='position1'>
+          1
+        </button>
+        <button className='position2'>
+          2
+        </button>
+        <button className='position3'>
+          3
+        </button>
+      </div>
      
     </div>
   )
