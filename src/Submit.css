@@ -1,0 +1,66 @@
+body{
+    background-color: rgb(17, 30, 72);
+}
+.title { 
+display: inline;
+justify-content: center;
+align-items: center;
+text-align: center;
+color: rgb(243, 246, 246);
+
+}
+.container{
+ height: 10vh;
+  display: flex;
+  align-items: center; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  justify-content: center;
+  display:flex;
+  gap: 0;
+
+
+}
+.button1{
+      background-color: rgb(197, 160, 234);   
+      margin-right: 20px; 
+}
+.Button6{
+    background-color: rgb(60, 156, 124);
+    margin-left: 20px
+}
+.Button{
+      background-color: rgb(30, 110, 110);
+    width: 150px;
+    height: 100px;
+    border-radius: 20px;
+    font-size: 100px;
+        font-size: 20px;
+}
+.button4{
+    background-color: rgb(220, 125, 227);
+    width: 150px;
+    height: 100px;
+    margin-left: 70px;
+    border-radius: 30px;
+    font-size: 20px;
+    
+}
+.button7{
+background-color: rgb(88, 176, 179);
+width: 150px;
+height: 100px;
+border-radius: 30px;
+font-size: 20px;
+
+
+
+
+}
+
+
+
+
+
