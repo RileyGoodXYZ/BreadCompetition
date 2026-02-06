@@ -7,6 +7,8 @@ html {
 
 body {
     text-align: center;
+    background-color: #2f1404;
+    color: #ffe0bb;
     margin: 0;
     height: 100vh;
     overflow: hidden;
@@ -72,7 +74,6 @@ label {
     align-items: center;
     justify-content: center;
 }
-
 .CheckboxIndicator {
     color: #2f1404;
 }
@@ -114,8 +115,8 @@ label {
 }
 
 .topScoreButton, .bottomScoreButton {
-    width: 47%;
-    height: 50%;
+    width: 8rem;
+    height: 8.5rem;
 }
 .bottomScoreButton {
     top: 50%;
@@ -129,8 +130,8 @@ label {
 .oppAllianceTopPassButton, .oppAllianceBottomPassButton,
 .neutralTopPassButton, .neutralBottomPassButton,
 .myAllianceTopPassButton, .myAllianceBottomPassButton {
-    width: 35%;
-    height: 37%;
+    width: 6rem;
+    height: 5.5rem;
 }
 
 .oppAllianceTopPassButton {
@@ -138,7 +139,7 @@ label {
     left: 0;
 }
 .oppAllianceBottomPassButton {
-    top: 37%;
+    top: 5.25rem;
     left: 0;
 }
 .neutralTopPassButton {
@@ -146,7 +147,7 @@ label {
     left: 33%;
 }
 .neutralBottomPassButton {
-    top: 37%;
+    top: 5.25rem;
     left: 33%;
 }
 .myAllianceTopPassButton {
@@ -154,7 +155,7 @@ label {
     left: 66%;
 }
 .myAllianceBottomPassButton {
-    top: 37%;
+    top: 5.25rem;
     left: 66%;
 }
 
@@ -162,6 +163,7 @@ button {
     font-size: clamp(0.85rem, 2.5vw, 1.1rem);
     padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.2rem);
     border-radius: 8px;
+    border: none;
     color: #2f1404;
     background-color: #ffe0bb;
     cursor: pointer;
@@ -170,15 +172,6 @@ button {
     min-width: 44px;
     min-height: 44px;
     touch-action: manipulation;
-}
-
-button:active {
-    transform: scale(0.98);
-    opacity: 0.8;
-}
-
-button:hover {
-    background-color: #ffd699;
 }
 
 @media (max-width: 480px) {

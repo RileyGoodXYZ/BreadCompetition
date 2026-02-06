@@ -2,8 +2,6 @@ import './Teleop.css';
 import * as Switch from '@radix-ui/react-switch';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Checkbox } from "radix-ui";
-import { CheckIcon } from "@radix-ui/react-icons";
 
 
 function Teleop() {
@@ -132,17 +130,6 @@ function Teleop() {
         )}
       </div>
 
-      {/* Climb while shooting checkbox */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "1rem", flexWrap: 'wrap', gap: '0.5rem' }}>
-        <Checkbox.Root className="CheckboxRoot" id="c1">
-          <Checkbox.Indicator className="CheckboxIndicator">
-            <CheckIcon />
-          </Checkbox.Indicator>
-        </Checkbox.Root>
-        <label className="Label">
-          Shooting while climbing?
-        </label>
-      </div>
 
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: topMargin, flexWrap: 'wrap', width: '100%' }}>
