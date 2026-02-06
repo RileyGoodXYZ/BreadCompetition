@@ -18,19 +18,20 @@ function Submit() {
 
       </div>
       
-      
+    <button className= 'button7'>
+            Bad Auto 
+         </button> 
 
+        <div className='container1'>
         <button className= 'Button'>
           SIGN IN
         </button>x
         <button className= 'button4'> 
          Submit
         </button>
+        </div> 
 
-          <button className= 'button7'>
-            Bad Auto 
-         </button> 
-
+      
         </center>
      </div>
 
