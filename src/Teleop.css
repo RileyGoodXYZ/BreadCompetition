@@ -6,8 +6,6 @@ html {
 
 body {
     text-align: center;
-    background-color: #2f1404;
-    color: #ffe0bb;
     margin: 0;
     height: 100vh;
     overflow: hidden;
@@ -162,7 +160,6 @@ button {
     font-size: clamp(0.85rem, 2.5vw, 1.1rem);
     padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.2rem);
     border-radius: 8px;
-    border: none;
     color: #2f1404;
     background-color: #ffe0bb;
     cursor: pointer;
