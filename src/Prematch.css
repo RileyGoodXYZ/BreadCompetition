@@ -1,5 +1,14 @@
 body {
     background-color: rgb(25, 14, 34);
+    font-weight: bold;
+    color: rgb(241, 243, 245);
+    overflow: auto;
+}
+
+.prematchTitle{
+    white-space: nowrap;
+    font-family: Arial, Helvetica, sans-serif;
+    background: none;
 }
 
 .textbox1 {
@@ -8,6 +17,7 @@ body {
     text-align: center;
     resize: none;
     margin: 5px;
+    font-weight: bold;
 }
 
 .textbox2 {
@@ -16,6 +26,7 @@ body {
     text-align: center;
     resize: none;
     margin: 5px;
+    font-weight: bold;
 }
 
 .orient {
@@ -23,9 +34,11 @@ body {
     height: 7vh;
     border-radius: 9px;
     border-width: 4px;
-    background-color: rgb(87, 225, 209);
-    border-color: rgb(75, 162, 152);
+    background-color: rgb(49, 175, 161);
+    border-color: rgb(33, 115, 105);
     margin: 5px;
+    color: rgb(241, 243, 245);
+    font-weight: bold;
 }
 
 .alliance {
@@ -36,6 +49,8 @@ body {
     border-width: 4px;
     border-color: rgb(32, 32, 90);
     margin: 5px;
+    color: rgb(241, 243, 245);
+    font-weight: bold;
 }
 
 .position1 {
@@ -43,8 +58,12 @@ body {
     border-radius: 9px;
     border-width: 4px;
     border-color: rgb(170, 63, 118);
-    width: 20vw;
+    width: 15vw;
+    height: 70px;
     margin: 5px;
+    translate: 10px -250px;
+    color: rgb(241, 243, 245);
+    font-weight: bold;
 }
 
 .position2 {
@@ -52,8 +71,12 @@ body {
     border-radius: 9px;
     border-width: 4px;
     border-color: rgb(170, 63, 118);
-    width: 20vw;
+    width: 15vw;
+    height: 70px;
     margin: 5px;
+    translate: 10px -250px;
+    color: rgb(241, 243, 245);
+    font-weight: bold;
     
 }
 
@@ -62,8 +85,12 @@ body {
     border-radius: 9px;
     border-width: 4px;
     border-color: rgb(170, 63, 118);
-    width: 20vw;
+    width: 15vw;
+    height: 70px;
     margin: 5px;
+    translate: 10px -250px;
+    color: rgb(241, 243, 245);
+    font-weight: bold;
 }
 
 .container2 {
@@ -71,9 +98,21 @@ body {
     flex-direction: column;
 }
 
+.prematchNext {
+    background-color: rgb(95, 219, 76);
+    border-color: rgb(69, 145, 57);
+    border-radius: 9px;
+    border-width: 4px;
+    font-weight: bold;
+    width: 80vw;
+    height: 7vh;
+    color: rgb(241, 243, 245);
+}
+
 
 img {
-    width: 200px;
-    height: 150px;
+    /* width: 200px;
+    height: 150px; */
+
     margin: 5px;
 }

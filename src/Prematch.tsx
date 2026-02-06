@@ -6,13 +6,13 @@ function Prematch() {
 
   return (
     <div>
-       <h2 className="PrematchTitle text-3xl text-white font-bold tracking-wide">
+       <h2 className="prematchTitle" text-3xl text-white font-bold tracking-wide>
           PREMATCH
         </h2>
       <div>
         <textarea
         className='textbox1'
-        placeholder='Match Number'
+        placeholder='MATCH NUMBER'
         content="center"
         />
       </div>
@@ -20,16 +20,16 @@ function Prematch() {
       <div>
         <textarea
         className='textbox2'
-        placeholder='Team Number'
+        placeholder='TEAM NUMBER'
         content="center"
         />
       </div>
       <div className='container1'>
         <button className='orient'>
-          Orientation
+          ORIENTATION
         </button>
         <button className='alliance'>
-          Alliance
+          ALLIANCE
         </button>
       <div>
         <img
@@ -51,6 +51,9 @@ function Prematch() {
           3
         </button>
       </div>
+      <button className='prematchNext'>
+        NEXT
+      </button>
      
     </div>
   )
