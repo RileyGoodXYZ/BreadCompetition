@@ -1,8 +1,9 @@
 import './Prematch.css';
 import image from './assets/rebuiltField.png';
+import { useNavigate } from 'react-router-dom';
 
 function Prematch() {
-
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -51,7 +52,7 @@ function Prematch() {
           3
         </button>
       </div>
-      <button className='prematchNext'>
+      <button className='prematchNext' onClick={() => navigate('/Teleop')}>
         NEXT
       </button>
      
