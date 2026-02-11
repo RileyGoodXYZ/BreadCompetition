@@ -19,7 +19,7 @@ createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
       <Routes>
       <Route path="/" element={<Profile />} />
-        <Route path="/Prematch" element={<Prematch />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/prematch" element={<Prematch />} />
         <Route path="/auto" element={<Auto />} />
         <Route path="/teleop" element={<Teleop />} />

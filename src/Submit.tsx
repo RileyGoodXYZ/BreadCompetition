@@ -6,36 +6,20 @@ function Submit() {
   const navigate = useNavigate();
 
     return (
-     <div>
-      <center>
-        <div className='container'>
-             <button className='button1' onClick={() => navigate('/Endgame')}>
-        Back
-        </button> 
-      <h1 className='title'>Submit</h1>
+      <div className="mainContainer">
+        <div className="topHeader">
+          <h1>Submit</h1>
+        </div>
+        <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+          <button className="badAutoBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }}>Bad Auto</button>
+          <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }}>Submit</button>
+          <button className="signInBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }}>SIGN IN</button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
+            <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Back</button>
+            <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Prematch')}>Next</button>
+          </div>
+        </div>
       </div>
-      
-    <button className= 'button7'>
-            Bad Auto 
-         </button> 
-
-        <div className='container1'>
-        <button className= 'Button'>
-          SIGN IN
-        </button>
-        <button className= 'button4'> 
-         Submit
-        </button>
-        
-        </div> 
-
-        <button className= 'nextprofile'>
-      next
-     </button>
-
-        </center>
-     </div>
-
     )
 
   }
