@@ -18,14 +18,14 @@ function Endgame() {
         </div>
       </div>
 
-      {/* Trench/Bump and Score/Pass toggle  */}
+      {/* Climb Selections  */}
       <h3>Climb Level</h3>
       <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
-        <button style={{ background: climb === "Level 1" ? '#90ee90' : '#ffe0bb', color: '#2f1404' }} onClick={() => setClimb("Level 1")}>Level 1</button>
-        <button style={{ background: climb === "Level 2" ? '#90ee90' : '#ffe0bb', color: '#2f1404' }} onClick={() => setClimb("Level 2")}>Level 2</button>
-        <button style={{ background: climb === "Level 3" ? '#90ee90' : '#ffe0bb', color: '#2f1404' }} onClick={() => setClimb("Level 3")}>Level 3</button>
-        <button style={{ background: climb === "None" ? '#90ee90' : '#ffe0bb', color: '#2f1404' }} onClick={() => setClimb("None")}>None</button>
-        <button style={{ background: climb === "Climb Fail" ? '#90ee90' : '#ffe0bb', color: '#2f1404' }} onClick={() => setClimb("Climb Fail")}>Climb Fail</button>
+        <button style={{ background:'#b2c2f6', opacity: climb === "Level 1" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Level 1")}>Level 1</button>
+        <button style={{ background:'#b2c2f6', opacity: climb === "Level 2" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Level 2")}>Level 2</button>
+        <button style={{ background:'#b2c2f6', opacity: climb === "Level 3" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Level 3")}>Level 3</button>
+        <button style={{ background:'#d7b3fb', opacity: climb === "None" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("None")}>None</button>
+        <button style={{ background:'#d7b3fb', opacity: climb === "Climb Level" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Climb Fail")}>Climb Fail</button>
       </div>
 
       {/* Checkbox */}
@@ -54,8 +54,8 @@ function Endgame() {
 
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: "1rem", flexWrap: 'wrap', width: '100%' }}>
-        <button style={{ flex: '1 1 auto', minWidth: '100px', background: '#ffe0bb', color: '#2f1404' }} onClick={() => navigate('/Teleop')}>Back</button>
-        <button style={{ flex: '1 1 auto', minWidth: '100px', background: '#ffe0bb', color: '#2f1404' }} onClick={() => navigate('/Submit')}>Next</button>
+        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Teleop')}>Back</button>
+        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Submit')}>Next</button>
       </div>
     </div>
   );

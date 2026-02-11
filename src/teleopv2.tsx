@@ -1,180 +1,191 @@
-import React, { useState } from 'react';
+import * as Switch from '@radix-ui/react-switch';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './teleopv2.css';
 
 export default function TeleopV1() {
-  const [shiftToggled, setShiftToggled] = useState(false);
+    // Timing logic for toggle
+    const toggleStartTimeRef = useRef<number | null>(null);
+    const [toggleElapsed, setToggleElapsed] = useState<number | null>(null);
 
-  const handleButtonClick = (buttonName) => {
-    console.log(`${buttonName} clicked`);
+  const [shiftToggled, setShiftToggled] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [intakeState, setIntakeState] = useState("Off");
+  const [canBump, setCanBump] = useState(false);
+  const [canTrench, setCanTrench] = useState(false);
+  const navigate = useNavigate();
+
+  // Timing logic for Pass, Score, Miss buttons
+  const [activeButton, setActiveButton] = useState<string | null>(null);
+  const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>({});
+  const startTimeRef = useRef<number | null>(null);
+
+  const pressingDown = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const buttonId = (e.currentTarget as HTMLButtonElement).getAttribute('data-button-id');
+    if (buttonId) {
+      setActiveButton(buttonId);
+      startTimeRef.current = performance.now();
+    }
+  };
+
+  const notPressingDown = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const buttonId = (e.currentTarget as HTMLButtonElement).getAttribute('data-button-id');
+    if (buttonId && startTimeRef.current !== null) {
+      const elapsed = Math.round(performance.now() - startTimeRef.current);
+      setButtonTimes((prev) => ({
+        ...prev,
+        [buttonId]: elapsed,
+      }));
+      console.log(`Button ${buttonId}: ${elapsed} ms`);
+    }
+    setActiveButton(null);
+    startTimeRef.current = null;
   };
 
   return (
-    <div style={{ 
-      fontFamily: 'Arial, sans-serif', 
-      padding: '20px',
-      maxWidth: '500px',
-      margin: '0 auto'
-    }}>
-      <h1 style={{ 
-        fontSize: '48px', 
-        fontWeight: 'normal',
-        marginBottom: '40px',
-        letterSpacing: '2px'
-      }}>
-        TELEOP V1
-      </h1>
-
-      {/* Shift Toggle */}
-      <button
-        onClick={() => {
-          setShiftToggled(!shiftToggled);
-          handleButtonClick('shift toggle');
-        }}
-        style={{
-          width: '100px',
-          height: '70px',
-          border: '2px solid black',
-          borderRadius: '50%',
-          background: 'white',
-          cursor: 'pointer',
-          fontSize: '14px',
-          marginBottom: '30px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          lineHeight: '1.3'
-        }}
-      >
-        <span>shift</span>
-        <span>toggle</span>
-      </button>
+    <div className="mainContainer">
+      <div className="topHeader">
+        <h1>TELEOP V2</h1>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+        <label
+          className="Label"
+          htmlFor="intakeMode"
+          style={{ margin: 0, fontSize: '1rem', marginRight: '0.5rem' }}
+        >
+          Intaking
+        </label>
+        <Switch.Root
+          checked={checked}
+          id="intakeMode"
+          onCheckedChange={(isChecked) => {
+            setChecked(isChecked);
+            setIntakeState(isChecked ? "On" : "Off");
+            if (isChecked) {
+              // Toggle turned ON, start timer
+              toggleStartTimeRef.current = performance.now();
+            } else {
+              // Toggle turned OFF, stop timer and log
+              if (toggleStartTimeRef.current !== null) {
+                const elapsed = Math.round(performance.now() - toggleStartTimeRef.current);
+                setToggleElapsed(elapsed);
+                console.log(`Toggle ON duration: ${elapsed} ms`);
+                toggleStartTimeRef.current = null;
+              }
+            }
+          }}
+          style={{
+            width: '3rem',
+            height: '1.85rem',
+            backgroundColor: checked ? '#b2c2f6' : '#ccc',
+            borderRadius: '9999px',
+            position: 'relative',
+            outline: 'none',
+            padding: '0',
+            minHeight: '0',
+            border: 'none',
+            transition: 'background-color 100ms',
+          }}
+          aria-checked={checked}
+        >
+          <Switch.Thumb
+            style={{
+              display: 'block',
+              width: '1.5rem',
+              height: '1.5rem',
+              backgroundColor: 'white',
+              borderRadius: '50%',
+              transition: 'transform 100ms',
+              willChange: 'transform',
+              position: 'absolute',
+              top: '0.15rem',
+              left: checked ? '1.35rem' : '0.125rem',
+            }}
+          />
+        </Switch.Root>
+      </div>
 
       {/* Pass and Score Row */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
         <button
-          onClick={() => handleButtonClick('pass')}
+          data-button-id="pass"
+          onMouseDown={pressingDown}
+          onMouseUp={notPressingDown}
+          onTouchStart={pressingDown}
+          onTouchEnd={notPressingDown}
           style={{
             flex: 1,
             height: '120px',
-            border: '2px solid black',
-            borderRadius: '20px',
-            background: 'white',
-            cursor: 'pointer',
-            fontSize: '16px'
+            fontSize: '1.25rem',
           }}
         >
-          pass
+          Pass
         </button>
         <button
-          onClick={() => handleButtonClick('score')}
+          data-button-id="score"
+          onMouseDown={pressingDown}
+          onMouseUp={notPressingDown}
+          onTouchStart={pressingDown}
+          onTouchEnd={notPressingDown}
           style={{
             flex: 1,
             height: '120px',
-            border: '2px solid black',
-            borderRadius: '20px',
-            background: 'white',
-            cursor: 'pointer',
-            fontSize: '16px'
+            fontSize: '1.25rem',
           }}
         >
-          score
+          Score
         </button>
       </div>
 
       {/* Miss Row */}
       <button
-        onClick={() => handleButtonClick('miss')}
+        data-button-id="miss"
+        onMouseDown={pressingDown}
+        onMouseUp={notPressingDown}
+        onTouchStart={pressingDown}
+        onTouchEnd={notPressingDown}
         style={{
           width: '100%',
+          maxWidth: '600px',
           height: '60px',
-          border: '2px solid black',
-          borderRadius: '15px',
-          background: 'white',
-          cursor: 'pointer',
-          fontSize: '16px',
-          marginBottom: '30px'
+          marginBottom: '30px',
+          fontSize: '1rem',
         }}
       >
-        miss
+        Miss
       </button>
 
       {/* Trench and Bump Row */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
         <button
-          onClick={() => handleButtonClick('trench')}
+          onClick={() => setCanTrench(!canTrench)}
           style={{
             flex: 1,
-            height: '100px',
-            border: '2px solid black',
-            borderRadius: '20px',
-            background: 'white',
-            cursor: 'pointer',
-            fontSize: '16px'
+            height: "2.5rem",
+            backgroundColor: '#d7b3fb',
+            opacity: canTrench ? 0.6 : 1,
           }}
         >
-          trench
+          Trench
         </button>
         <button
-          onClick={() => handleButtonClick('bump')}
+          onClick={() => setCanBump(!canBump)}
           style={{
             flex: 1,
-            height: '100px',
-            border: '2px solid black',
-            borderRadius: '20px',
-            background: 'white',
-            cursor: 'pointer',
-            fontSize: '16px'
+            height: "2.5rem",
+            backgroundColor: '#d7b3fb',
+            opacity: canBump ? 0.6 : 1,
           }}
         >
-          bump
+          Bump
         </button>
       </div>
-
-      {/* Large Bottom Section with Intake and Neutral */}
-      <div style={{
-        width: '100%',
-        height: '300px',
-        border: '2px solid black',
-        borderRadius: '20px',
-        background: 'white',
-        position: 'relative',
-        cursor: 'pointer'
-      }}
-        onClick={() => handleButtonClick('neutral')}
-      >
-        {/* Intake Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleButtonClick('intake');
-          }}
-          style={{
-            position: 'absolute',
-            top: '0',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '160px',
-            height: '80px',
-            border: '2px solid black',
-            background: 'white',
-            cursor: 'pointer',
-            fontSize: '16px'
-          }}
-        >
-          intake
-        </button>
-
-        {/* Neutral Label */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          fontSize: '16px',
-          pointerEvents: 'none'
-        }}>
-          neutral
-        </div>
+      {/* Navigation buttons */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
+        <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Prematch')}>Back</button>
+        <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Next</button>
       </div>
     </div>
   );

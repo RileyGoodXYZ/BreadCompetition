@@ -1,6 +1,6 @@
 import './Teleop.css';
 import * as Switch from '@radix-ui/react-switch';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -58,7 +58,7 @@ function Teleop() {
           style={{
             width: '3rem',
             height: '1.85rem',
-            backgroundColor: checked ? '#ffe0bb' : '#ccc',
+            backgroundColor: checked ? '#b2c2f6' : '#ccc',
             borderRadius: '9999px',
             position: 'relative',
             outline: 'none',
@@ -133,8 +133,8 @@ function Teleop() {
 
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: topMargin, flexWrap: 'wrap', width: '100%' }}>
-        <button style={{ flex: '1 1 auto', minWidth: '100px', background: '#ffe0bb', color: '#2f1404' }} onClick={() => navigate('/Prematch')}>Back</button>
-        <button style={{ flex: '1 1 auto', minWidth: '100px', background: '#ffe0bb', color: '#2f1404' }} onClick={() => navigate('/Endgame')}>Next</button>
+        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Prematch')}>Back</button>
+        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Endgame')}>Next</button>
       </div>
     </div>
   );

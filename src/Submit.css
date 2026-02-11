@@ -1,74 +1,68 @@
-body{
+body {
     background-color: rgb(17, 30, 72);
 }
-.title { 
-display: inline;
-justify-content: center;
-align-items: center;
-text-align: center;
-color: rgb(243, 246, 246);
+
+.title {
+    display: inline;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: rgb(243, 246, 246);
 
 }
-.container{
-  margin-top:10px;
-  display: flex;
-  align-items: center; 
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  justify-content: center;
-  display:flex;
-  gap: 0;
 
+.container {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    gap: 0;
+    background-color: rgb(17, 30, 72)
+}
 
+.button1 {
+    background-color: rgb(182, 131, 233);
+    margin-right: 20px;
 }
-.button1{
-      background-color: rgb(182, 131, 233);   
-      margin-right: 20px; 
-}
-.Button6{
+
+.Button6 {
     background-color: rgb(255, 111, 161);
     margin-left: 20px
 }
-.Button{
-      background-color: rgb(30, 110, 110);
+
+.Button {
+    background-color: rgb(30, 110, 110);
     width: 150px;
     height: 100px;
     border-radius: 15px;
     font-size: 100px;
     font-size: 20px;
 }
-.button4{
+
+.button4 {
     background-color: rgb(220, 125, 227);
     width: 150px;
     height: 100px;
     margin-left: 40px;
     border-radius: 15px;
     font-size: 20px;
-    
-}
-.button7{
-background-color: rgb(88, 176, 179);
-width: 150px;
-height: 100px;
-border-radius: 15px;
-font-size: 20px;
-margin-left: 40px;
-margin-bottom: 50px;
- position: relative;
- bottom: 50px;
- right: 135px
-
-
-
-
-
-
 
 }
 
-
-
-
-
+.button7 {
+    background-color: rgb(88, 176, 179);
+    width: 150px;
+    height: 100px;
+    border-radius: 15px;
+    font-size: 20px;
+    margin-left: 40px;
+    margin-bottom: 50px;
+    position: relative;
+    bottom: 50px;
+    right: 135px
+}
