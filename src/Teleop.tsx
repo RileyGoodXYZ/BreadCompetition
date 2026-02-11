@@ -1,6 +1,6 @@
 import './Teleop.css';
 import * as Switch from '@radix-ui/react-switch';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 

@@ -9,6 +9,7 @@ import Auto from './Auto';
 import Endgame from './Endgame';
 import Submit from './Submit';
 import Teleop from './Teleop';
+import TeleopV1 from './teleopv2';
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -24,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/teleop" element={<Teleop />} />
         <Route path="/endgame" element={<Endgame />} />
         <Route path="/submit" element={<Submit />} />
+        <Route path="/teleopv2" element={<TeleopV1 />} />
         <Route path="*" element={<div>Page Not Found</div>} />
       </Routes>
     </BrowserRouter>
