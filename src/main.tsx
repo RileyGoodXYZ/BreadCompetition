@@ -1,7 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import './index.css'
 import App from './App.tsx'
+import Profile from './Profile';
 import Prematch from './Prematch';
 import Auto from './Auto';
 import Endgame from './Endgame';
@@ -12,9 +14,11 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <GoogleOAuthProvider clientId="1052919843340-og0i5nd5otropoqgtdqbla3lrsr4o1pd.apps.googleusercontent.com">
   <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Prematch />} />
+      <Route path="/" element={<Profile />} />
+        <Route path="/Prematch" element={<Prematch />} />
         <Route path="/prematch" element={<Prematch />} />
         <Route path="/auto" element={<Auto />} />
         <Route path="/teleop" element={<Teleop />} />
@@ -23,5 +27,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="*" element={<div>Page Not Found</div>} />
       </Routes>
     </BrowserRouter>
+    </GoogleOAuthProvider>
   </StrictMode>,
+  
 )
