@@ -1,0 +1,62 @@
+
+body {
+    background-color: #11326f;
+}
+button {
+    color: aliceblue;
+    align-items: center;
+}
+
+.ContainerTitle{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.ContainerTime{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 50px;
+}
+
+.Pass{
+    width: 100px;
+    height: 100px;
+    background-color: rgb(27, 160, 116);
+}
+
+.Score{
+    width: 100px;
+    height: 100px;
+    background-color: rgb(155, 68, 17)
+}
+
+.Timer{
+    width: 100px;
+    height: 100px;
+    background-color: crimson;
+}
+
+.ContainerTower{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 50px;
+    margin-bottom: 25px;
+    
+}
+.ContainerTower button{
+ background-color: rgb(122, 39, 199);
+}
+
+.rebuiltField{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
