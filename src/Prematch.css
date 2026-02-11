@@ -1,14 +1,5 @@
 body {
-    background-color: rgb(25, 14, 34);
-    font-weight: bold;
-    color: rgb(241, 243, 245);
-    overflow: auto;
-}
-
-.prematchTitle{
-    white-space: nowrap;
-    font-family: Arial, Helvetica, sans-serif;
-    background: none;
+    background-color: rgb(31, 17, 43);
 }
 
 .textbox1 {
@@ -16,8 +7,6 @@ body {
     border:5px;
     text-align: center;
     resize: none;
-    margin: 5px;
-    font-weight: bold;
 }
 
 .textbox2 {
@@ -25,94 +14,22 @@ body {
     border:5px;
     text-align: center;
     resize: none;
-    margin: 5px;
-    font-weight: bold;
 }
 
 .orient {
-    width: 40vw;
+    width: 20vw;
     height: 7vh;
     border-radius: 9px;
-    border-width: 4px;
-    background-color: rgb(49, 175, 161);
-    border-color: rgb(33, 115, 105);
-    margin: 5px;
-    color: rgb(241, 243, 245);
-    font-weight: bold;
+    background-color: rgb(230, 33, 204);
 }
 
 .alliance {
-    width: 40vw;
+    width: 20vw;
     height: 7vh;
     border-radius: 9px;
-    background-color: rgb(53, 53, 176);
-    border-width: 4px;
-    border-color: rgb(32, 32, 90);
-    margin: 5px;
-    color: rgb(241, 243, 245);
-    font-weight: bold;
+    background-color: rgb(50, 50, 201);
 }
-
-.position1 {
-    background-color: rgb(243, 124, 185);
-    border-radius: 9px;
-    border-width: 4px;
-    border-color: rgb(170, 63, 118);
-    width: 15vw;
-    height: 70px;
-    margin: 5px;
-    translate: 10px -250px;
-    color: rgb(241, 243, 245);
-    font-weight: bold;
-}
-
-.position2 {
-    background-color: rgb(243, 124, 185);
-    border-radius: 9px;
-    border-width: 4px;
-    border-color: rgb(170, 63, 118);
-    width: 15vw;
-    height: 70px;
-    margin: 5px;
-    translate: 10px -250px;
-    color: rgb(241, 243, 245);
-    font-weight: bold;
-    
-}
-
-.position3 {
-    background-color: rgb(243, 124, 185);
-    border-radius: 9px;
-    border-width: 4px;
-    border-color: rgb(170, 63, 118);
-    width: 15vw;
-    height: 70px;
-    margin: 5px;
-    translate: 10px -250px;
-    color: rgb(241, 243, 245);
-    font-weight: bold;
-}
-
-.container2 {
-    display: flex;
-    flex-direction: column;
-}
-
-.prematchNext {
-    background-color: rgb(95, 219, 76);
-    border-color: rgb(69, 145, 57);
-    border-radius: 9px;
-    border-width: 4px;
-    font-weight: bold;
-    width: 80vw;
-    height: 7vh;
-    color: rgb(241, 243, 245);
-}
-
 
 img {
-    /* width: 200px;
-    height: 150px; */
-
-    margin: 5px;
+    width: 50vw;
 }
