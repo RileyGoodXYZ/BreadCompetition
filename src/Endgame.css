@@ -47,9 +47,6 @@ p {
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-    padding: 0 0.5rem;
     width: 100%;
     flex-wrap: wrap;
 }
@@ -86,9 +83,6 @@ button {
 @media (max-width: 480px) {
     .mainContainer {
         padding: 0.1rem;
-    }
-    .topHeader {
-        gap: 0.5rem;
     }
 }
 @media (max-width: 768px) and (orientation: landscape) {
