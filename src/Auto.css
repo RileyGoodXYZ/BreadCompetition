@@ -1,0 +1,115 @@
+
+
+.ContainerTitle{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+}
+
+.ContainerTime{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
+    flex-wrap: wrap;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+.Pass{
+    width: 70px;
+    height: 50px;
+    background-color: #58b0b3;
+    color: white;
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.Score{
+    width: 70px;
+    height: 50px;
+    background-color: #155353;
+    color: white;
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.Timer{
+    width: 70px;
+    height: 50px;
+    background-color: #c69ef0;
+    color: white;
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.climbContainer{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+.climbContainer button{
+    width: 70px;
+    height: 50px;
+}
+
+.ContainerTower{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 50px;
+    margin-bottom: 25px;
+    
+}
+
+.rebuiltField{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+}
