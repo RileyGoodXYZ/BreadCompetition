@@ -61,7 +61,7 @@ body {
     width: 15vw;
     height: 70px;
     margin: 5px;
-    translate: 10px -250px;
+    translate: 10px 250px;
     color: rgb(241, 243, 245);
     font-weight: bold;
 }
@@ -74,7 +74,7 @@ body {
     width: 15vw;
     height: 70px;
     margin: 5px;
-    translate: 10px -250px;
+    translate: 10px 250px;
     color: rgb(241, 243, 245);
     font-weight: bold;
     
@@ -88,7 +88,7 @@ body {
     width: 15vw;
     height: 70px;
     margin: 5px;
-    translate: 10px -250px;
+    translate: 10px 250px;
     color: rgb(241, 243, 245);
     font-weight: bold;
 }
