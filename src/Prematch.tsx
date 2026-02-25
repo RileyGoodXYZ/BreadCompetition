@@ -6,6 +6,12 @@ import { useState } from "react";
 function Prematch() {
   const navigate = useNavigate();
   const [position, setPosition] = useState<string>("");
+  const [teamNum, setTeamNum] = useState<string>("");
+  const [matchNum, setMatchNum] = useState<string>("");
+  const [alliance, setAlliance] = useState<string>("");
+  const [orient, setOrient] = useState<string>("");
+
+
   
   return (
     <div className="mainContainer">
