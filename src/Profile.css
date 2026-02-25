@@ -44,6 +44,10 @@ color: rgb(243, 246, 246);
 
    
 }
+.selected-session{
+    opacity: 0.55;
+    filter: saturate(0.7);
+}
 .practice{
     background-color: #ffe0bb; 
 }

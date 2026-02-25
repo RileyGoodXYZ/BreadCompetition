@@ -11,7 +11,22 @@ function Teleop() {
   const [trenchCount, setTrenchCount] = useState<number>(Number(localStorage.getItem('teleop_trench_count') ?? '0'));
   const [bumpCount, setBumpCount] = useState<number>(Number(localStorage.getItem('teleop_bump_count') ?? '0'));
   const [hubState, setHubState] = useState<string>(localStorage.getItem('teleop_hub_state') ?? "Off");
+  const [, setHubStateHistory] = useState<string[]>(() => {
+    const raw = localStorage.getItem('teleop_hub_state_history');
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((value): value is string => typeof value === 'string');
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
   const topMargin = passOrScore === "Pass" ? "8vh" : "2vh";
+  const getMapButtonClassName = (baseClassName: string, buttonId: string) =>
+    `${baseClassName}${activeButton === buttonId ? ' active-zone' : ''}`;
 
   // Time button presses
   const [activeButton, setActiveButton] = useState<string | null>(null);
@@ -52,7 +67,7 @@ function Teleop() {
     startTimeRef.current = null;
   };
 
-  const handleMapButtonTouchMove = (e: React.TouchEvent<HTMLButtonElement>) => {
+  const handleMapButtonTouchMove = () => {
     // make this acutally work 
   };
 
@@ -69,6 +84,11 @@ function Teleop() {
             const nextHubState = checked ? "On" : "Off";
             setHubState(nextHubState);
             localStorage.setItem('teleop_hub_state', nextHubState);
+            setHubStateHistory((prev) => {
+              const next = [...prev, nextHubState];
+              localStorage.setItem('teleop_hub_state_history', JSON.stringify(next));
+              return next;
+            });
           }}
           style={{
             width: '3rem',
@@ -140,20 +160,20 @@ function Teleop() {
           <div style={{ position: 'relative', width: '100%', paddingBottom: '85%' }}>
             <img src="src/assets/passMap.png" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 'auto' }} />
             <div className="passOverlay">
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="oppAllianceTopPassButton" className="oppAllianceTopPassButton" />
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="oppAllianceBottomPassButton" className="oppAllianceBottomPassButton" />
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="neutralTopPassButton" className="neutralTopPassButton" />
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="neutralBottomPassButton" className="neutralBottomPassButton" />
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="myAllianceTopPassButton" className="myAllianceTopPassButton" />
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="myAllianceBottomPassButton" className="myAllianceBottomPassButton" />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="oppAllianceTopPassButton" className={getMapButtonClassName('oppAllianceTopPassButton', 'oppAllianceTopPassButton')} />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="oppAllianceBottomPassButton" className={getMapButtonClassName('oppAllianceBottomPassButton', 'oppAllianceBottomPassButton')} />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="neutralTopPassButton" className={getMapButtonClassName('neutralTopPassButton', 'neutralTopPassButton')} />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="neutralBottomPassButton" className={getMapButtonClassName('neutralBottomPassButton', 'neutralBottomPassButton')} />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="myAllianceTopPassButton" className={getMapButtonClassName('myAllianceTopPassButton', 'myAllianceTopPassButton')} />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="myAllianceBottomPassButton" className={getMapButtonClassName('myAllianceBottomPassButton', 'myAllianceBottomPassButton')} />
             </div>
           </div>
         ) : (
           <div style={{ position: 'relative', width: '100%', paddingBottom: '100%' }}>
             <img src="src/assets/scoreMap.png" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
             <div className="scoreOverlay">
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="topScoreButton" className="topScoreButton" />
-              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="bottomScoreButton" className="bottomScoreButton" />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="topScoreButton" className={getMapButtonClassName('topScoreButton', 'topScoreButton')} />
+              <button onMouseDown={pressingDown} onMouseUp={notPressingDown} onTouchStart={pressingDown} onTouchEnd={notPressingDown} onTouchMove={handleMapButtonTouchMove} data-button-id="bottomScoreButton" className={getMapButtonClassName('bottomScoreButton', 'bottomScoreButton')} />
             </div>
           </div>
         )}
@@ -163,7 +183,7 @@ function Teleop() {
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: topMargin, flexWrap: 'wrap', width: '100%' }}>
         <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Prematch')}>Back</button>
-        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Endgame')}>Next</button>
+        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/teleopv2')}>Next</button>
       </div>
     </div>
   );

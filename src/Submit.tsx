@@ -10,6 +10,20 @@ function Submit() {
   const [goodTeleopBtnMessage, setGoodTeleopBtnMessage] = useState<string>('');
   const [badTeleopBtnMessage, setBadTeleopMessage] = useState<string>('');
   const [signInBtnMessage, setSignInMessage] = useState<string>('');
+  const resetTeleopData = () => {
+    localStorage.removeItem('teleop_checked');
+    localStorage.removeItem('teleop_pass_or_score');
+    localStorage.removeItem('teleop_trench_count');
+    localStorage.removeItem('teleop_bump_count');
+    localStorage.removeItem('teleop_hub_state');
+    localStorage.removeItem('teleop_hub_state_history');
+    localStorage.removeItem('teleop_button_times');
+    localStorage.removeItem('teleopv2_checked');
+    localStorage.removeItem('teleopv2_intake_state');
+    localStorage.removeItem('teleopv2_trench_count');
+    localStorage.removeItem('teleopv2_bump_count');
+    localStorage.removeItem('teleopv2_button_times');
+  };
 
   const handleSubmit = async () => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -29,17 +43,46 @@ function Submit() {
         return {};
       }
     })();
+    const rawButtonTimesV2 = localStorage.getItem('teleopv2_button_times') ?? '{}';
+    const buttonTimesV2 = (() => {
+      try {
+        return JSON.parse(rawButtonTimesV2) as Record<string, number>;
+      } catch {
+        return {};
+      }
+    })();
+    const rawHubStateHistory = localStorage.getItem('teleop_hub_state_history') ?? '[]';
+    const hubStateHistory = (() => {
+      try {
+        const parsed = JSON.parse(rawHubStateHistory);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((value): value is string => typeof value === 'string');
+        }
+        return [];
+      } catch {
+        return [];
+      }
+    })();
+    const fallbackHubState = localStorage.getItem('teleop_hub_state') ?? localStorage.getItem('teleopv2_intake_state') ?? 'Off';
+    const teleopTrenchRaw = localStorage.getItem('teleop_trench_count');
+    const teleopBumpRaw = localStorage.getItem('teleop_bump_count');
+    const teleopV2TrenchRaw = localStorage.getItem('teleopv2_trench_count');
+    const teleopV2BumpRaw = localStorage.getItem('teleopv2_bump_count');
+    const mergedButtonTimes = {
+      ...buttonTimes,
+      ...Object.fromEntries(Object.entries(buttonTimesV2).map(([key, value]) => [`v2_${key}`, value])),
+    };
 
     const payload = {
       scout_name: localStorage.getItem('profile_scout_name') ?? '',
       session_type: localStorage.getItem('profile_session_type') ?? '',
       is_signed_in: localStorage.getItem('profile_is_signed_in') === 'true',
-      hub_on: localStorage.getItem('teleop_checked') === 'true',
+      hub_on: (localStorage.getItem('teleop_checked') ?? localStorage.getItem('teleopv2_checked') ?? 'false') === 'true',
       pass_or_score: localStorage.getItem('teleop_pass_or_score') ?? 'Score',
-      trench_count: Number(localStorage.getItem('teleop_trench_count') ?? '0'),
-      bump_count: Number(localStorage.getItem('teleop_bump_count') ?? '0'),
-      hub_state: localStorage.getItem('teleop_hub_state') ?? 'Off',
-      button_times: buttonTimes,
+      trench_count: Number(teleopTrenchRaw ?? teleopV2TrenchRaw ?? '0'),
+      bump_count: Number(teleopBumpRaw ?? teleopV2BumpRaw ?? '0'),
+      hub_state: hubStateHistory.length > 0 ? hubStateHistory.join(' | ') : fallbackHubState,
+      button_times: mergedButtonTimes,
       climb: localStorage.getItem('endgame_climb') ?? 'None',
       shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
       buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
@@ -65,6 +108,7 @@ function Submit() {
         return;
       }
 
+      resetTeleopData();
       setSubmitMessage('Submitted to Supabase.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';

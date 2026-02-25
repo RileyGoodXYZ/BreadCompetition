@@ -1,47 +1,108 @@
 import * as Switch from '@radix-ui/react-switch';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './teleopv2.css';
 
 export default function TeleopV1() {
     // Timing logic for toggle
-    const toggleStartTimeRef = useRef<number | null>(null);
-    const [toggleElapsed, setToggleElapsed] = useState<number | null>(null);
+  const toggleStartTimeRef = useRef<number | null>(null);
 
-  const [shiftToggled, setShiftToggled] = useState(false);
-  const [checked, setChecked] = useState(false);
-  const [intakeState, setIntakeState] = useState("Off");
-  const [canBump, setCanBump] = useState(false);
-  const [canTrench, setCanTrench] = useState(false);
+  const [checked, setChecked] = useState<boolean>(localStorage.getItem('teleopv2_checked') === 'true');
+  const [intakeState, setIntakeState] = useState<string>(localStorage.getItem('teleopv2_intake_state') ?? "Off");
+  const [bumpCount, setBumpCount] = useState<number>(Number(localStorage.getItem('teleopv2_bump_count') ?? '0'));
+  const [trenchCount, setTrenchCount] = useState<number>(Number(localStorage.getItem('teleopv2_trench_count') ?? '0'));
   const navigate = useNavigate();
 
   // Timing logic for Pass, Score, Miss buttons
-  const [activeButton, setActiveButton] = useState<string | null>(null);
-  const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>({});
+  const [activeButton, setActiveButton] = useState<'pass' | 'score' | 'miss' | null>(null);
+  const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>(() => {
+    const raw = localStorage.getItem('teleopv2_button_times');
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw) as { [key: string]: number };
+    } catch {
+      return {};
+    }
+  });
   const startTimeRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null);
+  const getTimedButtonStyle = (buttonId: 'pass' | 'score' | 'miss', baseStyle: CSSProperties): CSSProperties => ({
+    ...baseStyle,
+    backgroundColor: activeButton === buttonId ? 'rgba(0, 0, 0, 0.25)' : baseStyle.backgroundColor,
+    transform: activeButton === buttonId ? 'translateY(1px)' : 'translateY(0)',
+    boxShadow: activeButton === buttonId ? 'inset 0 3px 6px rgba(0, 0, 0, 0.35)' : 'none',
+  });
+  const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
+  const getPressedTimerText = (buttonId: 'pass' | 'score' | 'miss') =>
+    activeButton === buttonId && liveElapsedMs !== null ? ` (${formatSeconds(liveElapsedMs)}s)` : '';
 
-  const pressingDown = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    const buttonId = (e.currentTarget as HTMLButtonElement).getAttribute('data-button-id');
-    if (buttonId) {
-      setActiveButton(buttonId);
-      startTimeRef.current = performance.now();
+  useEffect(() => () => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+  }, []);
+
+  const stopTimer = (buttonId: 'pass' | 'score' | 'miss') => {
+    if (startTimeRef.current === null) return;
+    const elapsed = Math.round(performance.now() - startTimeRef.current);
+    setButtonTimes((prev) => {
+      const next = {
+        ...prev,
+        [buttonId]: elapsed,
+      };
+      localStorage.setItem('teleopv2_button_times', JSON.stringify(next));
+      return next;
+    });
+    console.log(`Button ${buttonId}: ${elapsed} ms`);
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    setLiveElapsedMs(null);
+    startTimeRef.current = null;
+  };
+
+  const startTimer = (buttonId: 'pass' | 'score' | 'miss') => {
+    setActiveButton(buttonId);
+    startTimeRef.current = performance.now();
+    setLiveElapsedMs(0);
+    const tick = () => {
+      if (startTimeRef.current !== null) {
+        setLiveElapsedMs(Math.round(performance.now() - startTimeRef.current));
+        animationFrameRef.current = requestAnimationFrame(tick);
+      }
+    };
+    animationFrameRef.current = requestAnimationFrame(tick);
+  };
+
+  const toggleTimedButton = (buttonId: 'pass' | 'score' | 'miss') => {
+    if (activeButton === buttonId) {
+      stopTimer(buttonId);
+      setActiveButton(null);
+      return;
+    }
+    if (activeButton !== null) {
+      stopTimer(activeButton);
+    }
+    startTimer(buttonId);
+  };
+
+  const stopAnyRunningTimer = () => {
+    if (activeButton !== null) {
+      stopTimer(activeButton);
+      setActiveButton(null);
     }
   };
 
-  const notPressingDown = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    const buttonId = (e.currentTarget as HTMLButtonElement).getAttribute('data-button-id');
-    if (buttonId && startTimeRef.current !== null) {
-      const elapsed = Math.round(performance.now() - startTimeRef.current);
-      setButtonTimes((prev) => ({
-        ...prev,
-        [buttonId]: elapsed,
-      }));
-      console.log(`Button ${buttonId}: ${elapsed} ms`);
-    }
-    setActiveButton(null);
-    startTimeRef.current = null;
+  const handleBack = () => {
+    stopAnyRunningTimer();
+    navigate('/teleop');
+  };
+
+  const handleNext = () => {
+    stopAnyRunningTimer();
+    navigate('/Endgame');
   };
 
   return (
@@ -62,7 +123,10 @@ export default function TeleopV1() {
           id="intakeMode"
           onCheckedChange={(isChecked) => {
             setChecked(isChecked);
-            setIntakeState(isChecked ? "On" : "Off");
+            localStorage.setItem('teleopv2_checked', String(isChecked));
+            const nextIntakeState = isChecked ? "On" : "Off";
+            setIntakeState(nextIntakeState);
+            localStorage.setItem('teleopv2_intake_state', nextIntakeState);
             if (isChecked) {
               // Toggle turned ON, start timer
               toggleStartTimeRef.current = performance.now();
@@ -70,7 +134,6 @@ export default function TeleopV1() {
               // Toggle turned OFF, stop timer and log
               if (toggleStartTimeRef.current !== null) {
                 const elapsed = Math.round(performance.now() - toggleStartTimeRef.current);
-                setToggleElapsed(elapsed);
                 console.log(`Toggle ON duration: ${elapsed} ms`);
                 toggleStartTimeRef.current = null;
               }
@@ -105,87 +168,95 @@ export default function TeleopV1() {
             }}
           />
         </Switch.Root>
+        <span style={{ minWidth: '2.5rem', textAlign: 'left' }}>{intakeState}</span>
       </div>
 
       {/* Pass and Score Row */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
         <button
-          data-button-id="pass"
-          onMouseDown={pressingDown}
-          onMouseUp={notPressingDown}
-          onTouchStart={pressingDown}
-          onTouchEnd={notPressingDown}
-          style={{
+          onClick={() => toggleTimedButton('pass')}
+          title={`Last: ${formatSeconds(buttonTimes.pass ?? 0)}s`}
+          style={getTimedButtonStyle('pass', {
             flex: 1,
             height: '120px',
             fontSize: '1.25rem',
-          }}
+          })}
         >
-          Pass
+          Pass{getPressedTimerText('pass')}
         </button>
         <button
-          data-button-id="score"
-          onMouseDown={pressingDown}
-          onMouseUp={notPressingDown}
-          onTouchStart={pressingDown}
-          onTouchEnd={notPressingDown}
-          style={{
+          onClick={() => toggleTimedButton('score')}
+          title={`Last: ${formatSeconds(buttonTimes.score ?? 0)}s`}
+          style={getTimedButtonStyle('score', {
             flex: 1,
             height: '120px',
             fontSize: '1.25rem',
-          }}
+          })}
         >
-          Score
+          Score{getPressedTimerText('score')}
         </button>
       </div>
 
       {/* Miss Row */}
       <button
-        data-button-id="miss"
-        onMouseDown={pressingDown}
-        onMouseUp={notPressingDown}
-        onTouchStart={pressingDown}
-        onTouchEnd={notPressingDown}
-        style={{
+        onClick={() => toggleTimedButton('miss')}
+        title={`Last: ${formatSeconds(buttonTimes.miss ?? 0)}s`}
+        style={getTimedButtonStyle('miss', {
           width: '100%',
           maxWidth: '600px',
           height: '60px',
-          marginBottom: '30px',
+          marginBottom: '14px',
           fontSize: '1rem',
-        }}
+        })}
       >
-        Miss
+        Miss{getPressedTimerText('miss')}
       </button>
 
       {/* Trench and Bump Row */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
         <button
-          onClick={() => setCanTrench(!canTrench)}
+          onClick={() => {
+            const next = trenchCount + 1;
+            setTrenchCount(next);
+            localStorage.setItem('teleopv2_trench_count', String(next));
+          }}
           style={{
             flex: 1,
             height: "2.5rem",
             backgroundColor: '#d7b3fb',
-            opacity: canTrench ? 0.6 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            whiteSpace: 'nowrap',
+            fontSize: '1rem',
           }}
         >
-          Trench
+          Trench: {trenchCount}
         </button>
         <button
-          onClick={() => setCanBump(!canBump)}
+          onClick={() => {
+            const next = bumpCount + 1;
+            setBumpCount(next);
+            localStorage.setItem('teleopv2_bump_count', String(next));
+          }}
           style={{
             flex: 1,
             height: "2.5rem",
             backgroundColor: '#d7b3fb',
-            opacity: canBump ? 0.6 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            whiteSpace: 'nowrap',
+            fontSize: '1rem',
           }}
         >
-          Bump
+          Bump: {bumpCount}
         </button>
       </div>
-      {/* Navigation buttons */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
-        <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Prematch')}>Back</button>
-        <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Next</button>
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap', width: '100%' }}>
+        <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={handleBack}>Back</button>
+        <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={handleNext}>Next</button>
       </div>
     </div>
   );
