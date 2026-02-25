@@ -5,19 +5,25 @@ import { useNavigate } from 'react-router-dom';
 
 
 function Teleop() {
+  const [checked, setChecked] = useState<boolean>(localStorage.getItem('teleop_checked') === 'true');
+  const [passOrScore, handlePassScoreToggle] = useState<string>(localStorage.getItem('teleop_pass_or_score') ?? "Score");
   const navigate = useNavigate();
-
-  // UseStates
-  const [checked, setChecked] = useState(false);
-  const [passOrScore, handlePassScoreToggle] = useState("Score");
-  const [trenchCount, setTrenchCount] = useState(0);
-  const [bumpCount, setBumpCount] = useState(0);
-  const [hubState, setHubState] = useState("Off");
+  const [trenchCount, setTrenchCount] = useState<number>(Number(localStorage.getItem('teleop_trench_count') ?? '0'));
+  const [bumpCount, setBumpCount] = useState<number>(Number(localStorage.getItem('teleop_bump_count') ?? '0'));
+  const [hubState, setHubState] = useState<string>(localStorage.getItem('teleop_hub_state') ?? "Off");
   const topMargin = passOrScore === "Pass" ? "8vh" : "2vh";
 
   // Time button presses
   const [activeButton, setActiveButton] = useState<string | null>(null);
-  const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>({});
+  const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>(() => {
+    const raw = localStorage.getItem('teleop_button_times');
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw) as { [key: string]: number };
+    } catch {
+      return {};
+    }
+  });
   const startTimeRef = useRef<number | null>(null);
   const pressingDown = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -32,10 +38,14 @@ function Teleop() {
     const buttonId = (e.currentTarget as HTMLButtonElement).getAttribute('data-button-id');
     if (buttonId && startTimeRef.current !== null) {
       const elapsed = Math.round(performance.now() - startTimeRef.current);
-      setButtonTimes((prev) => ({
-        ...prev,
-        [buttonId]: elapsed,
-      }));
+      setButtonTimes((prev) => {
+        const next = {
+          ...prev,
+          [buttonId]: elapsed,
+        };
+        localStorage.setItem('teleop_button_times', JSON.stringify(next));
+        return next;
+      });
       console.log(`Button ${buttonId}: ${elapsed} ms`);
     }
     setActiveButton(null);
@@ -55,7 +65,10 @@ function Teleop() {
           checked={checked}
           onCheckedChange={(checked) => {
             setChecked(checked);
-            setHubState(checked ? "On" : "Off");
+            localStorage.setItem('teleop_checked', String(checked));
+            const nextHubState = checked ? "On" : "Off";
+            setHubState(nextHubState);
+            localStorage.setItem('teleop_hub_state', nextHubState);
           }}
           style={{
             width: '3rem',
@@ -97,13 +110,27 @@ function Teleop() {
 
       {/* Trench/Bump and Score/Pass toggle  */}
       <div style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
-        <button onClick={() => setTrenchCount(trenchCount + 1)} style={{ flex: '1 1 auto', minWidth: '85px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Trench: {trenchCount}</button>
+        <button onClick={() => {
+          const next = trenchCount + 1;
+          setTrenchCount(next);
+          localStorage.setItem('teleop_trench_count', String(next));
+        }} style={{ flex: '1 1 auto', minWidth: '85px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Trench: {trenchCount}</button>
         {(passOrScore === "Score") ? (
-          <button onClick={() => handlePassScoreToggle("Pass")} style={{ flex: '1 1 auto', minWidth: '70px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Pass</button>
+          <button onClick={() => {
+            handlePassScoreToggle("Pass");
+            localStorage.setItem('teleop_pass_or_score', 'Pass');
+          }} style={{ flex: '1 1 auto', minWidth: '70px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Pass</button>
         ) : (
-          <button onClick={() => handlePassScoreToggle("Score")} style={{ flex: '1 1 auto', minWidth: '70px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Score</button>
+          <button onClick={() => {
+            handlePassScoreToggle("Score");
+            localStorage.setItem('teleop_pass_or_score', 'Score');
+          }} style={{ flex: '1 1 auto', minWidth: '70px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Score</button>
         )}
-        <button onClick={() => setBumpCount(bumpCount + 1)} style={{ flex: '1 1 auto', minWidth: '85px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Bump: {bumpCount}</button>
+        <button onClick={() => {
+          const next = bumpCount + 1;
+          setBumpCount(next);
+          localStorage.setItem('teleop_bump_count', String(next));
+        }} style={{ flex: '1 1 auto', minWidth: '85px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Bump: {bumpCount}</button>
       </div>
 
       {/* Field map */}
