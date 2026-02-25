@@ -25,7 +25,7 @@ function Endgame() {
         <button style={{ background:'#b2c2f6', opacity: climb === "Level 2" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Level 2")}>Level 2</button>
         <button style={{ background:'#b2c2f6', opacity: climb === "Level 3" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Level 3")}>Level 3</button>
         <button style={{ background:'#d7b3fb', opacity: climb === "None" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("None")}>None</button>
-        <button style={{ background:'#d7b3fb', opacity: climb === "Climb Level" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Climb Fail")}>Climb Fail</button>
+        <button style={{ background:'#d7b3fb', opacity: climb === "Climb Fail" ? 0.6 : 1, color: '#2f1404' }} onClick={() => setClimb("Climb Fail")}>Climb Fail</button>
       </div>
 
       {/* Checkbox */}

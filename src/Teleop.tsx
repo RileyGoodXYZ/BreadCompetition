@@ -5,9 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 function Teleop() {
+  const navigate = useNavigate();
+
+  // UseStates
   const [checked, setChecked] = useState(false);
   const [passOrScore, handlePassScoreToggle] = useState("Score");
-  const navigate = useNavigate();
   const [trenchCount, setTrenchCount] = useState(0);
   const [bumpCount, setBumpCount] = useState(0);
   const [hubState, setHubState] = useState("Off");

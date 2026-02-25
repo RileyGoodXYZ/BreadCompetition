@@ -4,9 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import './teleopv2.css';
 
 export default function TeleopV1() {
-    // Timing logic for toggle
-    const toggleStartTimeRef = useRef<number | null>(null);
-    const [toggleElapsed, setToggleElapsed] = useState<number | null>(null);
+  const toggleStartTimeRef = useRef<number | null>(null);
+  const [toggleElapsed, setToggleElapsed] = useState<number | null>(null);
 
   const [shiftToggled, setShiftToggled] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -64,10 +63,8 @@ export default function TeleopV1() {
             setChecked(isChecked);
             setIntakeState(isChecked ? "On" : "Off");
             if (isChecked) {
-              // Toggle turned ON, start timer
               toggleStartTimeRef.current = performance.now();
             } else {
-              // Toggle turned OFF, stop timer and log
               if (toggleStartTimeRef.current !== null) {
                 const elapsed = Math.round(performance.now() - toggleStartTimeRef.current);
                 setToggleElapsed(elapsed);
