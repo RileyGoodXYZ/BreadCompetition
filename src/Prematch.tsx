@@ -94,9 +94,10 @@ function Prematch() {
             3
           </button>
         </div>
-        <button className='prematchNext' onClick={() => navigate('/auto')}>
-          NEXT
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '-180px', flexWrap: 'wrap', width: '100%' }}>
+          <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/profile')}>Back</button>
+          <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/auto')}>Next</button>
+        </div>
       </div>
     </div>
   )

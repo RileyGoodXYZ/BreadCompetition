@@ -14,6 +14,7 @@ function Submit() {
   const resetTeleopData = () => {
     localStorage.removeItem('teleop_checked');
     localStorage.removeItem('teleop_pass_or_score');
+    localStorage.removeItem('teleop_pass_or_score_history');
     localStorage.removeItem('teleop_trench_count');
     localStorage.removeItem('teleop_bump_count');
     localStorage.removeItem('teleop_hub_state');
@@ -56,6 +57,18 @@ function Submit() {
     const hubStateHistory = (() => {
       try {
         const parsed = JSON.parse(rawHubStateHistory);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((value): value is string => typeof value === 'string');
+        }
+        return [];
+      } catch {
+        return [];
+      }
+    })();
+    const rawPassOrScoreHistory = localStorage.getItem('teleop_pass_or_score_history') ?? '[]';
+    const passOrScoreHistory = (() => {
+      try {
+        const parsed = JSON.parse(rawPassOrScoreHistory);
         if (Array.isArray(parsed)) {
           return parsed.filter((value): value is string => typeof value === 'string');
         }
@@ -115,7 +128,7 @@ function Submit() {
       auto_human_player_count: Number(localStorage.getItem('auto_human_player_count') ?? '0'),
       auto_depot_count: Number(localStorage.getItem('auto_depot_count') ?? '0'),
       hub_on: (localStorage.getItem('teleop_checked') ?? localStorage.getItem('teleopv2_checked') ?? 'false') === 'true',
-      pass_or_score: localStorage.getItem('teleop_pass_or_score') ?? 'Score',
+      pass_or_score: passOrScoreHistory.length > 0 ? passOrScoreHistory.join(' | ') : (localStorage.getItem('teleop_pass_or_score') ?? 'Score'),
       trench_count: Number(teleopTrenchRaw ?? teleopV2TrenchRaw ?? '0'),
       bump_count: Number(teleopBumpRaw ?? teleopV2BumpRaw ?? '0'),
       hub_state: hubStateHistory.length > 0 ? hubStateHistory.join(' | ') : fallbackHubState,

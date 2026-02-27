@@ -29,6 +29,19 @@ function Teleop() {
       return [];
     }
   });
+  const [, setPassOrScoreHistory] = useState<string[]>(() => {
+    const raw = localStorage.getItem('teleop_pass_or_score_history');
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((value): value is string => typeof value === 'string');
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
   const topMargin = passOrScore === "Pass" ? "8vh" : "2vh";
   const getMapButtonClassName = (baseClassName: string, buttonId: string) =>
     `${baseClassName}${activeButton === buttonId ? ' active-zone' : ''}`;
@@ -192,11 +205,21 @@ function Teleop() {
           <button onClick={() => {
             handlePassScoreToggle("Pass");
             localStorage.setItem('teleop_pass_or_score', 'Pass');
+            setPassOrScoreHistory((prev) => {
+              const next = [...prev, 'Pass'];
+              localStorage.setItem('teleop_pass_or_score_history', JSON.stringify(next));
+              return next;
+            });
           }} style={{ flex: '1 1 auto', minWidth: '70px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Pass</button>
         ) : (
           <button onClick={() => {
             handlePassScoreToggle("Score");
             localStorage.setItem('teleop_pass_or_score', 'Score');
+            setPassOrScoreHistory((prev) => {
+              const next = [...prev, 'Score'];
+              localStorage.setItem('teleop_pass_or_score_history', JSON.stringify(next));
+              return next;
+            });
           }} style={{ flex: '1 1 auto', minWidth: '70px', paddingLeft: '0.2rem', paddingRight: '0.2rem' }}>Score</button>
         )}
         <button onClick={() => {
