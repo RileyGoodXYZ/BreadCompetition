@@ -3,13 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 function Submit() {
+  const parseStoredReviews = (): string[] => {
+    const stored = localStorage.getItem('submit_review');
+    if (!stored) return [];
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((value): value is string => typeof value === 'string');
+      }
+    } catch {
+      // Backward compatibility: previous versions stored a plain string.
+    }
+    return [stored].filter(Boolean);
+  };
+  const reviewsToText = (reviews: string[]) => reviews.join(' | ');
 
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
-  const [selectedReview, setSelectedReview] = useState<string>(localStorage.getItem('submit_review') ?? '');
-  const selectReview = (value: string) => {
-    setSelectedReview(value);
-    localStorage.setItem('submit_review', value);
+  const [selectedReviews, setSelectedReviews] = useState<string[]>(parseStoredReviews);
+  const toggleReview = (value: string) => {
+    setSelectedReviews((prev) => {
+      const next = prev.includes(value) ? prev.filter((review) => review !== value) : [...prev, value];
+      localStorage.setItem('submit_review', JSON.stringify(next));
+      return next;
+    });
   };
   const resetTeleopData = () => {
     localStorage.removeItem('teleop_checked');
@@ -82,8 +99,9 @@ function Submit() {
     const teleopBumpRaw = localStorage.getItem('teleop_bump_count');
     const teleopV2TrenchRaw = localStorage.getItem('teleopv2_trench_count');
     const teleopV2BumpRaw = localStorage.getItem('teleopv2_bump_count');
+    const reviewText = reviewsToText(selectedReviews);
     const extraConstData = {
-      submit_review: selectedReview || localStorage.getItem('submit_review') || '',
+      submit_review: reviewText,
       prematch_alliance: localStorage.getItem('prematch_alliance') ?? '',
       prematch_match_num: localStorage.getItem('prematch_match_num') ?? '',
       prematch_team_num: localStorage.getItem('prematch_team_num') ?? '',
@@ -119,7 +137,7 @@ function Submit() {
       alliance: localStorage.getItem('prematch_alliance') ?? '',
       orientation: localStorage.getItem('prematch_orient') ?? '',
       position: localStorage.getItem('prematch_position') ?? '',
-      review: selectedReview || localStorage.getItem('submit_review') || '',
+      review: reviewText,
       auto_climb_selection: localStorage.getItem('auto_climb_selection') ?? '',
       auto_pass_count: Number(localStorage.getItem('auto_pass_count') ?? '0'),
       auto_score_count: Number(localStorage.getItem('auto_score_count') ?? '0'),
@@ -171,9 +189,9 @@ function Submit() {
         <h1>Submit</h1>
       </div>
       <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-        <button className="badAutoBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Bad Auto' ? 0.6 : 1 }} onClick={() => selectReview('Bad Auto')}>Bad Auto</button>
-        <button className="goodTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Good Teleop' ? 0.6 : 1 }} onClick={() => selectReview('Good Teleop')}>Good Teleop</button>
-          <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Bad Teleop' ? 0.6 : 1 }} onClick={() => selectReview('Bad Teleop')}>Bad Teleop</button>
+        <button className="badAutoBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReviews.includes('Bad Auto') ? 0.6 : 1 }} onClick={() => toggleReview('Bad Auto')}>Bad Auto</button>
+        <button className="goodTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReviews.includes('Good Teleop') ? 0.6 : 1 }} onClick={() => toggleReview('Good Teleop')}>Good Teleop</button>
+          <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReviews.includes('Bad Teleop') ? 0.6 : 1 }} onClick={() => toggleReview('Bad Teleop')}>Bad Teleop</button>
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleSubmit}>Submit</button>
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>

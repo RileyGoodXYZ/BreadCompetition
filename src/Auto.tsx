@@ -125,8 +125,8 @@ function Auto() {
         <button className="topRight"></button>
         <button className="middleRight"></button>
         <button className="bottomRight"></button>
-        <button className="humanPlayer" onClick={handleHumanPlayer} data-count={humanPlayerCount}></button>
-        <button className="depot" onClick={handleDepot} data-count={depotCount}></button>
+        <button className="humanPlayer" onClick={handleDepot} data-count={depotCount}></button>
+        <button className="depot" onClick={handleHumanPlayer} data-count={humanPlayerCount}></button>
         </div>
 
         <p>Climb</p>
