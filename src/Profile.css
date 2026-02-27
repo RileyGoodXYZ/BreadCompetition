@@ -49,16 +49,16 @@ color: rgb(243, 246, 246);
     filter: saturate(0.7);
 }
 .practice{
-    background-color: #ffe0bb; 
+    background-color: #eaddcd; 
 }
 .rescout{
-    background-color: rgb(198, 158, 240);
+    background-color: rgb(214, 192, 238);
 }
 .signinp{
-    background-color: rgb(255, 111, 161);
+    background-color: rgb(225, 143, 172);
 }
 .nextprofile{
-    background-color: rgb(30, 110, 110);
+    background-color: rgb(147, 251, 157);
     width: 90%;        
     max-width: 250px; 
     height: 100px;
