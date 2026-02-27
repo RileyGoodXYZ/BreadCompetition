@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import './index.css'
-import App from './App.tsx'
+import './App.css'
 import Profile from './Profile';
 import Prematch from './Prematch';
 import Auto from './Auto';

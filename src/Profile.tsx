@@ -7,7 +7,7 @@ function Profile() {
   const navigate = useNavigate();
   const [scoutName, setScoutName] = useState<string>(localStorage.getItem('profile_scout_name') ?? "");
   const [sessionType, setSessionType] = useState<string>(localStorage.getItem('profile_session_type') ?? "");
-  const [isSignedIn, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
+  const [, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
 
   const handleScoutNameChange = (value: string) => {
     setScoutName(value);

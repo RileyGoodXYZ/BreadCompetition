@@ -29,6 +29,8 @@ function Prematch() {
             className='textbox1'
             placeholder='MATCH NUMBER'
             content="center"
+            value={matchNum}
+            onChange={(e) => setMatchNum(e.target.value)}
           />
         </div>
         <div>
@@ -36,10 +38,12 @@ function Prematch() {
             className='textbox2'
             placeholder='TEAM NUMBER'
             content="center"
+            value={teamNum}
+            onChange={(e) => setTeamNum(e.target.value)}
           />
         </div>
         <div className='container1'>
-          <button className='orient'>
+          <button className='orient' onClick={() => setOrient(orient === "Normal" ? "Flipped" : "Normal")} data-orient={orient}>
             ORIENTATION
           </button>
           <button

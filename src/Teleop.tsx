@@ -12,8 +12,8 @@ function Teleop() {
   const [trenchCount, setTrenchCount] = useState<number>(Number(localStorage.getItem('teleop_trench_count') ?? '0'));
   const [bumpCount, setBumpCount] = useState<number>(Number(localStorage.getItem('teleop_bump_count') ?? '0'));
   const [hubState, setHubState] = useState<string>(localStorage.getItem('teleop_hub_state') ?? "Off");
-  const [scoreTime, setScoreTime] = useState<number>(Number(localStorage.getItem('teleop_score_time') ?? '0'));
-  const [passTime, setPassTime] = useState<number>(Number(localStorage.getItem('teleop_pass_time') ?? '0'));
+  const [, setScoreTime] = useState<number>(Number(localStorage.getItem('teleop_score_time') ?? '0'));
+  const [, setPassTime] = useState<number>(Number(localStorage.getItem('teleop_pass_time') ?? '0'));
   const [, setHubStateHistory] = useState<string[]>(() => {
     const raw = localStorage.getItem('teleop_hub_state_history');
     if (!raw) return [];
@@ -35,7 +35,7 @@ function Teleop() {
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const [isPointerDown, setIsPointerDown] = useState(false);
   const [currentDragButton, setCurrentDragButton] = useState<string | null>(null);
-  const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>(() => {
+  const [, setButtonTimes] = useState<{ [key: string]: number }>(() => {
     const raw = localStorage.getItem('teleop_button_times');
     if (!raw) return {};
     try {

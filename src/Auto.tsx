@@ -32,7 +32,7 @@ function Auto() {
     }
   };
 //button handles
-  const handlePass = () => () => {
+  const handlePass = () => {
     setPassCount(prev => prev + 1);
   };
 
@@ -53,13 +53,13 @@ function Auto() {
 
         <div className='ContainerTime'>
           <div>
-          <button className='Pass' onClick ={handleClick}>
+          <button className='Pass' onClick ={() => { handleClick(); handlePass(); }} data-count={passCount}>
          {isActive ? `Stop (${seconds}s passed)` : 'Pass'}
          </button>
           </div>
       
          <div> 
-          <button className='Score' onClick ={handleClick}>
+          <button className='Score' onClick ={() => { handleClick(); handleScore(); }} data-count={scoreCount}>
          {isActive ? `Stop (${seconds}s passed)` : 'Score'}
          </button>
          </div>
