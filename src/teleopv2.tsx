@@ -102,7 +102,7 @@ export default function TeleopV1() {
 
   const handleNext = () => {
     stopAnyRunningTimer();
-    navigate('/Endgame');
+    navigate('/teleopv3');
   };
 
   return (
