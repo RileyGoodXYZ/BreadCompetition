@@ -59,7 +59,8 @@ function Endgame() {
             Shooting while climbing?
           </label>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem' }}>
+        <center>
+        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem', marginRight: '4.4rem' }}>
           <Checkbox.Root className="CheckboxRoot" id="c2" onClick={() => {
             const next = !buddyClimb;
             setBuddyClimb(next);
@@ -73,7 +74,9 @@ function Endgame() {
             Buddy climb?
           </label>
         </div>
+        </center>
       </div>
+      
 
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: "1rem", flexWrap: 'wrap', width: '100%' }}>
