@@ -3,45 +3,96 @@ import image from './assets/rebuiltField.png';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const AUTO_CLIMB_SELECTION_KEY = 'auto_climb_selection';
+const AUTO_PASS_COUNT_KEY = 'auto_pass_count';
+const AUTO_SCORE_COUNT_KEY = 'auto_score_count';
+const AUTO_PASS_SECONDS_KEY = 'auto_pass_seconds';
+const AUTO_SCORE_SECONDS_KEY = 'auto_score_seconds';
+const AUTO_HUMAN_PLAYER_COUNT_KEY = 'auto_human_player_count';
+const AUTO_DEPOT_COUNT_KEY = 'auto_depot_count';
+const CLIMB_LEFT = 'left';
+const CLIMB_MIDDLE = 'middle';
+const CLIMB_RIGHT = 'right';
+
 function Auto() {
-  const [passCount, setPassCount] = useState(0);
-  const [scoreCount, setScoreCount] = useState(0);
-  const [climbSelection, setClimbSelection] = useState<string | null>(null);
+  const [passCount, setPassCount] = useState<number>(Number(localStorage.getItem(AUTO_PASS_COUNT_KEY) ?? '0'));
+  const [scoreCount, setScoreCount] = useState<number>(Number(localStorage.getItem(AUTO_SCORE_COUNT_KEY) ?? '0'));
+  const [climbSelection, setClimbSelection] = useState<string | null>(localStorage.getItem(AUTO_CLIMB_SELECTION_KEY));
   const navigate = useNavigate();
-  const [seconds, setSeconds] = useState(0);
-  const [isActive, setIsActive] = useState(false);
+  const [passSeconds, setPassSeconds] = useState<number>(Number(localStorage.getItem(AUTO_PASS_SECONDS_KEY) ?? '0'));
+  const [scoreSeconds, setScoreSeconds] = useState<number>(Number(localStorage.getItem(AUTO_SCORE_SECONDS_KEY) ?? '0'));
+  const [humanPlayerCount, setHumanPlayerCount] = useState<number>(Number(localStorage.getItem(AUTO_HUMAN_PLAYER_COUNT_KEY) ?? '0'));
+  const [depotCount, setDepotCount] = useState<number>(Number(localStorage.getItem(AUTO_DEPOT_COUNT_KEY) ?? '0'));
+  const [isPassActive, setIsPassActive] = useState<boolean>(false);
+  const [isScoreActive, setIsScoreActive] = useState<boolean>(false);
+
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
-    // If active, keep adding 1 every second
-    if (isActive) {
-      interval = setInterval(() => {
-    setSeconds((prev) => prev + 1); }, 1000);
-    } else {
-      if (interval !== null) clearInterval(interval);
-    }
+    if (!isPassActive) return;
+    const interval = setInterval(() => {
+      setPassSeconds((prev) => {
+        const next = prev + 1;
+        localStorage.setItem(AUTO_PASS_SECONDS_KEY, String(next));
+        return next;
+      });
+    }, 1000);
     return () => {
-      if (interval !== null) clearInterval(interval);
+      clearInterval(interval);
     };
-  }, [isActive]); // Only depend on isActive now
-  const handleClick = () => {
-    if (!isActive) {
-      setSeconds(0); // Resets to 0
-      setIsActive(true);
-    } else {
-      setIsActive(false); // Stop timing when clicked again
+  }, [isPassActive]);
+
+  useEffect(() => {
+    if (!isScoreActive) return;
+    const interval = setInterval(() => {
+      setScoreSeconds((prev) => {
+        const next = prev + 1;
+        localStorage.setItem(AUTO_SCORE_SECONDS_KEY, String(next));
+        return next;
+      });
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isScoreActive]);
+
+  const handlePassClick = () => {
+    if (!isPassActive) {
+      setPassCount((prev) => {
+        const next = prev + 1;
+        localStorage.setItem(AUTO_PASS_COUNT_KEY, String(next));
+        return next;
+      });
     }
-  };
-//button handles
-  const handlePass = () => {
-    setPassCount(prev => prev + 1);
+    setIsPassActive((prev) => !prev);
   };
 
-  const handleScore = () => {
-    setScoreCount(prev => prev + 1);
+  const handleScoreClick = () => {
+    if (!isScoreActive) {
+      setScoreCount((prev) => {
+        const next = prev + 1;
+        localStorage.setItem(AUTO_SCORE_COUNT_KEY, String(next));
+        return next;
+      });
+    }
+    setIsScoreActive((prev) => !prev);
   };
 
   const handleClimb = (position: string) => {
     setClimbSelection(position);
+    localStorage.setItem(AUTO_CLIMB_SELECTION_KEY, position);
+  };
+  const handleHumanPlayer = () => {
+    setHumanPlayerCount((prev) => {
+      const next = prev + 1;
+      localStorage.setItem(AUTO_HUMAN_PLAYER_COUNT_KEY, String(next));
+      return next;
+    });
+  };
+  const handleDepot = () => {
+    setDepotCount((prev) => {
+      const next = prev + 1;
+      localStorage.setItem(AUTO_DEPOT_COUNT_KEY, String(next));
+      return next;
+    });
   };
 
     return (
@@ -53,14 +104,14 @@ function Auto() {
 
         <div className='ContainerTime'>
           <div>
-          <button className='Pass' onClick ={() => { handleClick(); handlePass(); }} data-count={passCount}>
-         {isActive ? `Stop (${seconds}s passed)` : 'Pass'}
+          <button className='Pass' onClick ={handlePassClick} data-count={passCount}>
+         {isPassActive ? `Stop (${passSeconds}s passed)` : 'Pass'}
          </button>
           </div>
       
          <div> 
-          <button className='Score' onClick ={() => { handleClick(); handleScore(); }} data-count={scoreCount}>
-         {isActive ? `Stop (${seconds}s passed)` : 'Score'}
+          <button className='Score' onClick ={handleScoreClick} data-count={scoreCount}>
+         {isScoreActive ? `Stop (${scoreSeconds}s passed)` : 'Score'}
          </button>
          </div>
 
@@ -74,8 +125,8 @@ function Auto() {
         <button className="topRight"></button>
         <button className="middleRight"></button>
         <button className="bottomRight"></button>
-        <button className="humanPlayer"></button>
-        <button className="depot"></button>
+        <button className="humanPlayer" onClick={handleHumanPlayer} data-count={humanPlayerCount}></button>
+        <button className="depot" onClick={handleDepot} data-count={depotCount}></button>
         </div>
 
         <p>Climb</p>
@@ -83,21 +134,21 @@ function Auto() {
           <div>
           <button
             className={`ClimbLeft ${climbSelection === "left" ? "selected" : ""}`}
-            onClick={() => handleClimb("left")}>
+            onClick={() => handleClimb(CLIMB_LEFT)}>
               Left
           </button>
           </div>
           
           <button
             className={`ClimbMiddle ${climbSelection === "middle" ? "selected" : ""}`}
-            onClick={() => handleClimb("middle")}>
+            onClick={() => handleClimb(CLIMB_MIDDLE)}>
               Middle
           </button>
 
           <div>
           <button
             className={`ClimbRight ${climbSelection === "right" ? "selected" : ""}`}
-            onClick={() => handleClimb("right")}>
+            onClick={() => handleClimb(CLIMB_RIGHT)}>
               Right
           </button>
           </div>

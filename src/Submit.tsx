@@ -7,15 +7,11 @@ function Submit() {
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
   const [selectedReview, setSelectedReview] = useState<string>(localStorage.getItem('submit_review') ?? '');
-  const [signInFlag, setSignInFlag] = useState<string>(localStorage.getItem('submit_sign_in_flag') ?? '');
   const selectReview = (value: string) => {
     setSelectedReview(value);
     localStorage.setItem('submit_review', value);
   };
-  const handleSignInClick = () => {
-    setSignInFlag('SIGN IN');
-    localStorage.setItem('submit_sign_in_flag', 'SIGN IN');
-  };
+
   const resetTeleopData = () => {
     localStorage.removeItem('teleop_checked');
     localStorage.removeItem('teleop_pass_or_score');
@@ -74,15 +70,51 @@ function Submit() {
     const teleopBumpRaw = localStorage.getItem('teleop_bump_count');
     const teleopV2TrenchRaw = localStorage.getItem('teleopv2_trench_count');
     const teleopV2BumpRaw = localStorage.getItem('teleopv2_bump_count');
+    const extraConstData = {
+      submit_review: selectedReview || localStorage.getItem('submit_review') || '',
+      prematch_alliance: localStorage.getItem('prematch_alliance') ?? '',
+      prematch_match_num: localStorage.getItem('prematch_match_num') ?? '',
+      prematch_team_num: localStorage.getItem('prematch_team_num') ?? '',
+      prematch_position: localStorage.getItem('prematch_position') ?? '',
+      prematch_orient: localStorage.getItem('prematch_orient') ?? '',
+      auto_climb_selection: localStorage.getItem('auto_climb_selection') ?? '',
+      auto_pass_count: Number(localStorage.getItem('auto_pass_count') ?? '0'),
+      auto_score_count: Number(localStorage.getItem('auto_score_count') ?? '0'),
+      auto_pass_seconds: Number(localStorage.getItem('auto_pass_seconds') ?? '0'),
+      auto_score_seconds: Number(localStorage.getItem('auto_score_seconds') ?? '0'),
+      auto_human_player_count: Number(localStorage.getItem('auto_human_player_count') ?? '0'),
+      auto_depot_count: Number(localStorage.getItem('auto_depot_count') ?? '0'),
+      teleop_pass_time: Number(localStorage.getItem('teleop_pass_time') ?? '0'),
+      teleop_score_time: Number(localStorage.getItem('teleop_score_time') ?? '0'),
+      teleopv2_checked: localStorage.getItem('teleopv2_checked') === 'true',
+      teleopv2_intake_state: localStorage.getItem('teleopv2_intake_state') ?? '',
+      teleopv3_score_count: Number(localStorage.getItem('score_count') ?? '0'),
+      teleopv3_pass_count: Number(localStorage.getItem('pass_count') ?? '0'),
+      teleopv3_hoard_count: Number(localStorage.getItem('hoard_count') ?? '0'),
+    };
     const mergedButtonTimes = {
       ...buttonTimes,
       ...Object.fromEntries(Object.entries(buttonTimesV2).map(([key, value]) => [`v2_${key}`, value])),
+      ...extraConstData,
     };
 
     const payload = {
       scout_name: localStorage.getItem('profile_scout_name') ?? '',
       session_type: localStorage.getItem('profile_session_type') ?? '',
       is_signed_in: localStorage.getItem('profile_is_signed_in') === 'true',
+      match_num: localStorage.getItem('prematch_match_num') ?? '',
+      team_num: localStorage.getItem('prematch_team_num') ?? '',
+      alliance: localStorage.getItem('prematch_alliance') ?? '',
+      orientation: localStorage.getItem('prematch_orient') ?? '',
+      position: localStorage.getItem('prematch_position') ?? '',
+      review: selectedReview || localStorage.getItem('submit_review') || '',
+      auto_climb_selection: localStorage.getItem('auto_climb_selection') ?? '',
+      auto_pass_count: Number(localStorage.getItem('auto_pass_count') ?? '0'),
+      auto_score_count: Number(localStorage.getItem('auto_score_count') ?? '0'),
+      auto_pass_seconds: Number(localStorage.getItem('auto_pass_seconds') ?? '0'),
+      auto_score_seconds: Number(localStorage.getItem('auto_score_seconds') ?? '0'),
+      auto_human_player_count: Number(localStorage.getItem('auto_human_player_count') ?? '0'),
+      auto_depot_count: Number(localStorage.getItem('auto_depot_count') ?? '0'),
       hub_on: (localStorage.getItem('teleop_checked') ?? localStorage.getItem('teleopv2_checked') ?? 'false') === 'true',
       pass_or_score: localStorage.getItem('teleop_pass_or_score') ?? 'Score',
       trench_count: Number(teleopTrenchRaw ?? teleopV2TrenchRaw ?? '0'),
@@ -92,7 +124,6 @@ function Submit() {
       climb: localStorage.getItem('endgame_climb') ?? 'None',
       shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
       buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
-      created_at: new Date().toISOString(),
     };
 
     setSubmitMessage('Submitting...');
@@ -132,7 +163,6 @@ function Submit() {
         <button className="goodTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Good Teleop' ? 0.6 : 1 }} onClick={() => selectReview('Good Teleop')}>Good Teleop</button>
           <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Bad Teleop' ? 0.6 : 1 }} onClick={() => selectReview('Bad Teleop')}>Bad Teleop</button>
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleSubmit}>Submit</button>
-        <button className="signInBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: signInFlag ? 0.6 : 1 }} onClick={handleSignInClick}>SIGN IN</button>
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Back</button>

@@ -104,6 +104,11 @@
     display: flex;
     flex-direction: column;
     translate: 10px -250px;
+    transition: translate 150ms ease;
+}
+
+.container2.flipped {
+    translate: 260px -250px;
 }
 
 .prematchNext {
