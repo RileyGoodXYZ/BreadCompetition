@@ -13,8 +13,8 @@ export default function TeleopV1() {
   const [trenchCount, setTrenchCount] = useState<number>(Number(localStorage.getItem('teleopv2_trench_count') ?? '0'));
   const navigate = useNavigate();
 
-  // Timing logic for Pass and Score buttons
-  const [activeButton, setActiveButton] = useState<'pass' | 'score' | null>(null);
+  // Timing logic for Pass, Hoard, and Score buttons
+  const [activeButton, setActiveButton] = useState<'pass' | 'hoard' | 'score' | null>(null);
   const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>(() => {
     const raw = localStorage.getItem('teleopv2_button_times');
     if (!raw) return {};
@@ -39,14 +39,14 @@ export default function TeleopV1() {
   const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null);
-  const getTimedButtonStyle = (buttonId: 'pass' | 'score', baseStyle: CSSProperties): CSSProperties => ({
+  const getTimedButtonStyle = (buttonId: 'pass' | 'hoard' | 'score', baseStyle: CSSProperties): CSSProperties => ({
     ...baseStyle,
     backgroundColor: activeButton === buttonId ? 'rgba(0, 0, 0, 0.25)' : baseStyle.backgroundColor,
     transform: activeButton === buttonId ? 'translateY(1px)' : 'translateY(0)',
     boxShadow: activeButton === buttonId ? 'inset 0 3px 6px rgba(0, 0, 0, 0.35)' : 'none',
   });
   const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
-  const getPressedTimerText = (buttonId: 'pass' | 'score') =>
+  const getPressedTimerText = (buttonId: 'pass' | 'hoard' | 'score') =>
     activeButton === buttonId && liveElapsedMs !== null ? ` (${formatSeconds(liveElapsedMs)}s)` : '';
 
   useEffect(() => () => {
@@ -55,7 +55,7 @@ export default function TeleopV1() {
     }
   }, []);
 
-  const stopTimer = (buttonId: 'pass' | 'score') => {
+  const stopTimer = (buttonId: 'pass' | 'hoard' | 'score') => {
     if (startTimeRef.current === null) return;
     const elapsed = Math.round(performance.now() - startTimeRef.current);
     setButtonTimes((prev) => {
@@ -75,7 +75,7 @@ export default function TeleopV1() {
     startTimeRef.current = null;
   };
 
-  const startTimer = (buttonId: 'pass' | 'score') => {
+  const startTimer = (buttonId: 'pass' | 'hoard' | 'score') => {
     setActiveButton(buttonId);
     startTimeRef.current = performance.now();
     setLiveElapsedMs(0);
@@ -88,7 +88,7 @@ export default function TeleopV1() {
     animationFrameRef.current = requestAnimationFrame(tick);
   };
 
-  const toggleTimedButton = (buttonId: 'pass' | 'score') => {
+  const toggleTimedButton = (buttonId: 'pass' | 'hoard' | 'score') => {
     if (activeButton === buttonId) {
       stopTimer(buttonId);
       setActiveButton(null);
