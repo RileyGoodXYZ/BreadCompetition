@@ -2,6 +2,8 @@ import './Teleop.css';
 import * as Switch from '@radix-ui/react-switch';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import passMap from './assets/passMap.png';
+import scoreMap from './assets/scoreMap.png';
 
 
 function Teleop() {
@@ -209,7 +211,7 @@ function Teleop() {
         <p>{passOrScore} Mode</p>
         {(passOrScore === "Pass") ? (
           <div style={{ position: 'relative', width: '100%', paddingBottom: '85%' }}>
-            <img src="src/assets/passMap.png" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 'auto' }} />
+            <img src={passMap} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 'auto' }} />
             <div className="passOverlay">
               <button onPointerDown={handleMapButtonPointerDown} onPointerEnter={handleMapButtonPointerEnter} data-button-id="oppAllianceTopPassButton" className={getMapButtonClassName('oppAllianceTopPassButton', 'oppAllianceTopPassButton')} />
               <button onPointerDown={handleMapButtonPointerDown} onPointerEnter={handleMapButtonPointerEnter} data-button-id="oppAllianceBottomPassButton" className={getMapButtonClassName('oppAllianceBottomPassButton', 'oppAllianceBottomPassButton')} />
@@ -221,7 +223,7 @@ function Teleop() {
           </div>
         ) : (
           <div style={{ position: 'relative', width: '100%', paddingBottom: '100%' }}>
-            <img src="src/assets/scoreMap.png" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
+            <img src={scoreMap} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
             <div className="scoreOverlay">
               <button onPointerDown={handleMapButtonPointerDown} onPointerEnter={handleMapButtonPointerEnter} data-button-id="topScoreButton" className={getMapButtonClassName('topScoreButton', 'topScoreButton')} />
               <button onPointerDown={handleMapButtonPointerDown} onPointerEnter={handleMapButtonPointerEnter} data-button-id="bottomScoreButton" className={getMapButtonClassName('bottomScoreButton', 'bottomScoreButton')} />
