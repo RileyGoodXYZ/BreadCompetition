@@ -11,7 +11,6 @@ function Submit() {
     setSelectedReview(value);
     localStorage.setItem('submit_review', value);
   };
-
   const resetTeleopData = () => {
     localStorage.removeItem('teleop_checked');
     localStorage.removeItem('teleop_pass_or_score');
