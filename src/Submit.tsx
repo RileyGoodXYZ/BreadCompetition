@@ -82,7 +82,7 @@ function Submit() {
         <button className="goodTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} value={goodTeleopBtnMessage}>Good Teleop</button>
           <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} value={badTeleopBtnMessage}>Bad Teleop</button>
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleSubmit}>Submit</button>
-        <button className="signInBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} value={signInBtnMessage}>SIGN IN</button>
+        {/* <button className="signInBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} value={signInBtnMessage}>SIGN IN</button> */}
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Back</button>
