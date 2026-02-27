@@ -109,6 +109,12 @@ label {
     background-color: transparent;
     pointer-events: auto;
 }
+.topScoreButton.active-zone, .bottomScoreButton.active-zone,
+.oppAllianceTopPassButton.active-zone, .oppAllianceBottomPassButton.active-zone,
+.neutralTopPassButton.active-zone, .neutralBottomPassButton.active-zone,
+.myAllianceTopPassButton.active-zone, .myAllianceBottomPassButton.active-zone {
+    background-color: rgba(0, 0, 0, 0.3);
+}
 
 .topScoreButton, .bottomScoreButton {
     width: 8rem;

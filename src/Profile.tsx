@@ -18,6 +18,10 @@ function Profile() {
     setSessionType(value);
     localStorage.setItem('profile_session_type', value);
   };
+  const handleSessionTypeToggle = (value: string) => {
+    const nextValue = sessionType === value ? "" : value;
+    handleSessionTypeChange(nextValue);
+  };
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -48,8 +52,20 @@ function Profile() {
       <textarea className='textareaprofile' placeholder='Enter your name here' 
       value={scoutName} onChange={(e) => handleScoutNameChange(e.target.value)}></textarea>
       <div className='threebuttons'>
-        <button className='practice' onClick={() => handleSessionTypeChange("Practice")}>Practice</button>
-        <button className='rescout' onClick={() => handleSessionTypeChange("Rescout")}>Rescout</button>
+        <button
+          className={`practice ${sessionType === "Practice" ? "selected-session" : ""}`}
+          onClick={() => handleSessionTypeToggle("Practice")}
+          aria-pressed={sessionType === "Practice"}
+        >
+          Practice
+        </button>
+        <button
+          className={`rescout ${sessionType === "Rescout" ? "selected-session" : ""}`}
+          onClick={() => handleSessionTypeToggle("Rescout")}
+          aria-pressed={sessionType === "Rescout"}
+        >
+          Rescout
+        </button>
         <button className='signinp' onClick={() => login()}>Sign in</button>
       </div>
       <br></br>

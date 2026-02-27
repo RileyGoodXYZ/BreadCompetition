@@ -8,8 +8,13 @@ function Prematch() {
   const [position, setPosition] = useState<string>("");
   const [teamNum, setTeamNum] = useState<string>("");
   const [matchNum, setMatchNum] = useState<string>("");
-  const [alliance, setAlliance] = useState<string>("");
+  const [alliance, setAlliance] = useState<string>(localStorage.getItem('prematch_alliance') ?? "Red");
   const [orient, setOrient] = useState<string>("");
+  const toggleAlliance = () => {
+    const nextAlliance = alliance === "Red" ? "Blue" : "Red";
+    setAlliance(nextAlliance);
+    localStorage.setItem('prematch_alliance', nextAlliance);
+  };
 
 
   
@@ -37,7 +42,14 @@ function Prematch() {
           <button className='orient'>
             ORIENTATION
           </button>
-          <button className='alliance'>
+          <button
+            className='alliance'
+            onClick={toggleAlliance}
+            style={{
+              backgroundColor: alliance === "Red" ? 'rgb(203, 58, 58)' : 'rgb(53, 53, 176)',
+              borderColor: alliance === "Red" ? 'rgb(129, 33, 33)' : 'rgb(32, 32, 90)',
+            }}
+          >
             ALLIANCE
           </button>
           <div>
@@ -57,7 +69,7 @@ function Prematch() {
             3
           </button>
         </div>
-        <button className='prematchNext' onClick={() => navigate('/Teleop')}>
+        <button className='prematchNext' onClick={() => navigate('/auto')}>
           NEXT
         </button>
       </div>
