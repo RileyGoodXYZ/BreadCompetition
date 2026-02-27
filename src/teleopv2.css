@@ -57,19 +57,6 @@ label {
     flex-wrap: wrap;
 }
 
-button {
-    font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.2rem);
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 500;
-    min-width: 44px;
-    min-height: 44px;
-    touch-action: manipulation;
-}
-
 @media (max-width: 480px) {
     .mainContainer {
         padding: 0.1rem;
