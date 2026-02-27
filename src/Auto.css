@@ -30,8 +30,8 @@
 }
 
 .Pass{
-    width: 70px;
-    height: 50px;
+    width: 90px;
+    height: 60px;
     background-color: #58b0b3;
     color: white;
     font-size: 1rem;
@@ -41,19 +41,8 @@
 }
 
 .Score{
-    width: 70px;
-    height: 50px;
-    background-color: #155353;
-    color: white;
-    font-size: 1rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-
-.Timer{
-    width: 70px;
-    height: 50px;
+    width: 90px;
+    height: 60px;
     background-color: #c69ef0;
     color: white;
     font-size: 1rem;
@@ -67,6 +56,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    text-align: center;
     gap: 0.5rem;
     width: 100%;
     flex-wrap: wrap;
@@ -78,21 +68,12 @@
 }
 
 .climbContainer button{
-    width: 70px;
-    height: 50px;
+    width: 85px;
+    height: 55px;
+    text-align: center;
 }
 
-.ContainerTower{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 50px;
-    margin-bottom: 25px;
-    
-}
-
-.rebuiltField{
+.passMap{
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -112,4 +93,88 @@ img {
     border-radius: 8px;
     display: block;
     margin: 0 auto;
+}
+
+.mapContainer {
+    position: relative;   /* THIS is the anchor */
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;       /* center it */
+}
+
+.mapContainer img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.mapContainer button {
+    position: absolute;
+    border-radius: 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* Left side */
+.topLeft {
+    top: 0%;
+    left: 0%;
+    width: 69%;
+    height: 33.5%;
+    opacity: 0.5;
+}
+
+.middleLeft {
+    top: 33.5%;
+    left: 0%;
+    width: 69%;
+    height: 33.5%;
+    opacity: 0.5;
+}
+
+.bottomLeft {
+    top: 67%;
+    left: 0%;
+    width: 69%;
+    height: 33.5%;
+    opacity: 0.5;
+}
+
+/* Right side */
+.topRight {
+    top: 0%;
+    left: 69%;
+    width: 31%;
+    height: 33.5%;
+    opacity: 0.5;
+}
+
+.middleRight {
+    top: 33.5%;
+    left: 69%;
+    width: 31%;
+    height: 33.5%;
+    opacity: 0.5;
+}
+
+.bottomRight {
+    top: 67%;
+    left: 69%;
+    width: 31%;
+    height: 33.5%;
+    opacity: 0.5;
+}
+
+/* Special spots */
+.humanPlayer {
+    background-color: #c69ef0;
+    top: 67%;
+    left: 95%;
+    width: 0.5%;
+    height: 13%;
+}
+
+.depot {
+    background-color: #c69ef0;
+    top: -9%;
+    left: 92%;
 }
