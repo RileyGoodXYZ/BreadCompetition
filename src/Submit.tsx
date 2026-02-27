@@ -7,15 +7,11 @@ function Submit() {
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
   const [selectedReview, setSelectedReview] = useState<string>(localStorage.getItem('submit_review') ?? '');
-  const [signInFlag, setSignInFlag] = useState<string>(localStorage.getItem('submit_sign_in_flag') ?? '');
   const selectReview = (value: string) => {
     setSelectedReview(value);
     localStorage.setItem('submit_review', value);
   };
-  const handleSignInClick = () => {
-    setSignInFlag('SIGN IN');
-    localStorage.setItem('submit_sign_in_flag', 'SIGN IN');
-  };
+ 
   const resetTeleopData = () => {
     localStorage.removeItem('teleop_checked');
     localStorage.removeItem('teleop_pass_or_score');
@@ -132,7 +128,6 @@ function Submit() {
         <button className="goodTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Good Teleop' ? 0.6 : 1 }} onClick={() => selectReview('Good Teleop')}>Good Teleop</button>
           <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Bad Teleop' ? 0.6 : 1 }} onClick={() => selectReview('Bad Teleop')}>Bad Teleop</button>
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleSubmit}>Submit</button>
-        <button className="signInBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: signInFlag ? 0.6 : 1 }} onClick={handleSignInClick}>SIGN IN</button>
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Back</button>
