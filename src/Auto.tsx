@@ -1,6 +1,6 @@
 import './Auto.css'
 import image from './assets/rebuiltField.png';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Auto() {
