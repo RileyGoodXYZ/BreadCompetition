@@ -38,9 +38,10 @@
 .badAutoBtn:hover {
     background-color: #3a8d8f;
 }
-.signInBtn {
-    background-color: #b2c2f6;
-    color: black;
+
+.goodTeleopBtn {
+    background-color: #766dfc;
+    color: #fff;
     border: none;
     border-radius: 8px;
     font-size: 1.1rem;
@@ -49,9 +50,27 @@
     cursor: pointer;
     transition: background 0.2s;
 }
-.signInBtn:hover {
-    background-color: #155353;
+
+.goodTeleopBtn:hover {
+    background-color: #5b50ed;
 }
+
+.badTeleopBtn {
+    background-color: #ee68ad;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 0.75rem 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.badTeleopBtn:hover {
+    background-color: #f14ba1;
+}
+
 .submitBtn {
     background-color: #dc7de3;
     color: #fff;
