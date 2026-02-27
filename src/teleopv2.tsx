@@ -173,8 +173,9 @@ export default function TeleopV1() {
 
       {/* Pass and Score Row */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
-        <button
-          onClick={() => toggleTimedButton('pass')}
+        <div className="passHoardColumn">
+  <button
+   onClick={() => toggleTimedButton('pass')}
           title={`Last: ${formatSeconds(buttonTimes.pass ?? 0)}s`}
           style={getTimedButtonStyle('pass', {
             flex: 1,
@@ -183,7 +184,21 @@ export default function TeleopV1() {
           })}
         >
           Pass{getPressedTimerText('pass')}
-        </button>
+  </button>
+
+  <button
+    data-button-id="hoard"
+    onClick={() => toggleTimedButton('hoard')}
+          title={`Last: ${formatSeconds(buttonTimes.hoard ?? 0)}s`}
+          style={getTimedButtonStyle('hoard', {
+            flex: 1,
+            height: '120px',
+            fontSize: '1.25rem',
+          })}
+        >
+         Hoard{getPressedTimerText('hoard')}
+  </button>
+</div>
         <button
           onClick={() => toggleTimedButton('score')}
           title={`Last: ${formatSeconds(buttonTimes.score ?? 0)}s`}
