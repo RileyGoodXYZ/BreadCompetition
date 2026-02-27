@@ -182,7 +182,7 @@ function Teleop() {
 
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: topMargin, flexWrap: 'wrap', width: '100%' }}>
-        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Prematch')}>Back</button>
+        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/auto')}>Back</button>
         <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/teleopv2')}>Next</button>
       </div>
     </div>

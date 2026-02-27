@@ -69,7 +69,7 @@ function Prematch() {
             3
           </button>
         </div>
-        <button className='prematchNext' onClick={() => navigate('/Teleop')}>
+        <button className='prematchNext' onClick={() => navigate('/auto')}>
           NEXT
         </button>
       </div>
