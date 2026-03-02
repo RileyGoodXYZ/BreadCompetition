@@ -13,8 +13,9 @@ export default function TeleopV1() {
   const [trenchCount, setTrenchCount] = useState<number>(Number(localStorage.getItem('teleopv2_trench_count') ?? '0'));
   const navigate = useNavigate();
 
-  // Timing logic for Pass, Hoard, and Score buttons
-  const [activeButton, setActiveButton] = useState<'pass' | 'hoard' | 'score' | null>(null);
+  // Timing logic for pass zone, hoard, and score buttons
+  type TimedButtonId = 'pass_neutral_zone' | 'pass_other_alliance_zone' | 'hoard' | 'score';
+  const [activeButton, setActiveButton] = useState<TimedButtonId | null>(null);
   const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>(() => {
     const raw = localStorage.getItem('teleopv2_button_times');
     if (!raw) return {};
@@ -39,14 +40,14 @@ export default function TeleopV1() {
   const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null);
-  const getTimedButtonStyle = (buttonId: 'pass' | 'hoard' | 'score', baseStyle: CSSProperties): CSSProperties => ({
+  const getTimedButtonStyle = (buttonId: TimedButtonId, baseStyle: CSSProperties): CSSProperties => ({
     ...baseStyle,
     backgroundColor: activeButton === buttonId ? 'rgba(0, 0, 0, 0.25)' : baseStyle.backgroundColor,
     transform: activeButton === buttonId ? 'translateY(1px)' : 'translateY(0)',
     boxShadow: activeButton === buttonId ? 'inset 0 3px 6px rgba(0, 0, 0, 0.35)' : 'none',
   });
   const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
-  const getPressedTimerText = (buttonId: 'pass' | 'hoard' | 'score') =>
+  const getPressedTimerText = (buttonId: TimedButtonId) =>
     activeButton === buttonId && liveElapsedMs !== null ? ` (${formatSeconds(liveElapsedMs)}s)` : '';
 
   useEffect(() => () => {
@@ -55,7 +56,7 @@ export default function TeleopV1() {
     }
   }, []);
 
-  const stopTimer = (buttonId: 'pass' | 'hoard' | 'score') => {
+  const stopTimer = (buttonId: TimedButtonId) => {
     if (startTimeRef.current === null) return;
     const elapsed = Math.round(performance.now() - startTimeRef.current);
     setButtonTimes((prev) => {
@@ -75,7 +76,7 @@ export default function TeleopV1() {
     startTimeRef.current = null;
   };
 
-  const startTimer = (buttonId: 'pass' | 'hoard' | 'score') => {
+  const startTimer = (buttonId: TimedButtonId) => {
     setActiveButton(buttonId);
     startTimeRef.current = performance.now();
     setLiveElapsedMs(0);
@@ -88,7 +89,7 @@ export default function TeleopV1() {
     animationFrameRef.current = requestAnimationFrame(tick);
   };
 
-  const toggleTimedButton = (buttonId: 'pass' | 'hoard' | 'score') => {
+  const toggleTimedButton = (buttonId: TimedButtonId) => {
     if (activeButton === buttonId) {
       stopTimer(buttonId);
       setActiveButton(null);
@@ -197,40 +198,53 @@ export default function TeleopV1() {
       </div>
 
       {/* Pass and Score Row */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px', alignItems: 'stretch' }}>
         <div className="passHoardColumn">
-  <button
-   onClick={() => toggleTimedButton('pass')}
-          title={`Last: ${formatSeconds(buttonTimes.pass ?? 0)}s`}
-          style={getTimedButtonStyle('pass', {
-            flex: 1,
-            height: '120px',
-            fontSize: '1.25rem',
-          })}
-        >
-          Pass{getPressedTimerText('pass')}
-  </button>
+          <button
+            onClick={() => toggleTimedButton('pass_neutral_zone')}
+            title={`Last: ${formatSeconds(buttonTimes.pass_neutral_zone ?? 0)}s`}
+            style={getTimedButtonStyle('pass_neutral_zone', {
+              flex: 1,
+              height: '90px',
+              fontSize: '1rem',
+            })}
+          >
+            Pass Neutral Zone{getPressedTimerText('pass_neutral_zone')}
+          </button>
 
-  <button
-    data-button-id="hoard"
-    onClick={() => toggleTimedButton('hoard')}
-          title={`Last: ${formatSeconds(buttonTimes.hoard ?? 0)}s`}
-          style={getTimedButtonStyle('hoard', {
-            flex: 1,
-            height: '120px',
-            fontSize: '1.25rem',
-          })}
-        >
-         Hoard{getPressedTimerText('hoard')}
-  </button>
-</div>
+          <button
+            onClick={() => toggleTimedButton('pass_other_alliance_zone')}
+            title={`Last: ${formatSeconds(buttonTimes.pass_other_alliance_zone ?? 0)}s`}
+            style={getTimedButtonStyle('pass_other_alliance_zone', {
+              flex: 1,
+              height: '90px',
+              fontSize: '1rem',
+            })}
+          >
+            Pass Other Alliance Zone{getPressedTimerText('pass_other_alliance_zone')}
+          </button>
+
+          <button
+            data-button-id="hoard"
+            onClick={() => toggleTimedButton('hoard')}
+            title={`Last: ${formatSeconds(buttonTimes.hoard ?? 0)}s`}
+            style={getTimedButtonStyle('hoard', {
+              flex: 1,
+              height: '90px',
+              fontSize: '1.1rem',
+            })}
+          >
+            Hoard{getPressedTimerText('hoard')}
+          </button>
+        </div>
         <button
           onClick={() => toggleTimedButton('score')}
           title={`Last: ${formatSeconds(buttonTimes.score ?? 0)}s`}
           style={getTimedButtonStyle('score', {
-            flex: 1,
-            height: '120px',
-            fontSize: '1.25rem',
+            flex: 1.2,
+            height: 'auto',
+            minHeight: '290px',
+            fontSize: '1.4rem',
           })}
         >
           Score{getPressedTimerText('score')}
