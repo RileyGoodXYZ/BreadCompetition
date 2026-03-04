@@ -249,11 +249,6 @@ function Submit() {
       intake_teleopv2_bump_count: v2IntakeBumpCount,
       teleopv2_miss_count: v2MissCount,
       intake_teleopv2_miss_count: v2IntakeMissCount,
-      // Backward compatibility for existing Supabase columns.
-      intaking_pass_neutral_zone: v2IntakePassNeutralZone,
-      intaking_pass_other_alliance_zone: v2IntakePassOtherAllianceZone,
-      intaking_hoard: v2IntakeHoard,
-      intaking_score: v2IntakeScore,
       climb: localStorage.getItem('endgame_climb') ?? 'None',
       endgame_result: endgameResult,
       endgame_level: endgameLevel,
