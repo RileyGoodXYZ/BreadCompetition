@@ -2,6 +2,7 @@ import './Auto.css'
 import image from './assets/rebuiltField.png';
 import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { currentScoutCanUseAuto } from './autoAccess';
 
 const AUTO_CLIMB_SELECTION_KEY = 'auto_climb_selection';
 const AUTO_PASS_COUNT_KEY = 'auto_pass_count';
@@ -37,6 +38,12 @@ function Auto() {
   const [bottomRightCount, setBottomRightCount] = useState<number>(Number(localStorage.getItem(AUTO_BOTTOM_RIGHT_COUNT_KEY) ?? '0'));
   const [isPassActive, setIsPassActive] = useState<boolean>(false);
   const [isScoreActive, setIsScoreActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!currentScoutCanUseAuto()) {
+      navigate('/teleopv2', { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (!isPassActive) return;
@@ -178,7 +185,7 @@ function Auto() {
         </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/prematch')}>Back</button>
-          <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/teleop')}>Next</button>
+          <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/teleopv2')}>Next</button>
         </div>
       </div>
     )

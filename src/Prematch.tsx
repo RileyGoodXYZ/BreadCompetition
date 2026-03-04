@@ -2,6 +2,7 @@ import './Prematch.css';
 import image from './assets/rebuiltField.png';
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
+import { currentScoutCanUseAuto } from './autoAccess';
 
 function Prematch() {
   const navigate = useNavigate();
@@ -95,7 +96,13 @@ function Prematch() {
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '-180px', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/profile')}>Back</button>
-          <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/auto')}>Next</button>
+          <button
+            className="navBtns"
+            style={{ flex: '1 1 auto', minWidth: '100px' }}
+            onClick={() => navigate(currentScoutCanUseAuto() ? '/auto' : '/teleopv2')}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>
