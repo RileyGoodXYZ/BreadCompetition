@@ -272,7 +272,7 @@ export default function TeleopV1() {
           fontSize: '1rem',
         }}
       >
-        {checked ? 'intake_' : ''}Miss: {currentMissCount}
+        {checked ? 'Intake ' : ''}Miss: {currentMissCount}
       </button>
 
       {/* Trench and Bump Row */}
@@ -299,7 +299,7 @@ export default function TeleopV1() {
             fontSize: '1rem',
           }}
         >
-          {checked ? 'intake_' : ''}Trench: {currentTrenchCount}
+          {checked ? 'Intake ' : ''}Trench: {currentTrenchCount}
         </button>
         <button
           onClick={() => {
@@ -323,7 +323,7 @@ export default function TeleopV1() {
             fontSize: '1rem',
           }}
         >
-          {checked ? 'intake_' : ''}Bump: {currentBumpCount}
+          {checked ? 'Intake' : ''}Bump: {currentBumpCount}
         </button>
       </div>
 
