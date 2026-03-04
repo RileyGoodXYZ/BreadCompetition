@@ -112,29 +112,31 @@ img {
     border-radius: 0;
     min-width: 0;
     min-height: 0;
+    border: 2px solid black;
+    
 }
 
 /* Left side */
 .topLeft {
     top: 0%;
-    left: 0%;
-    width: 69%;
+    left: 18%;
+    width: 32%;
     height: 33.5%;
     opacity: 0.5;
 }
 
 .middleLeft {
     top: 33.5%;
-    left: 0%;
-    width: 69%;
+    left: 18%;
+    width: 32%;
     height: 33.5%;
     opacity: 0.5;
 }
 
 .bottomLeft {
     top: 67%;
-    left: 0%;
-    width: 69%;
+    left: 18%;
+    width: 32%;
     height: 33.5%;
     opacity: 0.5;
 }
@@ -142,24 +144,24 @@ img {
 /* Right side */
 .topRight {
     top: 0%;
-    left: 69%;
-    width: 31%;
+    left: 50%;
+    width: 32%;
     height: 33.5%;
     opacity: 0.5;
 }
 
 .middleRight {
     top: 33.5%;
-    left: 69%;
-    width: 31%;
+    left: 50%;
+    width: 32%;
     height: 33.5%;
     opacity: 0.5;
 }
 
 .bottomRight {
     top: 67%;
-    left: 69%;
-    width: 31%;
+    left: 50%;
+    width: 32%;
     height: 33.5%;
     opacity: 0.5;
 }
@@ -171,10 +173,12 @@ img {
     left: 95%;
     width: 0.5%;
     height: 13%;
+    border: none;
 }
 
 .depot {
     background-color: #c69ef0;
     top: -9%;
     left: 92%;
+    border: none;
 }
