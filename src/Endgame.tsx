@@ -6,30 +6,47 @@ import { useNavigate } from 'react-router-dom';
 
 function Endgame() {
   const savedClimb = localStorage.getItem('endgame_climb') ?? 'None';
-  const initialClimbStatus: 'None' | 'Climb' = savedClimb === 'None' ? 'None' : 'Climb';
+  const savedClimbType = localStorage.getItem('endgame_climb_type') ?? 'Center';
+  const initialClimbStatus: 'None' | 'Failed' | 'Success' = savedClimb === 'None' ? 'None' : (savedClimb === 'Failed' ? 'Failed' : 'Success');
   const initialClimbLevel: 'Level 1' | 'Level 2' | 'Level 3' | null =
     savedClimb === 'Level 1' || savedClimb === 'Level 2' || savedClimb === 'Level 3' ? savedClimb : null;
-  const [climbStatus, setClimbStatus] = useState<'None' | 'Climb'>(initialClimbStatus);
+  const [climbStatus, setClimbStatus] = useState<'None' | 'Failed' | 'Success'>(initialClimbStatus);
   const [climbLevel, setClimbLevel] = useState<'Level 1' | 'Level 2' | 'Level 3' | null>(initialClimbLevel);
+  const [climbType, setClimbType] = useState<'Center' | 'Side'>(savedClimbType === 'Side' ? 'Side' : 'Center');
   const [shootWhileClimb, setShootWhileClimb] = useState<boolean>(localStorage.getItem('endgame_shoot_while_climb') === 'true');
   const [buddyClimb, setBuddyClimb] = useState<boolean>(localStorage.getItem('endgame_buddy_climb') === 'true');
   const navigate = useNavigate();
 
-  const persistClimb = (nextStatus: 'None' | 'Climb', nextLevel: 'Level 1' | 'Level 2' | 'Level 3' | null) => {
-    const finalValue = nextStatus === 'None' ? 'None' : (nextLevel ?? 'Climb');
+  const persistClimb = (nextStatus: 'None' | 'Failed' | 'Success', nextLevel: 'Level 1' | 'Level 2' | 'Level 3' | null, nextType: 'Center' | 'Side') => {
+    let finalValue = 'None';
+    if (nextStatus === 'Success') {
+      finalValue = nextLevel ?? 'None';
+    } else if (nextStatus === 'Failed') {
+      finalValue = 'Failed';
+    }
     localStorage.setItem('endgame_climb', finalValue);
     localStorage.setItem('endgame_climb_status', nextStatus);
     localStorage.setItem('endgame_climb_level', nextLevel ?? '');
+    localStorage.setItem('endgame_climb_type', nextType);
   };
 
-  const handleStatusSelect = (status: 'None' | 'Climb') => {
+  const handleStatusSelect = (status: 'None' | 'Failed' | 'Success') => {
     setClimbStatus(status);
-    persistClimb(status, climbLevel);
+    if (status !== 'Success') {
+      setClimbLevel(null);
+    }
+    persistClimb(status, status === 'Success' ? climbLevel : null, climbType);
   };
 
-  const handleLevelSelect = (level: 'Level 1' | 'Level 2' | 'Level 3') => {
+  const handleLevelSelect = (level: 'Level 1' | 'Level 2' | 'Level 3' | null) => {
     setClimbLevel(level);
-    persistClimb(climbStatus, level);
+    setClimbStatus('Success');
+    persistClimb('Success', level, climbType);
+  };
+
+  const handleClimbTypeSelect = (type: 'Center' | 'Side') => {
+    setClimbType(type);
+    persistClimb(climbStatus, climbLevel, type);
   };
 
   return (
@@ -43,16 +60,24 @@ function Endgame() {
 
 
       <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
-        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 1" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 1')}>Level 1</button>
-        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 2" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 2')}>Level 2</button>
-        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 3" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 3')}>Level 3</button>
+        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 3" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 3')}>Level 3</button>
+        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 2" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 2')}>Level 2</button>
+        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 1" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 1')}>Level 1</button>
       </div>
 
 
       <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
-        <button style={{ background:'#d7b3fb', opacity: climbStatus === "None" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleStatusSelect('None')}>None</button>
-        <button style={{ background:'#d7b3fb', opacity: climbStatus === "Climb" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleStatusSelect('Climb')}>Climb</button>
+        <button style={{ background:'#d7b3fb', opacity: climbStatus === "None" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleStatusSelect('None')}>Not Attempted</button>
+        <button style={{ background:'#d7b3fb', opacity: climbStatus === "Failed" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleStatusSelect('Failed')}>Failed</button>
       </div>
+
+      {/* Climb type selection (only on success) */}
+      {climbStatus === 'Success' && climbLevel && (
+        <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '1rem', width: '100%' }}>
+          <button style={{ background: climbType === 'Center' ? '#f6e7b2' : '#e0e0e0', color: '#2f1404', opacity: climbType === 'Center' ? 0.7 : 1 }} onClick={() => handleClimbTypeSelect('Center')}> Center of Tower</button>
+          <button style={{ background: climbType === 'Side' ? '#f6e7b2' : '#e0e0e0', color: '#2f1404', opacity: climbType === 'Side' ? 0.7 : 1 }} onClick={() => handleClimbTypeSelect('Side')}>Side of Tower</button>
+        </div>
+      )}
 
       {/* Checkbox */}
       <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: "1rem", flexWrap: 'wrap', gap: '1rem' }}>

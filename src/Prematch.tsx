@@ -16,8 +16,6 @@ function Prematch() {
     localStorage.setItem('prematch_alliance', nextAlliance);
   };
 
-
-  
   return (
     <div className="mainContainer">
       <div >
@@ -53,14 +51,13 @@ function Prematch() {
             const nextOrient = orient === "Normal" ? "Flipped" : "Normal";
             setOrient(nextOrient);
             localStorage.setItem('prematch_orient', nextOrient);
-          }} data-orient={orient}>
+          }}>
             ORIENTATION
-             
- 
           </button>
           <button
             className='alliance'
             onClick={toggleAlliance}
+            data-orient={orient}
             style={{
               backgroundColor: alliance === "Red" ? 'rgb(203, 58, 58)' : 'rgb(53, 53, 176)',
               borderColor: alliance === "Red" ? 'rgb(129, 33, 33)' : 'rgb(32, 32, 90)',
@@ -70,11 +67,13 @@ function Prematch() {
           </button>
           <div>
             <img
-              src={image} alt="rebuiltField.png"
+              src={image}
+              alt="rebuiltField.png"
+              className={orient === "Flipped" ? "flipped-image" : ""}
             />
           </div>
         </div>
-        <div className={`container2 ${orient === "Flipped" ? "flipped" : ""}`}>
+        <div className={`container2 ${alliance === "Blue" ? "flipped" : ""}`}>
           <button className='position1' onClick={() => {
             setPosition("1");
             localStorage.setItem('prematch_position', "1");

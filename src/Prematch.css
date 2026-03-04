@@ -1,3 +1,6 @@
+.flipped-image {
+    transform: scaleX(-1);
+}
 .mainContainer{
     margin: 0 0;
     padding: 0rem;
@@ -108,7 +111,7 @@
 }
 
 .container2.flipped {
-    translate: 260px -250px;
+    translate: 340px -250px;
 }
 
 .prematchNext {
