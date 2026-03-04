@@ -7,11 +7,16 @@ import { currentScoutCanUseAuto } from './autoAccess';
 export default function TeleopV1() {
     // Timing logic for toggle
   const toggleStartTimeRef = useRef<number | null>(null);
+  const getPrefixedKey = (baseKey: string, intakeOn: boolean) =>
+    intakeOn ? `intake_${baseKey}` : baseKey;
+  const readCount = (key: string) => Number(localStorage.getItem(key) ?? '0');
 
   const [checked, setChecked] = useState<boolean>(localStorage.getItem('teleopv2_checked') === 'true');
   const [intakeState, setIntakeState] = useState<string>(localStorage.getItem('teleopv2_intake_state') ?? "Off");
-  const [bumpCount, setBumpCount] = useState<number>(Number(localStorage.getItem('teleopv2_bump_count') ?? '0'));
-  const [trenchCount, setTrenchCount] = useState<number>(Number(localStorage.getItem('teleopv2_trench_count') ?? '0'));
+  const [bumpCount, setBumpCount] = useState<number>(readCount('teleopv2_bump_count'));
+  const [intakeBumpCount, setIntakeBumpCount] = useState<number>(readCount('intake_teleopv2_bump_count'));
+  const [trenchCount, setTrenchCount] = useState<number>(readCount('teleopv2_trench_count'));
+  const [intakeTrenchCount, setIntakeTrenchCount] = useState<number>(readCount('intake_teleopv2_trench_count'));
   const navigate = useNavigate();
 
   // Timing logic for pass zone, hoard, and score buttons
@@ -26,18 +31,8 @@ export default function TeleopV1() {
       return {};
     }
   });
-  const [missCount, setMissCount] = useState<number>(() => {
-    const stored = localStorage.getItem('teleopv2_miss_count');
-    if (stored !== null) return Number(stored);
-    const raw = localStorage.getItem('teleopv2_button_times');
-    if (!raw) return 0;
-    try {
-      const parsed = JSON.parse(raw) as { [key: string]: number };
-      return Number(parsed.miss_count ?? 0);
-    } catch {
-      return 0;
-    }
-  });
+  const [missCount, setMissCount] = useState<number>(readCount('teleopv2_miss_count'));
+  const [intakeMissCount, setIntakeMissCount] = useState<number>(readCount('intake_teleopv2_miss_count'));
   const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null);
@@ -48,6 +43,10 @@ export default function TeleopV1() {
     boxShadow: activeButton === buttonId ? 'inset 0 3px 6px rgba(0, 0, 0, 0.35)' : 'none',
   });
   const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
+  const getCurrentButtonKey = (buttonId: TimedButtonId) => getPrefixedKey(buttonId, checked);
+  const currentMissCount = checked ? intakeMissCount : missCount;
+  const currentTrenchCount = checked ? intakeTrenchCount : trenchCount;
+  const currentBumpCount = checked ? intakeBumpCount : bumpCount;
   const getPressedTimerText = (buttonId: TimedButtonId) =>
     activeButton === buttonId && liveElapsedMs !== null ? ` (${formatSeconds(liveElapsedMs)}s)` : '';
 
@@ -61,14 +60,16 @@ export default function TeleopV1() {
     if (startTimeRef.current === null) return;
     const elapsed = Math.round(performance.now() - startTimeRef.current);
     setButtonTimes((prev) => {
+      const storageKey = getPrefixedKey(buttonId, checked);
+      const accumulated = Number(prev[storageKey] ?? 0) + elapsed;
       const next = {
         ...prev,
-        [buttonId]: elapsed,
+        [storageKey]: accumulated,
       };
       localStorage.setItem('teleopv2_button_times', JSON.stringify(next));
       return next;
     });
-    console.log(`Button ${buttonId}: ${elapsed} ms`);
+    console.log(`Button ${buttonId}: +${elapsed} ms`);
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
@@ -119,13 +120,19 @@ export default function TeleopV1() {
     navigate('/endgame');
   };
   const handleMissClick = () => {
-    const nextCount = missCount + 1;
-    setMissCount(nextCount);
-    localStorage.setItem('teleopv2_miss_count', String(nextCount));
+    const isIntakeOn = checked;
+    const nextCount = currentMissCount + 1;
+    if (isIntakeOn) {
+      setIntakeMissCount(nextCount);
+    } else {
+      setMissCount(nextCount);
+    }
+    localStorage.setItem(getPrefixedKey('teleopv2_miss_count', isIntakeOn), String(nextCount));
     setButtonTimes((prev) => {
+      const missKey = getPrefixedKey('miss_count', isIntakeOn);
       const next = {
         ...prev,
-        miss_count: nextCount,
+        [missKey]: nextCount,
       };
       localStorage.setItem('teleopv2_button_times', JSON.stringify(next));
       return next;
@@ -149,6 +156,7 @@ export default function TeleopV1() {
           checked={checked}
           id="intakeMode"
           onCheckedChange={(isChecked) => {
+            stopAnyRunningTimer();
             setChecked(isChecked);
             localStorage.setItem('teleopv2_checked', String(isChecked));
             const nextIntakeState = isChecked ? "On" : "Off";
@@ -203,7 +211,7 @@ export default function TeleopV1() {
         <div className="passHoardColumn">
           <button
             onClick={() => toggleTimedButton('pass_neutral_zone')}
-            title={`Last: ${formatSeconds(buttonTimes.pass_neutral_zone ?? 0)}s`}
+            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('pass_neutral_zone')] ?? 0)}s`}
             style={getTimedButtonStyle('pass_neutral_zone', {
               flex: 1,
               height: '90px',
@@ -215,7 +223,7 @@ export default function TeleopV1() {
 
           <button
             onClick={() => toggleTimedButton('pass_other_alliance_zone')}
-            title={`Last: ${formatSeconds(buttonTimes.pass_other_alliance_zone ?? 0)}s`}
+            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('pass_other_alliance_zone')] ?? 0)}s`}
             style={getTimedButtonStyle('pass_other_alliance_zone', {
               flex: 1,
               height: '90px',
@@ -228,7 +236,7 @@ export default function TeleopV1() {
           <button
             data-button-id="hoard"
             onClick={() => toggleTimedButton('hoard')}
-            title={`Last: ${formatSeconds(buttonTimes.hoard ?? 0)}s`}
+            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('hoard')] ?? 0)}s`}
             style={getTimedButtonStyle('hoard', {
               flex: 1,
               height: '90px',
@@ -240,7 +248,7 @@ export default function TeleopV1() {
         </div>
         <button
           onClick={() => toggleTimedButton('score')}
-          title={`Last: ${formatSeconds(buttonTimes.score ?? 0)}s`}
+          title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('score')] ?? 0)}s`}
           style={getTimedButtonStyle('score', {
             flex: 1.2,
             height: 'auto',
@@ -255,7 +263,7 @@ export default function TeleopV1() {
       {/* Miss Row */}
       <button
         onClick={handleMissClick}
-        title={`Count: ${missCount}`}
+        title={`Count: ${currentMissCount}`}
         style={{
           width: '100%',
           maxWidth: '600px',
@@ -264,16 +272,21 @@ export default function TeleopV1() {
           fontSize: '1rem',
         }}
       >
-        Miss: {missCount}
+        {checked ? 'intake_' : ''}Miss: {currentMissCount}
       </button>
 
       {/* Trench and Bump Row */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
         <button
           onClick={() => {
-            const next = trenchCount + 1;
-            setTrenchCount(next);
-            localStorage.setItem('teleopv2_trench_count', String(next));
+            const isIntakeOn = checked;
+            const next = currentTrenchCount + 1;
+            if (isIntakeOn) {
+              setIntakeTrenchCount(next);
+            } else {
+              setTrenchCount(next);
+            }
+            localStorage.setItem(getPrefixedKey('teleopv2_trench_count', isIntakeOn), String(next));
           }}
           style={{
             flex: 1,
@@ -286,13 +299,18 @@ export default function TeleopV1() {
             fontSize: '1rem',
           }}
         >
-          Trench: {trenchCount}
+          {checked ? 'intake_' : ''}Trench: {currentTrenchCount}
         </button>
         <button
           onClick={() => {
-            const next = bumpCount + 1;
-            setBumpCount(next);
-            localStorage.setItem('teleopv2_bump_count', String(next));
+            const isIntakeOn = checked;
+            const next = currentBumpCount + 1;
+            if (isIntakeOn) {
+              setIntakeBumpCount(next);
+            } else {
+              setBumpCount(next);
+            }
+            localStorage.setItem(getPrefixedKey('teleopv2_bump_count', isIntakeOn), String(next));
           }}
           style={{
             flex: 1,
@@ -305,7 +323,7 @@ export default function TeleopV1() {
             fontSize: '1rem',
           }}
         >
-          Bump: {bumpCount}
+          {checked ? 'intake_' : ''}Bump: {currentBumpCount}
         </button>
       </div>
 

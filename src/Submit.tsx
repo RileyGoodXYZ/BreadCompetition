@@ -64,9 +64,17 @@ function Submit() {
       'teleopv2_checked',
       'teleopv2_intake_state',
       'teleopv2_trench_count',
+      'intake_teleopv2_trench_count',
       'teleopv2_bump_count',
+      'intake_teleopv2_bump_count',
       'teleopv2_button_times',
       'teleopv2_miss_count',
+      'intake_teleopv2_miss_count',
+      'intake_pass_neutral_zone',
+      'intake_pass_other_alliance_zone',
+      'intake_hoard',
+      'intake_score',
+      'intake_miss_count',
       'intaking_pass_neutral_zone',
       'intaking_pass_other_alliance_zone',
       'intaking_hoard',
@@ -142,6 +150,8 @@ function Submit() {
     const teleopBumpRaw = localStorage.getItem('teleop_bump_count');
     const teleopV2TrenchRaw = localStorage.getItem('teleopv2_trench_count');
     const teleopV2BumpRaw = localStorage.getItem('teleopv2_bump_count');
+    const intakeTeleopV2TrenchRaw = localStorage.getItem('intake_teleopv2_trench_count');
+    const intakeTeleopV2BumpRaw = localStorage.getItem('intake_teleopv2_bump_count');
     const reviewText = reviewsToText(selectedReviews);
     const payload = {
       scout_name: localStorage.getItem('profile_scout_name') ?? '',
@@ -168,8 +178,8 @@ function Submit() {
       auto_bottom_right_count: Number(localStorage.getItem('auto_bottom_right_count') ?? '0'),
       hub_on: (localStorage.getItem('teleop_checked') ?? localStorage.getItem('teleopv2_checked') ?? 'false') === 'true',
       pass_or_score: passOrScoreHistory.length > 0 ? passOrScoreHistory.join(' | ') : (localStorage.getItem('teleop_pass_or_score') ?? 'Score'),
-      trench_count: Number(teleopTrenchRaw ?? teleopV2TrenchRaw ?? '0'),
-      bump_count: Number(teleopBumpRaw ?? teleopV2BumpRaw ?? '0'),
+      trench_count: Number(teleopTrenchRaw ?? '0') + Number(teleopV2TrenchRaw ?? '0') + Number(intakeTeleopV2TrenchRaw ?? '0'),
+      bump_count: Number(teleopBumpRaw ?? '0') + Number(teleopV2BumpRaw ?? '0') + Number(intakeTeleopV2BumpRaw ?? '0'),
       hub_state: hubStateHistory.length > 0 ? hubStateHistory.join(' | ') : fallbackHubState,
       teleop_pass_time: Number(localStorage.getItem('teleop_pass_time') ?? '0'),
       teleop_score_time: Number(localStorage.getItem('teleop_score_time') ?? '0'),
@@ -191,10 +201,10 @@ function Submit() {
       v2_hoard: Number(buttonTimesV2.hoard ?? 0),
       v2_score: Number(buttonTimesV2.score ?? 0),
       v2_miss_count: Number(buttonTimesV2.miss_count ?? 0),
-      intaking_pass_neutral_zone: Number(buttonTimesV2.intaking_pass_neutral_zone ?? 0),
-      intaking_pass_other_alliance_zone: Number(buttonTimesV2.intaking_pass_other_alliance_zone ?? 0),
-      intaking_hoard: Number(buttonTimesV2.intaking_hoard ?? 0),
-      intaking_score: Number(buttonTimesV2.intaking_score ?? 0),
+      intaking_pass_neutral_zone: Number(buttonTimesV2.intake_pass_neutral_zone ?? buttonTimesV2.intaking_pass_neutral_zone ?? 0),
+      intaking_pass_other_alliance_zone: Number(buttonTimesV2.intake_pass_other_alliance_zone ?? buttonTimesV2.intaking_pass_other_alliance_zone ?? 0),
+      intaking_hoard: Number(buttonTimesV2.intake_hoard ?? buttonTimesV2.intaking_hoard ?? 0),
+      intaking_score: Number(buttonTimesV2.intake_score ?? buttonTimesV2.intaking_score ?? 0),
       climb: localStorage.getItem('endgame_climb') ?? 'None',
       shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
       buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
