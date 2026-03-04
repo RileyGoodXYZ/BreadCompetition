@@ -81,7 +81,7 @@ function Endgame() {
 
       {/* Checkbox */}
       <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: "1rem", flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem' }}>
+        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem', marginRight: '4.4rem' }}>
           <Checkbox.Root className="CheckboxRoot" id="c1" onClick={() => {
             const next = !shootWhileClimb;
             setShootWhileClimb(next);
@@ -96,7 +96,7 @@ function Endgame() {
           </label>
         </div>
         <center>
-        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem', marginRight: '4.4rem' }}>
+        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem', marginRight: '0.5rem' }}>
           <Checkbox.Root className="CheckboxRoot" id="c2" onClick={() => {
             const next = !buddyClimb;
             setBuddyClimb(next);
@@ -107,7 +107,7 @@ function Endgame() {
             </Checkbox.Indicator>
           </Checkbox.Root>
           <label className="Label">
-            Buddy climb?
+          Did they climb with another robot?
           </label>
         </div>
         </center>

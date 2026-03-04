@@ -243,7 +243,7 @@ export default function TeleopV1() {
               fontSize: '1.1rem',
             })}
           >
-            Hoard{getPressedTimerText('hoard')}
+            Bulldoze{getPressedTimerText('hoard')}
           </button>
         </div>
         <button
