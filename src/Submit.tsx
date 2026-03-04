@@ -28,20 +28,63 @@ function Submit() {
       return next;
     });
   };
-  const resetTeleopData = () => {
-    localStorage.removeItem('teleop_checked');
-    localStorage.removeItem('teleop_pass_or_score');
-    localStorage.removeItem('teleop_pass_or_score_history');
-    localStorage.removeItem('teleop_trench_count');
-    localStorage.removeItem('teleop_bump_count');
-    localStorage.removeItem('teleop_hub_state');
-    localStorage.removeItem('teleop_hub_state_history');
-    localStorage.removeItem('teleop_button_times');
-    localStorage.removeItem('teleopv2_checked');
-    localStorage.removeItem('teleopv2_intake_state');
-    localStorage.removeItem('teleopv2_trench_count');
-    localStorage.removeItem('teleopv2_bump_count');
-    localStorage.removeItem('teleopv2_button_times');
+  const resetScoutingData = () => {
+    const keysToClear = [
+      // Prematch
+      'prematch_match_num',
+      'prematch_team_num',
+      'prematch_alliance',
+      'prematch_orient',
+      'prematch_position',
+      // Auto
+      'auto_climb_selection',
+      'auto_pass_count',
+      'auto_score_count',
+      'auto_pass_seconds',
+      'auto_score_seconds',
+      'auto_human_player_count',
+      'auto_depot_count',
+      'auto_top_left_count',
+      'auto_middle_left_count',
+      'auto_bottom_left_count',
+      'auto_top_right_count',
+      'auto_middle_right_count',
+      'auto_bottom_right_count',
+      // Teleop (legacy + v2 + v3)
+      'teleop_checked',
+      'teleop_pass_or_score',
+      'teleop_pass_or_score_history',
+      'teleop_trench_count',
+      'teleop_bump_count',
+      'teleop_hub_state',
+      'teleop_hub_state_history',
+      'teleop_button_times',
+      'teleop_pass_time',
+      'teleop_score_time',
+      'teleopv2_checked',
+      'teleopv2_intake_state',
+      'teleopv2_trench_count',
+      'teleopv2_bump_count',
+      'teleopv2_button_times',
+      'teleopv2_miss_count',
+      'intaking_pass_neutral_zone',
+      'intaking_pass_other_alliance_zone',
+      'intaking_hoard',
+      'intaking_score',
+      'score_count',
+      'pass_count',
+      'hoard_count',
+      // Endgame
+      'endgame_climb',
+      'endgame_climb_status',
+      'endgame_climb_level',
+      'endgame_shoot_while_climb',
+      'endgame_buddy_climb',
+      // Submit page state
+      'submit_review',
+    ];
+
+    keysToClear.forEach((key) => localStorage.removeItem(key));
   };
 
   const handleSubmit = async () => {
@@ -148,6 +191,10 @@ function Submit() {
       v2_hoard: Number(buttonTimesV2.hoard ?? 0),
       v2_score: Number(buttonTimesV2.score ?? 0),
       v2_miss_count: Number(buttonTimesV2.miss_count ?? 0),
+      intaking_pass_neutral_zone: Number(buttonTimesV2.intaking_pass_neutral_zone ?? 0),
+      intaking_pass_other_alliance_zone: Number(buttonTimesV2.intaking_pass_other_alliance_zone ?? 0),
+      intaking_hoard: Number(buttonTimesV2.intaking_hoard ?? 0),
+      intaking_score: Number(buttonTimesV2.intaking_score ?? 0),
       climb: localStorage.getItem('endgame_climb') ?? 'None',
       shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
       buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
@@ -172,7 +219,8 @@ function Submit() {
         return;
       }
 
-      resetTeleopData();
+      resetScoutingData();
+      setSelectedReviews([]);
       setSubmitMessage('Submitted to Supabase.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';

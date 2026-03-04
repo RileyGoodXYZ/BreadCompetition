@@ -2,6 +2,7 @@ import * as Switch from '@radix-ui/react-switch';
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './teleopv2.css';
+import { currentScoutCanUseAuto } from './autoAccess';
 
 export default function TeleopV1() {
     // Timing logic for toggle
@@ -110,12 +111,12 @@ export default function TeleopV1() {
 
   const handleBack = () => {
     stopAnyRunningTimer();
-    navigate('/teleop');
+    navigate(currentScoutCanUseAuto() ? '/auto' : '/prematch');
   };
 
   const handleNext = () => {
     stopAnyRunningTimer();
-    navigate('/teleopv3');
+    navigate('/endgame');
   };
   const handleMissClick = () => {
     const nextCount = missCount + 1;
