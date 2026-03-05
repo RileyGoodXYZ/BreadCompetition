@@ -3,28 +3,35 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 function Submit() {
-  const parseStoredReviews = (): string[] => {
+  const parseStoredReview = (): string | null => {
     const stored = localStorage.getItem('submit_review');
-    if (!stored) return [];
+    if (!stored) return null;
     try {
       const parsed = JSON.parse(stored);
+      if (typeof parsed === 'string') {
+        return parsed;
+      }
       if (Array.isArray(parsed)) {
-        return parsed.filter((value): value is string => typeof value === 'string');
+        const firstReview = parsed.find((value): value is string => typeof value === 'string' && value.length > 0);
+        return firstReview ?? null;
       }
     } catch {
       // Backward compatibility: previous versions stored a plain string.
     }
-    return [stored].filter(Boolean);
+    return stored;
   };
-  const reviewsToText = (reviews: string[]) => reviews.join(' | ');
 
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
-  const [selectedReviews, setSelectedReviews] = useState<string[]>(parseStoredReviews);
+  const [selectedReview, setSelectedReview] = useState<string | null>(parseStoredReview);
   const toggleReview = (value: string) => {
-    setSelectedReviews((prev) => {
-      const next = prev.includes(value) ? prev.filter((review) => review !== value) : [...prev, value];
-      localStorage.setItem('submit_review', JSON.stringify(next));
+    setSelectedReview((prev) => {
+      const next = prev === value ? null : value;
+      if (next === null) {
+        localStorage.removeItem('submit_review');
+      } else {
+        localStorage.setItem('submit_review', JSON.stringify(next));
+      }
       return next;
     });
   };
@@ -86,6 +93,7 @@ function Submit() {
       'endgame_climb',
       'endgame_climb_status',
       'endgame_climb_level',
+      'endgame_climb_type',
       'endgame_shoot_while_climb',
       'endgame_buddy_climb',
       // Submit page state
@@ -152,7 +160,36 @@ function Submit() {
     const teleopV2BumpRaw = localStorage.getItem('teleopv2_bump_count');
     const intakeTeleopV2TrenchRaw = localStorage.getItem('intake_teleopv2_trench_count');
     const intakeTeleopV2BumpRaw = localStorage.getItem('intake_teleopv2_bump_count');
-    const reviewText = reviewsToText(selectedReviews);
+    const v2PassNeutralZone = Number(buttonTimesV2.pass_neutral_zone ?? 0);
+    const v2PassOtherAllianceZone = Number(buttonTimesV2.pass_other_alliance_zone ?? 0);
+    const v2Hoard = Number(buttonTimesV2.hoard ?? 0);
+    const v2Score = Number(buttonTimesV2.score ?? 0);
+    const v2MissCount = Number(buttonTimesV2.miss_count ?? 0);
+    const v2IntakePassNeutralZone = Number(buttonTimesV2.intake_pass_neutral_zone ?? buttonTimesV2.intaking_pass_neutral_zone ?? 0);
+    const v2IntakePassOtherAllianceZone = Number(buttonTimesV2.intake_pass_other_alliance_zone ?? buttonTimesV2.intaking_pass_other_alliance_zone ?? 0);
+    const v2IntakeHoard = Number(buttonTimesV2.intake_hoard ?? buttonTimesV2.intaking_hoard ?? 0);
+    const v2IntakeScore = Number(buttonTimesV2.intake_score ?? buttonTimesV2.intaking_score ?? 0);
+    const v2IntakeMissCount = Number(buttonTimesV2.intake_miss_count ?? 0);
+    const v2NonIntakeTrenchCount = Number(teleopV2TrenchRaw ?? '0');
+    const v2NonIntakeBumpCount = Number(teleopV2BumpRaw ?? '0');
+    const v2IntakeTrenchCount = Number(intakeTeleopV2TrenchRaw ?? '0');
+    const v2IntakeBumpCount = Number(intakeTeleopV2BumpRaw ?? '0');
+    const storedEndgameStatus = localStorage.getItem('endgame_climb_status') ?? 'None';
+    const endgameResult =
+      storedEndgameStatus === 'Success'
+        ? 'Successful'
+        : storedEndgameStatus === 'Failed'
+          ? 'Failed'
+          : 'Not Attempted';
+    const endgameLevel = localStorage.getItem('endgame_climb_level') ?? '';
+    const storedClimbType = localStorage.getItem('endgame_climb_type') ?? '';
+    const endgameTowerPosition =
+      storedClimbType === 'Center'
+        ? 'Center of Tower'
+        : storedClimbType === 'Side'
+          ? 'Side of Tower'
+          : '';
+    const reviewText = selectedReview ?? '';
     const payload = {
       scout_name: localStorage.getItem('profile_scout_name') ?? '',
       session_type: localStorage.getItem('profile_session_type') ?? '',
@@ -178,8 +215,8 @@ function Submit() {
       auto_bottom_right_count: Number(localStorage.getItem('auto_bottom_right_count') ?? '0'),
       hub_on: (localStorage.getItem('teleop_checked') ?? localStorage.getItem('teleopv2_checked') ?? 'false') === 'true',
       pass_or_score: passOrScoreHistory.length > 0 ? passOrScoreHistory.join(' | ') : (localStorage.getItem('teleop_pass_or_score') ?? 'Score'),
-      trench_count: Number(teleopTrenchRaw ?? '0') + Number(teleopV2TrenchRaw ?? '0') + Number(intakeTeleopV2TrenchRaw ?? '0'),
-      bump_count: Number(teleopBumpRaw ?? '0') + Number(teleopV2BumpRaw ?? '0') + Number(intakeTeleopV2BumpRaw ?? '0'),
+      trench_count: Number(teleopTrenchRaw ?? '0') + v2NonIntakeTrenchCount + v2IntakeTrenchCount,
+      bump_count: Number(teleopBumpRaw ?? '0') + v2NonIntakeBumpCount + v2IntakeBumpCount,
       hub_state: hubStateHistory.length > 0 ? hubStateHistory.join(' | ') : fallbackHubState,
       teleop_pass_time: Number(localStorage.getItem('teleop_pass_time') ?? '0'),
       teleop_score_time: Number(localStorage.getItem('teleop_score_time') ?? '0'),
@@ -196,16 +233,26 @@ function Submit() {
       myAllianceBottomPassButton: Number(buttonTimes.myAllianceBottomPassButton ?? 0),
       topScoreButton: Number(buttonTimes.topScoreButton ?? 0),
       bottomScoreButton: Number(buttonTimes.bottomScoreButton ?? 0),
-      v2_pass_neutral_zone: Number(buttonTimesV2.pass_neutral_zone ?? 0),
-      v2_pass_other_alliance_zone: Number(buttonTimesV2.pass_other_alliance_zone ?? 0),
-      v2_hoard: Number(buttonTimesV2.hoard ?? 0),
-      v2_score: Number(buttonTimesV2.score ?? 0),
-      v2_miss_count: Number(buttonTimesV2.miss_count ?? 0),
-      intaking_pass_neutral_zone: Number(buttonTimesV2.intake_pass_neutral_zone ?? buttonTimesV2.intaking_pass_neutral_zone ?? 0),
-      intaking_pass_other_alliance_zone: Number(buttonTimesV2.intake_pass_other_alliance_zone ?? buttonTimesV2.intaking_pass_other_alliance_zone ?? 0),
-      intaking_hoard: Number(buttonTimesV2.intake_hoard ?? buttonTimesV2.intaking_hoard ?? 0),
-      intaking_score: Number(buttonTimesV2.intake_score ?? buttonTimesV2.intaking_score ?? 0),
+      v2_pass_neutral_zone: v2PassNeutralZone,
+      v2_pass_other_alliance_zone: v2PassOtherAllianceZone,
+      v2_hoard: v2Hoard,
+      v2_score: v2Score,
+      v2_miss_count: v2MissCount,
+      v2_intake_pass_neutral_zone: v2IntakePassNeutralZone,
+      v2_intake_pass_other_alliance_zone: v2IntakePassOtherAllianceZone,
+      v2_intake_hoard: v2IntakeHoard,
+      v2_intake_score: v2IntakeScore,
+      v2_intake_miss_count: v2IntakeMissCount,
+      teleopv2_trench_count: v2NonIntakeTrenchCount,
+      intake_teleopv2_trench_count: v2IntakeTrenchCount,
+      teleopv2_bump_count: v2NonIntakeBumpCount,
+      intake_teleopv2_bump_count: v2IntakeBumpCount,
+      teleopv2_miss_count: v2MissCount,
+      intake_teleopv2_miss_count: v2IntakeMissCount,
       climb: localStorage.getItem('endgame_climb') ?? 'None',
+      endgame_result: endgameResult,
+      endgame_level: endgameLevel,
+      endgame_tower_position: endgameTowerPosition,
       shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
       buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
     };
@@ -230,7 +277,7 @@ function Submit() {
       }
 
       resetScoutingData();
-      setSelectedReviews([]);
+      setSelectedReview(null);
       setSubmitMessage('Submitted to Supabase.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -244,9 +291,9 @@ function Submit() {
         <h1>Submit</h1>
       </div>
       <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-        <button className="badAutoBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReviews.includes('Bad Auto') ? 0.6 : 1 }} onClick={() => toggleReview('Bad Auto')}>Bad Auto</button>
-        <button className="goodTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReviews.includes('Good Teleop') ? 0.6 : 1 }} onClick={() => toggleReview('Good Teleop')}>Good Teleop</button>
-          <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReviews.includes('Bad Teleop') ? 0.6 : 1 }} onClick={() => toggleReview('Bad Teleop')}>Bad Teleop</button>
+        <button className="badAutoBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Bad Auto' ? 0.6 : 1 }} onClick={() => toggleReview('Bad Auto')}>Bad Auto</button>
+        <button className="goodTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Good Teleop' ? 0.6 : 1 }} onClick={() => toggleReview('Good Teleop')}>Good Teleop</button>
+          <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Bad Teleop' ? 0.6 : 1 }} onClick={() => toggleReview('Bad Teleop')}>Bad Teleop</button>
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleSubmit}>Submit</button>
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>

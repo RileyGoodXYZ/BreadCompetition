@@ -242,7 +242,7 @@ export default function TeleopV1() {
               fontSize: '1.1rem',
             })}
           >
-            Hoard
+            Bulldoze
           </button>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'stretch' }}>
