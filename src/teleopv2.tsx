@@ -1,11 +1,10 @@
-import * as Switch from '@radix-ui/react-switch';
-import { useState, useRef, useEffect, type CSSProperties } from 'react';
+import { useState, useRef, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './teleopv2.css';
 import { currentScoutCanUseAuto } from './autoAccess';
 
 export default function TeleopV1() {
-    // Timing logic for toggle
+   // Timing logic for toggle
   const toggleStartTimeRef = useRef<number | null>(null);
   const getPrefixedKey = (baseKey: string, intakeOn: boolean) =>
     intakeOn ? `intake_${baseKey}` : baseKey;
@@ -31,30 +30,20 @@ export default function TeleopV1() {
       return {};
     }
   });
-  const [missCount, setMissCount] = useState<number>(readCount('teleopv2_miss_count'));
-  const [intakeMissCount, setIntakeMissCount] = useState<number>(readCount('intake_teleopv2_miss_count'));
   const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null);
+  // const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null); // Unused
   const getTimedButtonStyle = (buttonId: TimedButtonId, baseStyle: CSSProperties): CSSProperties => ({
     ...baseStyle,
-    backgroundColor: activeButton === buttonId ? 'rgba(0, 0, 0, 0.25)' : baseStyle.backgroundColor,
     transform: activeButton === buttonId ? 'translateY(1px)' : 'translateY(0)',
     boxShadow: activeButton === buttonId ? 'inset 0 3px 6px rgba(0, 0, 0, 0.35)' : 'none',
+    opacity: activeButton === buttonId ? 0.7 : 1,
+    width: '100%',
   });
   const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
   const getCurrentButtonKey = (buttonId: TimedButtonId) => getPrefixedKey(buttonId, checked);
-  const currentMissCount = checked ? intakeMissCount : missCount;
   const currentTrenchCount = checked ? intakeTrenchCount : trenchCount;
   const currentBumpCount = checked ? intakeBumpCount : bumpCount;
-  const getPressedTimerText = (buttonId: TimedButtonId) =>
-    activeButton === buttonId && liveElapsedMs !== null ? ` (${formatSeconds(liveElapsedMs)}s)` : '';
-
-  useEffect(() => () => {
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-  }, []);
 
   const stopTimer = (buttonId: TimedButtonId) => {
     if (startTimeRef.current === null) return;
@@ -74,17 +63,17 @@ export default function TeleopV1() {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-    setLiveElapsedMs(null);
+    // setLiveElapsedMs(null); // Removed unused
     startTimeRef.current = null;
   };
 
   const startTimer = (buttonId: TimedButtonId) => {
     setActiveButton(buttonId);
     startTimeRef.current = performance.now();
-    setLiveElapsedMs(0);
+    // setLiveElapsedMs(0); // Removed unused
     const tick = () => {
       if (startTimeRef.current !== null) {
-        setLiveElapsedMs(Math.round(performance.now() - startTimeRef.current));
+        // setLiveElapsedMs(Math.round(performance.now() - startTimeRef.current)); // Removed unused
         animationFrameRef.current = requestAnimationFrame(tick);
       }
     };
@@ -119,33 +108,15 @@ export default function TeleopV1() {
     stopAnyRunningTimer();
     navigate('/endgame');
   };
-  const handleMissClick = () => {
-    const isIntakeOn = checked;
-    const nextCount = currentMissCount + 1;
-    if (isIntakeOn) {
-      setIntakeMissCount(nextCount);
-    } else {
-      setMissCount(nextCount);
-    }
-    localStorage.setItem(getPrefixedKey('teleopv2_miss_count', isIntakeOn), String(nextCount));
-    setButtonTimes((prev) => {
-      const missKey = getPrefixedKey('miss_count', isIntakeOn);
-      const next = {
-        ...prev,
-        [missKey]: nextCount,
-      };
-      localStorage.setItem('teleopv2_button_times', JSON.stringify(next));
-      return next;
-    });
-  };
 
   return (
     <div className="mainContainer">
       <div className="topHeader">
         <h1>TELEOP V2</h1>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-        <label
+      <div style={{ width: '100%', marginBottom: '1rem' }}>
+        {/* Good switch :( :wilted}
+        {/* <label
           className="Label"
           htmlFor="intakeMode"
           style={{ margin: 0, fontSize: '1rem', marginRight: '0.5rem' }}
@@ -203,77 +174,92 @@ export default function TeleopV1() {
             }}
           />
         </Switch.Root>
-        <span style={{ minWidth: '2.5rem', textAlign: 'left' }}>{intakeState}</span>
+        <span style={{ minWidth: '2.5rem', textAlign: 'left' }}>{intakeState}</span> */}
+        {/* Intake toggle button (replaces switch) */}
+        <button
+          style={{ width: '100%' }}
+          id="intakeMode"
+          onClick={() => {
+            stopAnyRunningTimer();
+            const isChecked = !checked;
+            setChecked(isChecked);
+            localStorage.setItem('teleopv2_checked', String(isChecked));
+            const nextIntakeState = isChecked ? "On" : "Off";
+            setIntakeState(nextIntakeState);
+            localStorage.setItem('teleopv2_intake_state', nextIntakeState);
+            if (isChecked) {
+              // Toggle turned ON, start timer
+              toggleStartTimeRef.current = performance.now();
+            } else {
+              // Toggle turned OFF, stop timer and log
+              if (toggleStartTimeRef.current !== null) {
+                const elapsed = Math.round(performance.now() - toggleStartTimeRef.current);
+                console.log(`Toggle ON duration: ${elapsed} ms`);
+                toggleStartTimeRef.current = null;
+              }
+            }
+          }}
+        >
+          Intake: {intakeState}
+        </button>
       </div>
 
       {/* Pass and Score Row */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px', alignItems: 'stretch' }}>
-        <div className="passHoardColumn">
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '10px' }}>
           <button
             onClick={() => toggleTimedButton('pass_neutral_zone')}
             title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('pass_neutral_zone')] ?? 0)}s`}
             style={getTimedButtonStyle('pass_neutral_zone', {
-              flex: 1,
-              height: '90px',
+              width: '100%',
+              height: '70px',
               fontSize: '1rem',
+              background: '#58b0b3'
             })}
           >
-            Pass Neutral Zone{getPressedTimerText('pass_neutral_zone')}
+            Pass Neutral Zone
           </button>
-
           <button
             onClick={() => toggleTimedButton('pass_other_alliance_zone')}
             title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('pass_other_alliance_zone')] ?? 0)}s`}
             style={getTimedButtonStyle('pass_other_alliance_zone', {
-              flex: 1,
-              height: '90px',
+              width: '100%',
+              height: '70px',
               fontSize: '1rem',
+              background: '#58b0b3'
             })}
           >
-            Pass Other Alliance Zone{getPressedTimerText('pass_other_alliance_zone')}
+            Pass Other Alliance Zone
           </button>
-
           <button
             data-button-id="hoard"
             onClick={() => toggleTimedButton('hoard')}
             title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('hoard')] ?? 0)}s`}
             style={getTimedButtonStyle('hoard', {
-              flex: 1,
-              height: '90px',
+              background: '#58b0b3',
+              width: '100%',
+              height: '70px',
               fontSize: '1.1rem',
             })}
           >
-            Hoard{getPressedTimerText('hoard')}
+            Hoard
           </button>
         </div>
-        <button
-          onClick={() => toggleTimedButton('score')}
-          title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('score')] ?? 0)}s`}
-          style={getTimedButtonStyle('score', {
-            flex: 1.2,
-            height: 'auto',
-            minHeight: '290px',
-            fontSize: '1.4rem',
-          })}
-        >
-          Score{getPressedTimerText('score')}
-        </button>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'stretch' }}>
+          <button
+            onClick={() => toggleTimedButton('score')}
+            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('score')] ?? 0)}s`}
+            style={getTimedButtonStyle('score', {
+              width: '100%',
+              height: '100%',
+              minHeight: '220px',
+              fontSize: '1.4rem',
+            })}
+          >
+            Score
+          </button>
+        </div>
       </div>
-
-      {/* Miss Row */}
-      <button
-        onClick={handleMissClick}
-        title={`Count: ${currentMissCount}`}
-        style={{
-          width: '100%',
-          maxWidth: '600px',
-          height: '60px',
-          marginBottom: '14px',
-          fontSize: '1rem',
-        }}
-      >
-        {checked ? 'intake_' : ''}Miss: {currentMissCount}
-      </button>
 
       {/* Trench and Bump Row */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
@@ -299,7 +285,7 @@ export default function TeleopV1() {
             fontSize: '1rem',
           }}
         >
-          {checked ? 'intake_' : ''}Trench: {currentTrenchCount}
+          Trench: {currentTrenchCount}
         </button>
         <button
           onClick={() => {
@@ -323,7 +309,7 @@ export default function TeleopV1() {
             fontSize: '1rem',
           }}
         >
-          {checked ? 'intake_' : ''}Bump: {currentBumpCount}
+          Bump: {currentBumpCount}
         </button>
       </div>
 
