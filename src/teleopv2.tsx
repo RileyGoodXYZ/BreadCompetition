@@ -40,20 +40,20 @@ export default function TeleopV1() {
     opacity: activeButton === buttonId ? 0.7 : 1,
     width: '100%',
   });
-  const formatSeconds = (seconds: number) => seconds.toFixed(2);
+  const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
   const getCurrentButtonKey = (buttonId: TimedButtonId) => getPrefixedKey(buttonId, checked);
-  const getStoredSecondsForButton = (buttonId: TimedButtonId) =>
+  const getStoredMsForButton = (buttonId: TimedButtonId) =>
     Number(buttonTimes[getCurrentButtonKey(buttonId)] ?? 0);
   const getLiveMsForButton = (buttonId: TimedButtonId) =>
     activeButton === buttonId ? (liveElapsedMs ?? 0) : 0;
   const getDisplayedSecondsForButton = (buttonId: TimedButtonId) => {
-    const storedSeconds = getStoredSecondsForButton(buttonId);
-    const runningSeconds = getLiveMsForButton(buttonId) / 1000;
-    return formatSeconds(storedSeconds + runningSeconds);
+    const storedMs = getStoredMsForButton(buttonId);
+    const runningMs = getLiveMsForButton(buttonId);
+    return formatSeconds(storedMs + runningMs);
   };
   const getTimerTextForButton = (buttonId: TimedButtonId) =>
     activeButton === buttonId
-      ? `${formatSeconds(getLiveMsForButton(buttonId) / 1000)}s`
+      ? `${Math.round(getLiveMsForButton(buttonId))}ms`
       : '';
   const currentTrenchCount = checked ? intakeTrenchCount : trenchCount;
   const currentBumpCount = checked ? intakeBumpCount : bumpCount;
@@ -66,11 +66,10 @@ export default function TeleopV1() {
 
   const stopTimer = (buttonId: TimedButtonId) => {
     if (startTimeRef.current === null) return;
-    const elapsedMs = performance.now() - startTimeRef.current;
-    const elapsedSeconds = Number((elapsedMs / 1000).toFixed(2));
+    const elapsed = Math.round(performance.now() - startTimeRef.current);
     setButtonTimes((prev) => {
       const storageKey = getPrefixedKey(buttonId, checked);
-      const accumulated = Number((Number(prev[storageKey] ?? 0) + elapsedSeconds).toFixed(2));
+      const accumulated = Number(prev[storageKey] ?? 0) + elapsed;
       const next = {
         ...prev,
         [storageKey]: accumulated,
@@ -78,7 +77,7 @@ export default function TeleopV1() {
       localStorage.setItem('teleopv2_button_times', JSON.stringify(next));
       return next;
     });
-    console.log(`Button ${buttonId}: +${elapsedSeconds}s`);
+    console.log(`Button ${buttonId}: +${elapsed} ms`);
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
