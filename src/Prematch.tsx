@@ -1,7 +1,7 @@
 import './Prematch.css';
 import image from './assets/rebuiltField.png';
 import { useNavigate } from 'react-router-dom';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { currentScoutCanUseAuto } from './autoAccess';
 
 function Prematch() {
@@ -11,6 +11,13 @@ function Prematch() {
   const [matchNum, setMatchNum] = useState<string>(localStorage.getItem('prematch_match_num') ?? "");
   const [alliance, setAlliance] = useState<string>(localStorage.getItem('prematch_alliance') ?? "Red");
   const [orient, setOrient] = useState<string>(localStorage.getItem('prematch_orient') ?? "Normal");
+  
+  useEffect(() => {
+    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+      navigate('/profile');
+    }
+  }, [navigate]);
+  
   const toggleAlliance = () => {
     const nextAlliance = alliance === "Red" ? "Blue" : "Red";
     setAlliance(nextAlliance);

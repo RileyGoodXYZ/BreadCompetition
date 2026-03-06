@@ -2,17 +2,14 @@ import './Profile.css'
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from "react";
-
+  // Remove scoutName, use Google account name only
 function Profile() {
   const navigate = useNavigate();
-  const [scoutName, setScoutName] = useState<string>(localStorage.getItem('profile_scout_name') ?? "");
+  // Removed scoutName, only Google account name is used
   const [sessionType, setSessionType] = useState<string>(localStorage.getItem('profile_session_type') ?? "");
-  const [, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
-
-  const handleScoutNameChange = (value: string) => {
-    setScoutName(value);
-    localStorage.setItem('profile_scout_name', value);
-  };
+  // Removed scoutName handler
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
+  const [userName, setUserName] = useState<string>(localStorage.getItem('profile_user_name') ?? "");
 
   const handleSessionTypeChange = (value: string) => {
     setSessionType(value);
@@ -34,7 +31,9 @@ function Profile() {
       console.log("User Name:", userInfo.name);
       alert("Welcome, " + userInfo.name);
       setIsSignedIn(true);
+      setUserName(userInfo.name);
       localStorage.setItem('profile_is_signed_in', 'true');
+      localStorage.setItem('profile_user_name', userInfo.name);
 
     },
     onError: (error) => {
@@ -48,9 +47,8 @@ function Profile() {
     <div className="wrapper">
       <div className='maincontainer'>
         <h1 className="titleprofile">Profile</h1>
+        {isSignedIn && userName && <h2>Hello, {userName}</h2>}
       </div>
-      <textarea className='textareaprofile' placeholder='Enter your name here' 
-      value={scoutName} onChange={(e) => handleScoutNameChange(e.target.value)}></textarea>
       <div className='threebuttons'>
         <button
           className={`practice ${sessionType === "Practice" ? "selected-session" : ""}`}
@@ -71,7 +69,6 @@ function Profile() {
       <br></br>
       <button className='nextprofile' onClick={() => navigate('/Prematch')}>next</button>
     </div>
-
   )
 }
 

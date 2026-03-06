@@ -1,4 +1,4 @@
-import { useState, useRef, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './teleopv2.css';
 import { currentScoutCanUseAuto } from './autoAccess';
@@ -17,6 +17,12 @@ export default function TeleopV1() {
   const [trenchCount, setTrenchCount] = useState<number>(readCount('teleopv2_trench_count'));
   const [intakeTrenchCount, setIntakeTrenchCount] = useState<number>(readCount('intake_teleopv2_trench_count'));
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+      navigate('/profile');
+    }
+  }, [navigate]);
 
   // Timing logic for pass zone, hoard, and score buttons
   type TimedButtonId = 'pass_neutral_zone' | 'pass_other_alliance_zone' | 'hoard' | 'score';

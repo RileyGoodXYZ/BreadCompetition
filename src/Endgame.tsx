@@ -1,5 +1,5 @@
 import './Endgame.css';
-import { useState} from 'react';
+import { useState, useEffect } from 'react';
 import { Checkbox } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,12 @@ function Endgame() {
   const [shootWhileClimb, setShootWhileClimb] = useState<boolean>(localStorage.getItem('endgame_shoot_while_climb') === 'true');
   const [buddyClimb, setBuddyClimb] = useState<boolean>(localStorage.getItem('endgame_buddy_climb') === 'true');
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+      navigate('/profile');
+    }
+  }, [navigate]);
 
   const persistClimb = (nextStatus: 'None' | 'Failed' | 'Success', nextLevel: 'Level 1' | 'Level 2' | 'Level 3' | null, nextType: 'Center' | 'Side') => {
     let finalValue = 'None';

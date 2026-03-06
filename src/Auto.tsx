@@ -28,6 +28,12 @@ function Auto() {
   const navigate = useNavigate();
   const [passSeconds, setPassSeconds] = useState<number>(Number(localStorage.getItem(AUTO_PASS_SECONDS_KEY) ?? '0'));
   const [scoreSeconds, setScoreSeconds] = useState<number>(Number(localStorage.getItem(AUTO_SCORE_SECONDS_KEY) ?? '0'));
+  
+  useEffect(() => {
+    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+      navigate('/profile');
+    }
+  }, [navigate]);
   const [humanPlayerCount, setHumanPlayerCount] = useState<number>(Number(localStorage.getItem(AUTO_HUMAN_PLAYER_COUNT_KEY) ?? '0'));
   const [depotCount, setDepotCount] = useState<number>(Number(localStorage.getItem(AUTO_DEPOT_COUNT_KEY) ?? '0'));
   const [topLeftCount, setTopLeftCount] = useState<number>(Number(localStorage.getItem(AUTO_TOP_LEFT_COUNT_KEY) ?? '0'));

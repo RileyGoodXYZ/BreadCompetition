@@ -1,6 +1,6 @@
 import './Submit.css'
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function Submit() {
   const parseStoredReview = (): string | null => {
@@ -24,6 +24,12 @@ function Submit() {
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
   const [selectedReview, setSelectedReview] = useState<string | null>(parseStoredReview);
+  
+  useEffect(() => {
+    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+      navigate('/profile');
+    }
+  }, [navigate]);
   const toggleReview = (value: string) => {
     setSelectedReview((prev) => {
       const next = prev === value ? null : value;
