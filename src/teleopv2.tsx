@@ -205,13 +205,23 @@ export default function TeleopV1() {
           style={{ width: '100%' }}
           id="intakeMode"
           onClick={() => {
-            stopAnyRunningTimer();
+            // If a timer is running, stop it and save the time
+            if (activeButton !== null) {
+              stopTimer(activeButton);
+            }
+            
             const isChecked = !checked;
             setChecked(isChecked);
             localStorage.setItem('teleopv2_checked', String(isChecked));
             const nextIntakeState = isChecked ? "On" : "Off";
             setIntakeState(nextIntakeState);
             localStorage.setItem('teleopv2_intake_state', nextIntakeState);
+            
+            // Restart the timer with the new checked state so future time goes to the other category
+            if (activeButton !== null) {
+              startTimer(activeButton);
+            }
+            
             if (isChecked) {
               // Toggle turned ON, start timer
               toggleStartTimeRef.current = performance.now();
@@ -230,33 +240,37 @@ export default function TeleopV1() {
       </div>
 
       {/* Pass and Score Row */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px', alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '900px', alignItems: 'stretch' }}>
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '10px' }}>
           <button
             onClick={() => toggleTimedButton('pass_neutral_zone')}
             title={`Total: ${getDisplayedSecondsForButton('pass_neutral_zone')}s`}
             style={getTimedButtonStyle('pass_neutral_zone', {
               width: '100%',
+              minWidth: '220px',
               height: '70px',
               fontSize: '1rem',
               background: '#b2c2f6',
               color: '#2f1404',
+              textAlign: 'center',
             })}
           >
-            Pass Neutral Zone {getTimerTextForButton('pass_neutral_zone') ? `(${getTimerTextForButton('pass_neutral_zone')})` : ''}
+            <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_neutral_zone') ? `(${getTimerTextForButton('pass_neutral_zone')})` : 'Pass Neutral Zone'}</span>
           </button>
           <button
             onClick={() => toggleTimedButton('pass_other_alliance_zone')}
             title={`Total: ${getDisplayedSecondsForButton('pass_other_alliance_zone')}s`}
             style={getTimedButtonStyle('pass_other_alliance_zone', {
               width: '100%',
+              minWidth: '220px',
               height: '70px',
               fontSize: '1rem',
               background: '#b2c2f6',
               color: '#2f1404',
+              textAlign: 'center',
             })}
           >
-            Pass Other Alliance Zone {getTimerTextForButton('pass_other_alliance_zone') ? `(${getTimerTextForButton('pass_other_alliance_zone')})` : ''}
+            <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_other_alliance_zone') ? `(${getTimerTextForButton('pass_other_alliance_zone')})` : 'Pass Other Alliance'}</span>
           </button>
           <button
             data-button-id="hoard"
@@ -266,11 +280,18 @@ export default function TeleopV1() {
               background: '#d7b3fb',
               color: '#2f1404',
               width: '100%',
+              minWidth: '220px',
               height: '70px',
               fontSize: '1.1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
             })}
           >
-            Bulldoze {getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : ''}
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : 'Hoard'}</span>
+            </span>
           </button>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'stretch' }}>
@@ -279,14 +300,20 @@ export default function TeleopV1() {
             title={`Total: ${getDisplayedSecondsForButton('score')}s`}
             style={getTimedButtonStyle('score', {
               width: '100%',
-              height: '100%',
+              minWidth: '220px',
               minHeight: '220px',
               fontSize: '1.4rem',
               background: '#f6e7b2',
               color: '#2f1404',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
             })}
           >
-            Score {getTimerTextForButton('score') ? `(${getTimerTextForButton('score')})` : ''}
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('score') ? `(${getTimerTextForButton('score')})` : 'Score'}</span>
+            </span>
           </button>
         </div>
       </div>
