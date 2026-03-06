@@ -1,4 +1,4 @@
-import { useState, useRef, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './teleopv2.css';
 import { currentScoutCanUseAuto } from './autoAccess';
@@ -32,7 +32,7 @@ export default function TeleopV1() {
   });
   const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  // const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null); // Unused
+  const [liveElapsedMs, setLiveElapsedMs] = useState<number | null>(null);
   const getTimedButtonStyle = (buttonId: TimedButtonId, baseStyle: CSSProperties): CSSProperties => ({
     ...baseStyle,
     transform: activeButton === buttonId ? 'translateY(1px)' : 'translateY(0)',
@@ -40,17 +40,37 @@ export default function TeleopV1() {
     opacity: activeButton === buttonId ? 0.7 : 1,
     width: '100%',
   });
-  const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
+  const formatSeconds = (seconds: number) => seconds.toFixed(2);
   const getCurrentButtonKey = (buttonId: TimedButtonId) => getPrefixedKey(buttonId, checked);
+  const getStoredSecondsForButton = (buttonId: TimedButtonId) =>
+    Number(buttonTimes[getCurrentButtonKey(buttonId)] ?? 0);
+  const getLiveMsForButton = (buttonId: TimedButtonId) =>
+    activeButton === buttonId ? (liveElapsedMs ?? 0) : 0;
+  const getDisplayedSecondsForButton = (buttonId: TimedButtonId) => {
+    const storedSeconds = getStoredSecondsForButton(buttonId);
+    const runningSeconds = getLiveMsForButton(buttonId) / 1000;
+    return formatSeconds(storedSeconds + runningSeconds);
+  };
+  const getTimerTextForButton = (buttonId: TimedButtonId) =>
+    activeButton === buttonId
+      ? `${formatSeconds(getLiveMsForButton(buttonId) / 1000)}s`
+      : '';
   const currentTrenchCount = checked ? intakeTrenchCount : trenchCount;
   const currentBumpCount = checked ? intakeBumpCount : bumpCount;
 
+  useEffect(() => () => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+  }, []);
+
   const stopTimer = (buttonId: TimedButtonId) => {
     if (startTimeRef.current === null) return;
-    const elapsed = Math.round(performance.now() - startTimeRef.current);
+    const elapsedMs = performance.now() - startTimeRef.current;
+    const elapsedSeconds = Number((elapsedMs / 1000).toFixed(2));
     setButtonTimes((prev) => {
       const storageKey = getPrefixedKey(buttonId, checked);
-      const accumulated = Number(prev[storageKey] ?? 0) + elapsed;
+      const accumulated = Number((Number(prev[storageKey] ?? 0) + elapsedSeconds).toFixed(2));
       const next = {
         ...prev,
         [storageKey]: accumulated,
@@ -58,22 +78,22 @@ export default function TeleopV1() {
       localStorage.setItem('teleopv2_button_times', JSON.stringify(next));
       return next;
     });
-    console.log(`Button ${buttonId}: +${elapsed} ms`);
+    console.log(`Button ${buttonId}: +${elapsedSeconds}s`);
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-    // setLiveElapsedMs(null); // Removed unused
+    setLiveElapsedMs(null);
     startTimeRef.current = null;
   };
 
   const startTimer = (buttonId: TimedButtonId) => {
     setActiveButton(buttonId);
     startTimeRef.current = performance.now();
-    // setLiveElapsedMs(0); // Removed unused
+    setLiveElapsedMs(0);
     const tick = () => {
       if (startTimeRef.current !== null) {
-        // setLiveElapsedMs(Math.round(performance.now() - startTimeRef.current)); // Removed unused
+        setLiveElapsedMs(Math.round(performance.now() - startTimeRef.current));
         animationFrameRef.current = requestAnimationFrame(tick);
       }
     };
@@ -209,54 +229,59 @@ export default function TeleopV1() {
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '10px' }}>
           <button
             onClick={() => toggleTimedButton('pass_neutral_zone')}
-            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('pass_neutral_zone')] ?? 0)}s`}
+            title={`Total: ${getDisplayedSecondsForButton('pass_neutral_zone')}s`}
             style={getTimedButtonStyle('pass_neutral_zone', {
               width: '100%',
               height: '70px',
               fontSize: '1rem',
-              background: '#58b0b3'
+              background: '#b2c2f6',
+              color: '#2f1404',
             })}
           >
-            Pass Neutral Zone
+            Pass Neutral Zone {getTimerTextForButton('pass_neutral_zone') ? `(${getTimerTextForButton('pass_neutral_zone')})` : ''}
           </button>
           <button
             onClick={() => toggleTimedButton('pass_other_alliance_zone')}
-            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('pass_other_alliance_zone')] ?? 0)}s`}
+            title={`Total: ${getDisplayedSecondsForButton('pass_other_alliance_zone')}s`}
             style={getTimedButtonStyle('pass_other_alliance_zone', {
               width: '100%',
               height: '70px',
               fontSize: '1rem',
-              background: '#58b0b3'
+              background: '#b2c2f6',
+              color: '#2f1404',
             })}
           >
-            Pass Other Alliance Zone
+            Pass Other Alliance Zone {getTimerTextForButton('pass_other_alliance_zone') ? `(${getTimerTextForButton('pass_other_alliance_zone')})` : ''}
           </button>
           <button
             data-button-id="hoard"
             onClick={() => toggleTimedButton('hoard')}
-            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('hoard')] ?? 0)}s`}
+            title={`Total: ${getDisplayedSecondsForButton('hoard')}s`}
             style={getTimedButtonStyle('hoard', {
-              background: '#58b0b3',
+              background: '#d7b3fb',
+              color: '#2f1404',
               width: '100%',
               height: '70px',
               fontSize: '1.1rem',
             })}
           >
-            Bulldoze
+            Bulldoze {getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : ''}
           </button>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'stretch' }}>
           <button
             onClick={() => toggleTimedButton('score')}
-            title={`Last: ${formatSeconds(buttonTimes[getCurrentButtonKey('score')] ?? 0)}s`}
+            title={`Total: ${getDisplayedSecondsForButton('score')}s`}
             style={getTimedButtonStyle('score', {
               width: '100%',
               height: '100%',
               minHeight: '220px',
               fontSize: '1.4rem',
+              background: '#f6e7b2',
+              color: '#2f1404',
             })}
           >
-            Score
+            Score {getTimerTextForButton('score') ? `(${getTimerTextForButton('score')})` : ''}
           </button>
         </div>
       </div>
