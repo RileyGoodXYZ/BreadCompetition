@@ -43,6 +43,13 @@ function Profile() {
     }
   });
 
+  const logout = () => {
+    setIsSignedIn(false);
+    setUserName("");
+    localStorage.setItem('profile_is_signed_in', 'false');
+    localStorage.removeItem('profile_user_name');
+  };
+
   return (
     <div className="wrapper">
       <div className='maincontainer'>
@@ -64,7 +71,11 @@ function Profile() {
         >
           Rescout
         </button>
-        <button className='signinp' onClick={() => login()}>Sign in</button>
+        {isSignedIn ? (
+          <button className='signinp' onClick={logout}>Log out</button>
+        ) : (
+          <button className='signinp' onClick={() => login()}>Sign in</button>
+        )}
       </div>
       <br></br>
       <button className='nextprofile' onClick={() => navigate('/Prematch')}>next</button>
