@@ -22,7 +22,7 @@ function Profile() {
     const nextValue = sessionType === value ? "" : value;
     handleSessionTypeChange(nextValue);
   };
-
+ 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
