@@ -49,8 +49,14 @@ function Profile() {
       <div className='maincontainer'>
         <h1 className="titleprofile">Profile</h1>
       </div>
+      {
+        (localStorage.getItem('profile_is_signed_in') !== 'true' && (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1")) ? (
+          <h3>Hello {localStorage.getItem("profile_scout_name")}</h3>
+        ) : (
+      
       <textarea className='textareaprofile' placeholder='Enter your name here' 
-      value={scoutName} onChange={(e) => handleScoutNameChange(e.target.value)}></textarea>
+      value={scoutName} onChange={(e) => handleScoutNameChange(e.target.value)}></textarea>)
+      }
       <div className='threebuttons'>
         <button
           className={`practice ${sessionType === "Practice" ? "selected-session" : ""}`}
