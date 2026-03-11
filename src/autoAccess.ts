@@ -12,3 +12,6 @@ export const canScoutUseAuto = (name: string | null | undefined): boolean =>
 
 export const currentScoutCanUseAuto = (): boolean =>
   canScoutUseAuto(localStorage.getItem('profile_scout_name'));
+
+export const isPracticeSession = (): boolean =>
+  localStorage.getItem('profile_session_type') === 'Practice';

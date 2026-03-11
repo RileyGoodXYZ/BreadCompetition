@@ -93,6 +93,7 @@ function Profile() {
         onClick={() => {
           const canProceed =
             window.location.hostname === 'localhost' ||
+            sessionType === 'Practice' ||
             isSignedIn ||
             localStorage.getItem('profile_is_signed_in') === 'true';
           if (!canProceed) {
@@ -103,12 +104,12 @@ function Profile() {
         }}
         disabled={
           window.location.hostname !== 'localhost' &&
-          !(isSignedIn || localStorage.getItem('profile_is_signed_in') === 'true')
+          !(sessionType === 'Practice' || isSignedIn || localStorage.getItem('profile_is_signed_in') === 'true')
         }
         style={{
           opacity:
             window.location.hostname !== 'localhost' &&
-            !(isSignedIn || localStorage.getItem('profile_is_signed_in') === 'true')
+            !(sessionType === 'Practice' || isSignedIn || localStorage.getItem('profile_is_signed_in') === 'true')
               ? 0.6
               : 1,
         }}

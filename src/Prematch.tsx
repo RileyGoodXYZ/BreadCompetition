@@ -2,7 +2,7 @@ import './Prematch.css';
 import image from './assets/rebuiltField.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
-import { currentScoutCanUseAuto } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession } from './autoAccess';
 
 function Prematch() {
   const navigate = useNavigate();
@@ -13,7 +13,11 @@ function Prematch() {
   const [orient, setOrient] = useState<string>(localStorage.getItem('prematch_orient') ?? "Normal");
   
   useEffect(() => {
-    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+    if (
+      window.location.hostname !== 'localhost' &&
+      localStorage.getItem('profile_is_signed_in') !== 'true' &&
+      !isPracticeSession()
+    ) {
       navigate('/profile');
     }
   }, [navigate]);
@@ -29,7 +33,7 @@ function Prematch() {
       alert("Please fill in all fields before proceeding.");
       return;
     }
-    if (currentScoutCanUseAuto()) {
+    if (currentScoutCanUseAuto() || isPracticeSession()) {
       navigate('/auto');
     } else {
       navigate('/teleopv2');

@@ -1,11 +1,11 @@
 import './Submit.css'
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { currentScoutCanUseAuto } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession } from './autoAccess';
 
 function Submit() {
   const getDefaultReview = (): string =>
-    currentScoutCanUseAuto() ? 'Good Auto' : 'Good Teleop';
+    currentScoutCanUseAuto() || isPracticeSession() ? 'Good Auto' : 'Good Teleop';
 
   const parseStoredReview = (): string | null => {
     const stored = localStorage.getItem('submit_review');
@@ -30,7 +30,11 @@ function Submit() {
   const [selectedReview, setSelectedReview] = useState<string>(() => parseStoredReview() ?? getDefaultReview());
   
   useEffect(() => {
-    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+    if (
+      window.location.hostname !== 'localhost' &&
+      localStorage.getItem('profile_is_signed_in') !== 'true' &&
+      !isPracticeSession()
+    ) {
       navigate('/profile');
     }
   }, [navigate]);

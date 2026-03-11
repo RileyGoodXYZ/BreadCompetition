@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Checkbox } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { useNavigate } from 'react-router-dom';
+import { isPracticeSession } from './autoAccess';
 
 function Endgame() {
   const savedClimb = localStorage.getItem('endgame_climb') ?? 'None';
@@ -18,7 +19,11 @@ function Endgame() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
+    if (
+      window.location.hostname !== 'localhost' &&
+      localStorage.getItem('profile_is_signed_in') !== 'true' &&
+      !isPracticeSession()
+    ) {
       navigate('/profile');
     }
   }, [navigate]);
