@@ -8,6 +8,7 @@ body{
     gap: 20px;       
     padding-top: 20px;
     width: 100%;
+    --profile-row-width: min(84vw, 320px);
 }
 .maincontainer{
  
@@ -32,7 +33,7 @@ color: rgb(243, 246, 246);
     justify-content: center;
     align-items: center;
     gap: 15px;
-    width: 100%; 
+    width: var(--profile-row-width);
 }
 .threebuttons button {
     font-size: 16px;
@@ -56,6 +57,8 @@ color: rgb(243, 246, 246);
 }
 .signinp{
     background-color: rgb(225, 143, 172);
+    width: var(--profile-row-width);
+    max-width: 100%;
 }
 .nextprofile{
     background-color: #b4ebb4;

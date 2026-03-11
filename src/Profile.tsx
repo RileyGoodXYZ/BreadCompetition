@@ -33,6 +33,10 @@ function Profile() {
 
       console.log("User Name:", userInfo.name);
       alert("Welcome, " + userInfo.name);
+      if (typeof userInfo.name === 'string') {
+        setScoutName(userInfo.name);
+        localStorage.setItem('profile_scout_name', userInfo.name);
+      }
       setIsSignedIn(true);
       localStorage.setItem('profile_is_signed_in', 'true');
 
@@ -57,7 +61,9 @@ function Profile() {
       <textarea className='textareaprofile' placeholder='Enter your name here' 
       value={scoutName} onChange={(e) => handleScoutNameChange(e.target.value)}></textarea>)
       }
+         <button className='signinp' onClick={() => login()}>Sign in</button>
       <div className='threebuttons'>
+        
         <button
           className={`practice ${sessionType === "Practice" ? "selected-session" : ""}`}
           onClick={() => handleSessionTypeToggle("Practice")}
@@ -72,7 +78,14 @@ function Profile() {
         >
           Rescout
         </button>
-        <button className='signinp' onClick={() => login()}>Sign in</button>
+        <button
+          className={`rescout ${sessionType === "Async" ? "selected-session" : ""}`}
+          onClick={() => handleSessionTypeToggle("Async")}
+          aria-pressed={sessionType === "Async"}
+        >
+         Async
+        </button>
+     
       </div>
       <br></br>
       <button className='nextprofile' onClick={() => navigate('/Prematch')}>next</button>

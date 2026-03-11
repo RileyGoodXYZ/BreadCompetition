@@ -1,15 +1,19 @@
 import './Submit.css'
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { currentScoutCanUseAuto } from './autoAccess';
 
 function Submit() {
+  const getDefaultReview = (): string =>
+    currentScoutCanUseAuto() ? 'Good Auto' : 'Good Teleop';
+
   const parseStoredReview = (): string | null => {
     const stored = localStorage.getItem('submit_review');
     if (!stored) return null;
     try {
       const parsed = JSON.parse(stored);
       if (typeof parsed === 'string') {
-        return parsed;
+        return parsed.trim().length > 0 ? parsed : null;
       }
       if (Array.isArray(parsed)) {
         const firstReview = parsed.find((value): value is string => typeof value === 'string' && value.length > 0);
@@ -18,12 +22,12 @@ function Submit() {
     } catch {
       // Backward compatibility: previous versions stored a plain string.
     }
-    return stored;
+    return stored.trim().length > 0 ? stored : null;
   };
 
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
-  const [selectedReview, setSelectedReview] = useState<string | null>(parseStoredReview);
+  const [selectedReview, setSelectedReview] = useState<string>(() => parseStoredReview() ?? getDefaultReview());
   
   useEffect(() => {
     if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
@@ -32,12 +36,8 @@ function Submit() {
   }, [navigate]);
   const toggleReview = (value: string) => {
     setSelectedReview((prev) => {
-      const next = prev === value ? null : value;
-      if (next === null) {
-        localStorage.removeItem('submit_review');
-      } else {
-        localStorage.setItem('submit_review', JSON.stringify(next));
-      }
+      const next = prev === value ? getDefaultReview() : value;
+      localStorage.setItem('submit_review', JSON.stringify(next));
       return next;
     });
   };
@@ -195,7 +195,7 @@ function Submit() {
         : storedClimbType === 'Side'
           ? 'Side of Tower'
           : '';
-    const reviewText = selectedReview ?? '';
+    const reviewText = selectedReview;
     const payload = {
       scout_name: localStorage.getItem('profile_scout_name') ?? '',
       session_type: localStorage.getItem('profile_session_type') ?? '',
@@ -283,7 +283,9 @@ function Submit() {
       }
 
       resetScoutingData();
-      setSelectedReview(null);
+      const nextDefault = getDefaultReview();
+      setSelectedReview(nextDefault);
+      localStorage.setItem('submit_review', JSON.stringify(nextDefault));
       setSubmitMessage('Submitted to Supabase.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';

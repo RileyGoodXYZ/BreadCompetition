@@ -23,6 +23,12 @@ export default function TeleopV1() {
       navigate('/profile');
     }
   }, [navigate]);
+  
+  useEffect(() => {
+    if (currentScoutCanUseAuto()) {
+      navigate('/endgame', { replace: true });
+    }
+  }, [navigate]);
 
   // Timing logic for pass zone, hoard, and score buttons
   type TimedButtonId = 'pass_neutral_zone' | 'pass_other_alliance_zone' | 'hoard' | 'score';
