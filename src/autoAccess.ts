@@ -2,6 +2,7 @@ const AUTO_ALLOWED_SCOUTS = new Set([
   'lenna yoon',
   'sonia bidlack',
   'kylie chan',
+  'test scout',
 ]);
 
 const normalizeScoutName = (name: string): string => name.trim().toLowerCase().replace(/\s+/g, ' ');
