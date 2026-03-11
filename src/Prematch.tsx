@@ -24,6 +24,18 @@ function Prematch() {
     localStorage.setItem('prematch_alliance', nextAlliance);
   };
 
+  const handleNext = () => {
+    if (teamNum === "" || matchNum === "" || position === "") {
+      alert("Please fill in all fields before proceeding.");
+      return;
+    }
+    if (currentScoutCanUseAuto()) {
+      navigate('/auto');
+    } else {
+      navigate('/teleopv2');
+    }
+  }
+
   return (
     <div className="mainContainer">
       <div >
@@ -106,7 +118,7 @@ function Prematch() {
           <button
             className="navBtns"
             style={{ flex: '1 1 auto', minWidth: '100px' }}
-            onClick={() => navigate(currentScoutCanUseAuto() ? '/auto' : '/teleopv2')}
+            onClick={handleNext}
           >
             Next
           </button>

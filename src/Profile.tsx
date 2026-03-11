@@ -50,7 +50,7 @@ function Profile() {
         <h1 className="titleprofile">Profile</h1>
       </div>
       {
-        (localStorage.getItem('profile_is_signed_in') !== 'true' && (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1")) ? (
+        (window.location.hostname === "2026-scouting-app-q77y.vercel.app" && localStorage.getItem('profile_is_signed_in') === 'true') ? (
           <h3>Hello {localStorage.getItem("profile_scout_name")}</h3>
         ) : (
       

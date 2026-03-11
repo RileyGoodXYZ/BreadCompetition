@@ -6,7 +6,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   // Disable in testing
-  if (localStorage.getItem('profile_is_signed_in') !== 'true' && (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1")) {
+  if (window.location.hostname === "2026-scouting-app-q77y.vercel.app") {
     alert("Please sign in!");
     return <Navigate to="/profile" state={{ from: location }} replace />;
   }
