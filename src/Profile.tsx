@@ -7,7 +7,7 @@ function Profile() {
   const navigate = useNavigate();
   const [scoutName, setScoutName] = useState<string>(localStorage.getItem('profile_scout_name') ?? "");
   const [sessionType, setSessionType] = useState<string>(localStorage.getItem('profile_session_type') ?? "");
-  const [, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
 
   const handleScoutNameChange = (value: string) => {
     setScoutName(value);
@@ -88,7 +88,21 @@ function Profile() {
      
       </div>
       <br></br>
-      <button className='nextprofile' onClick={() => navigate('/Prematch')}>next</button>
+      <button
+        className='nextprofile'
+        onClick={() => {
+          const canProceed = window.location.hostname === 'localhost' || isSignedIn;
+          if (!canProceed) {
+            alert('Please sign in first.');
+            return;
+          }
+          navigate('/Prematch');
+        }}
+        disabled={window.location.hostname !== 'localhost' && !isSignedIn}
+        style={{ opacity: window.location.hostname !== 'localhost' && !isSignedIn ? 0.6 : 1 }}
+      >
+        next
+      </button>
     </div>
 
   )
