@@ -91,15 +91,27 @@ function Profile() {
       <button
         className='nextprofile'
         onClick={() => {
-          const canProceed = window.location.hostname === 'localhost' || isSignedIn;
+          const canProceed =
+            window.location.hostname === 'localhost' ||
+            isSignedIn ||
+            localStorage.getItem('profile_is_signed_in') === 'true';
           if (!canProceed) {
             alert('Please sign in first.');
             return;
           }
           navigate('/Prematch');
         }}
-        disabled={window.location.hostname !== 'localhost' && !isSignedIn}
-        style={{ opacity: window.location.hostname !== 'localhost' && !isSignedIn ? 0.6 : 1 }}
+        disabled={
+          window.location.hostname !== 'localhost' &&
+          !(isSignedIn || localStorage.getItem('profile_is_signed_in') === 'true')
+        }
+        style={{
+          opacity:
+            window.location.hostname !== 'localhost' &&
+            !(isSignedIn || localStorage.getItem('profile_is_signed_in') === 'true')
+              ? 0.6
+              : 1,
+        }}
       >
         next
       </button>
