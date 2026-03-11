@@ -30,10 +30,10 @@ label {
 
 /* Containers */
 .mainContainer {
-    margin: 0 0;
-    padding: 0rem;
-    margin-top: 2rem;
-    max-width: 100%;
+    margin: 2rem auto 0;
+    padding: 0;
+    box-sizing: border-box;
+    max-width: none;
     width: 100%;
     min-height: 100vh;
     display: flex;
@@ -41,7 +41,7 @@ label {
     align-items: center;
     justify-content: flex-start;
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: auto;
 }
 
 .topHeader {
@@ -57,6 +57,19 @@ label {
     flex-wrap: wrap;
 }
 
+.teleop-content {
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.teleop-block {
+    width: min(92vw, 900px);
+    margin: 0 auto;
+    padding: 0 min(2vw, 12px);
+    box-sizing: border-box;
+}
+
 
 .passHoardColumn {
   flex: 1;
@@ -67,7 +80,7 @@ label {
 
 @media (max-width: 480px) {
     .mainContainer {
-        padding: 0.1rem;
+        padding: 0;
     }
     .topHeader {
         gap: 0.5rem;
@@ -78,7 +91,7 @@ label {
 }
 @media (max-width: 768px) and (orientation: landscape) {
     .mainContainer {
-        padding: 0.1rem;
+        padding: 0;
     }
     .fieldMap {
         max-width: 80vw;
@@ -91,8 +104,8 @@ label {
 }
 @media (min-width: 769px) {
     .mainContainer {
-        padding: 0.1rem;
-        max-width: 800px;
+        padding: 0;
+        max-width: none;
     }
 }
  

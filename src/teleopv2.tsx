@@ -139,6 +139,7 @@ export default function TeleopV1() {
       <div className="topHeader">
         <h1>TELEOP V2</h1>
       </div>
+      <div className="teleop-block">
       <div style={{ width: '100%', marginBottom: '1rem' }}>
         {/* Good switch :( :wilted}
         {/* <label
@@ -239,135 +240,138 @@ export default function TeleopV1() {
         </button>
       </div>
 
-      {/* Pass and Score Row */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '900px', alignItems: 'stretch' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '10px' }}>
-          <button
-            onClick={() => toggleTimedButton('pass_neutral_zone')}
-            title={`Total: ${getDisplayedSecondsForButton('pass_neutral_zone')}s`}
-            style={getTimedButtonStyle('pass_neutral_zone', {
-              width: '100%',
-              minWidth: '220px',
-              height: '70px',
-              fontSize: '1rem',
-              background: '#b2c2f6',
-              color: '#2f1404',
-              textAlign: 'center',
-            })}
-          >
-            <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_neutral_zone') ? `(${getTimerTextForButton('pass_neutral_zone')})` : 'Pass Neutral Zone'}</span>
-          </button>
-          <button
-            onClick={() => toggleTimedButton('pass_other_alliance_zone')}
-            title={`Total: ${getDisplayedSecondsForButton('pass_other_alliance_zone')}s`}
-            style={getTimedButtonStyle('pass_other_alliance_zone', {
-              width: '100%',
-              minWidth: '220px',
-              height: '70px',
-              fontSize: '1rem',
-              background: '#b2c2f6',
-              color: '#2f1404',
-              textAlign: 'center',
-            })}
-          >
-            <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_other_alliance_zone') ? `(${getTimerTextForButton('pass_other_alliance_zone')})` : 'Pass Other Alliance'}</span>
-          </button>
-          <button
-            data-button-id="hoard"
-            onClick={() => toggleTimedButton('hoard')}
-            title={`Total: ${getDisplayedSecondsForButton('hoard')}s`}
-            style={getTimedButtonStyle('hoard', {
-              background: '#d7b3fb',
-              color: '#2f1404',
-              width: '100%',
-              minWidth: '220px',
-              height: '70px',
-              fontSize: '1.1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-            })}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : 'Hoard'}</span>
-            </span>
-          </button>
+      <div className="teleop-content">
+        {/* Pass and Score Row */}
+        <div style={{ display: 'flex', gap: 'clamp(8px, 2.5vw, 20px)', marginBottom: '10px', width: '100%', alignItems: 'stretch' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0', gap: '10px', minWidth: 0 }}>
+            <button
+              onClick={() => toggleTimedButton('pass_neutral_zone')}
+              title={`Total: ${getDisplayedSecondsForButton('pass_neutral_zone')}s`}
+              style={getTimedButtonStyle('pass_neutral_zone', {
+                width: '100%',
+                minWidth: 0,
+                height: '70px',
+                fontSize: '1rem',
+                background: '#b2c2f6',
+                color: '#2f1404',
+                textAlign: 'center',
+              })}
+            >
+              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_neutral_zone') ? `(${getTimerTextForButton('pass_neutral_zone')})` : 'Pass Neutral Zone'}</span>
+            </button>
+            <button
+              onClick={() => toggleTimedButton('pass_other_alliance_zone')}
+              title={`Total: ${getDisplayedSecondsForButton('pass_other_alliance_zone')}s`}
+              style={getTimedButtonStyle('pass_other_alliance_zone', {
+                width: '100%',
+                minWidth: 0,
+                height: '70px',
+                fontSize: '1rem',
+                background: '#b2c2f6',
+                color: '#2f1404',
+                textAlign: 'center',
+              })}
+            >
+              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_other_alliance_zone') ? `(${getTimerTextForButton('pass_other_alliance_zone')})` : 'Pass Other Alliance'}</span>
+            </button>
+            <button
+              data-button-id="hoard"
+              onClick={() => toggleTimedButton('hoard')}
+              title={`Total: ${getDisplayedSecondsForButton('hoard')}s`}
+              style={getTimedButtonStyle('hoard', {
+                background: '#d7b3fb',
+                color: '#2f1404',
+                width: '100%',
+                minWidth: 0,
+                height: '70px',
+                fontSize: '1.1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+              })}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : 'Hoard'}</span>
+              </span>
+            </button>
+          </div>
+          <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'stretch', minWidth: 0 }}>
+            <button
+              onClick={() => toggleTimedButton('score')}
+              title={`Total: ${getDisplayedSecondsForButton('score')}s`}
+              style={getTimedButtonStyle('score', {
+                width: '100%',
+                minWidth: 0,
+                minHeight: 'min(200px, 26vh)',
+                fontSize: '1.4rem',
+                background: '#f6e7b2',
+                color: '#2f1404',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+              })}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('score') ? `(${getTimerTextForButton('score')})` : 'Score'}</span>
+              </span>
+            </button>
+          </div>
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'stretch' }}>
+
+        {/* Trench and Bump Row */}
+        <div style={{ display: 'flex', gap: 'clamp(8px, 2.5vw, 20px)', marginBottom: '10px', width: '100%', maxWidth: 'min(600px, 92vw)' }}>
           <button
-            onClick={() => toggleTimedButton('score')}
-            title={`Total: ${getDisplayedSecondsForButton('score')}s`}
-            style={getTimedButtonStyle('score', {
-              width: '100%',
-              minWidth: '220px',
-              minHeight: '220px',
-              fontSize: '1.4rem',
-              background: '#f6e7b2',
-              color: '#2f1404',
+            onClick={() => {
+              const isIntakeOn = checked;
+              const next = currentTrenchCount + 1;
+              if (isIntakeOn) {
+                setIntakeTrenchCount(next);
+              } else {
+                setTrenchCount(next);
+              }
+              localStorage.setItem(getPrefixedKey('teleopv2_trench_count', isIntakeOn), String(next));
+            }}
+            style={{
+              flex: 1,
+              height: "2.5rem",
+              backgroundColor: '#d7b3fb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              textAlign: 'center',
-            })}
+              whiteSpace: 'nowrap',
+              fontSize: '1rem',
+            }}
           >
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('score') ? `(${getTimerTextForButton('score')})` : 'Score'}</span>
-            </span>
+            Trench: {currentTrenchCount}
+          </button>
+          <button
+            onClick={() => {
+              const isIntakeOn = checked;
+              const next = currentBumpCount + 1;
+              if (isIntakeOn) {
+                setIntakeBumpCount(next);
+              } else {
+                setBumpCount(next);
+              }
+              localStorage.setItem(getPrefixedKey('teleopv2_bump_count', isIntakeOn), String(next));
+            }}
+            style={{
+              flex: 1,
+              height: "2.5rem",
+              backgroundColor: '#d7b3fb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              whiteSpace: 'nowrap',
+              fontSize: '1rem',
+            }}
+          >
+            Bump: {currentBumpCount}
           </button>
         </div>
       </div>
-
-      {/* Trench and Bump Row */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', width: '100%', maxWidth: '600px' }}>
-        <button
-          onClick={() => {
-            const isIntakeOn = checked;
-            const next = currentTrenchCount + 1;
-            if (isIntakeOn) {
-              setIntakeTrenchCount(next);
-            } else {
-              setTrenchCount(next);
-            }
-            localStorage.setItem(getPrefixedKey('teleopv2_trench_count', isIntakeOn), String(next));
-          }}
-          style={{
-            flex: 1,
-            height: "2.5rem",
-            backgroundColor: '#d7b3fb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            whiteSpace: 'nowrap',
-            fontSize: '1rem',
-          }}
-        >
-          Trench: {currentTrenchCount}
-        </button>
-        <button
-          onClick={() => {
-            const isIntakeOn = checked;
-            const next = currentBumpCount + 1;
-            if (isIntakeOn) {
-              setIntakeBumpCount(next);
-            } else {
-              setBumpCount(next);
-            }
-            localStorage.setItem(getPrefixedKey('teleopv2_bump_count', isIntakeOn), String(next));
-          }}
-          style={{
-            flex: 1,
-            height: "2.5rem",
-            backgroundColor: '#d7b3fb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            whiteSpace: 'nowrap',
-            fontSize: '1rem',
-          }}
-        >
-          Bump: {currentBumpCount}
-        </button>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap', width: '100%' }}>
