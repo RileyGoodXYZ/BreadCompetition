@@ -1,6 +1,6 @@
 import './Auto.css'
 import image from './assets/rebuiltField.png';
-import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { currentScoutCanUseAuto } from './autoAccess';
 
@@ -17,9 +17,49 @@ const AUTO_BOTTOM_LEFT_COUNT_KEY = 'auto_bottom_left_count';
 const AUTO_TOP_RIGHT_COUNT_KEY = 'auto_top_right_count';
 const AUTO_MIDDLE_RIGHT_COUNT_KEY = 'auto_middle_right_count';
 const AUTO_BOTTOM_RIGHT_COUNT_KEY = 'auto_bottom_right_count';
+const AUTO_BUTTON_TIMES_KEY = 'auto_button_times';
+const AUTO_COUNT_KEYS = [
+  AUTO_HUMAN_PLAYER_COUNT_KEY,
+  AUTO_DEPOT_COUNT_KEY,
+  AUTO_TOP_LEFT_COUNT_KEY,
+  AUTO_MIDDLE_LEFT_COUNT_KEY,
+  AUTO_BOTTOM_LEFT_COUNT_KEY,
+  AUTO_TOP_RIGHT_COUNT_KEY,
+  AUTO_MIDDLE_RIGHT_COUNT_KEY,
+  AUTO_BOTTOM_RIGHT_COUNT_KEY,
+];
 const CLIMB_LEFT = 'left';
 const CLIMB_MIDDLE = 'middle';
 const CLIMB_RIGHT = 'right';
+
+const parseAutoButtonTimes = (raw: string | null): Record<string, number> => {
+  const counts: Record<string, number> = {};
+  AUTO_COUNT_KEYS.forEach((key) => {
+    counts[key] = 0;
+  });
+  if (!raw) return counts;
+  raw.split('\n').forEach((line) => {
+    const [key, value] = line.split('\t');
+    if (!key || !(key in counts)) return;
+    const parsed = Number(value);
+    counts[key] = Number.isFinite(parsed) ? parsed : 0;
+  });
+  return counts;
+};
+
+const formatAutoButtonTimes = (counts: Record<string, number>): string =>
+  AUTO_COUNT_KEYS.map((key) => `${key}\t${counts[key] ?? 0}`).join('\n');
+
+const readLegacyAutoCounts = (): Record<string, number> => ({
+  [AUTO_HUMAN_PLAYER_COUNT_KEY]: Number(localStorage.getItem(AUTO_HUMAN_PLAYER_COUNT_KEY) ?? '0'),
+  [AUTO_DEPOT_COUNT_KEY]: Number(localStorage.getItem(AUTO_DEPOT_COUNT_KEY) ?? '0'),
+  [AUTO_TOP_LEFT_COUNT_KEY]: Number(localStorage.getItem(AUTO_TOP_LEFT_COUNT_KEY) ?? '0'),
+  [AUTO_MIDDLE_LEFT_COUNT_KEY]: Number(localStorage.getItem(AUTO_MIDDLE_LEFT_COUNT_KEY) ?? '0'),
+  [AUTO_BOTTOM_LEFT_COUNT_KEY]: Number(localStorage.getItem(AUTO_BOTTOM_LEFT_COUNT_KEY) ?? '0'),
+  [AUTO_TOP_RIGHT_COUNT_KEY]: Number(localStorage.getItem(AUTO_TOP_RIGHT_COUNT_KEY) ?? '0'),
+  [AUTO_MIDDLE_RIGHT_COUNT_KEY]: Number(localStorage.getItem(AUTO_MIDDLE_RIGHT_COUNT_KEY) ?? '0'),
+  [AUTO_BOTTOM_RIGHT_COUNT_KEY]: Number(localStorage.getItem(AUTO_BOTTOM_RIGHT_COUNT_KEY) ?? '0'),
+});
 
 function Auto() {
   const [passCount, setPassCount] = useState<number>(Number(localStorage.getItem(AUTO_PASS_COUNT_KEY) ?? '0'));
@@ -28,20 +68,24 @@ function Auto() {
   const navigate = useNavigate();
   const [passSeconds, setPassSeconds] = useState<number>(Number(localStorage.getItem(AUTO_PASS_SECONDS_KEY) ?? '0'));
   const [scoreSeconds, setScoreSeconds] = useState<number>(Number(localStorage.getItem(AUTO_SCORE_SECONDS_KEY) ?? '0'));
+  const initialCounts = useMemo(
+    () => parseAutoButtonTimes(localStorage.getItem(AUTO_BUTTON_TIMES_KEY)),
+    [],
+  );
   
   useEffect(() => {
     if (window.location.hostname !== 'localhost' && localStorage.getItem('profile_is_signed_in') !== 'true') {
       navigate('/profile');
     }
   }, [navigate]);
-  const [humanPlayerCount, setHumanPlayerCount] = useState<number>(Number(localStorage.getItem(AUTO_HUMAN_PLAYER_COUNT_KEY) ?? '0'));
-  const [depotCount, setDepotCount] = useState<number>(Number(localStorage.getItem(AUTO_DEPOT_COUNT_KEY) ?? '0'));
-  const [topLeftCount, setTopLeftCount] = useState<number>(Number(localStorage.getItem(AUTO_TOP_LEFT_COUNT_KEY) ?? '0'));
-  const [middleLeftCount, setMiddleLeftCount] = useState<number>(Number(localStorage.getItem(AUTO_MIDDLE_LEFT_COUNT_KEY) ?? '0'));
-  const [bottomLeftCount, setBottomLeftCount] = useState<number>(Number(localStorage.getItem(AUTO_BOTTOM_LEFT_COUNT_KEY) ?? '0'));
-  const [topRightCount, setTopRightCount] = useState<number>(Number(localStorage.getItem(AUTO_TOP_RIGHT_COUNT_KEY) ?? '0'));
-  const [middleRightCount, setMiddleRightCount] = useState<number>(Number(localStorage.getItem(AUTO_MIDDLE_RIGHT_COUNT_KEY) ?? '0'));
-  const [bottomRightCount, setBottomRightCount] = useState<number>(Number(localStorage.getItem(AUTO_BOTTOM_RIGHT_COUNT_KEY) ?? '0'));
+  const [humanPlayerCount, setHumanPlayerCount] = useState<number>(initialCounts[AUTO_HUMAN_PLAYER_COUNT_KEY] ?? 0);
+  const [depotCount, setDepotCount] = useState<number>(initialCounts[AUTO_DEPOT_COUNT_KEY] ?? 0);
+  const [topLeftCount, setTopLeftCount] = useState<number>(initialCounts[AUTO_TOP_LEFT_COUNT_KEY] ?? 0);
+  const [middleLeftCount, setMiddleLeftCount] = useState<number>(initialCounts[AUTO_MIDDLE_LEFT_COUNT_KEY] ?? 0);
+  const [bottomLeftCount, setBottomLeftCount] = useState<number>(initialCounts[AUTO_BOTTOM_LEFT_COUNT_KEY] ?? 0);
+  const [topRightCount, setTopRightCount] = useState<number>(initialCounts[AUTO_TOP_RIGHT_COUNT_KEY] ?? 0);
+  const [middleRightCount, setMiddleRightCount] = useState<number>(initialCounts[AUTO_MIDDLE_RIGHT_COUNT_KEY] ?? 0);
+  const [bottomRightCount, setBottomRightCount] = useState<number>(initialCounts[AUTO_BOTTOM_RIGHT_COUNT_KEY] ?? 0);
   const [isPassActive, setIsPassActive] = useState<boolean>(false);
   const [isScoreActive, setIsScoreActive] = useState<boolean>(false);
 
@@ -50,6 +94,41 @@ function Auto() {
       navigate('/teleopv2', { replace: true });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    const raw = localStorage.getItem(AUTO_BUTTON_TIMES_KEY);
+    if (!raw || raw.trim().length === 0) {
+      const legacyCounts = readLegacyAutoCounts();
+      const hasLegacy = Object.values(legacyCounts).some((value) => value > 0);
+      const nextCounts = hasLegacy ? legacyCounts : initialCounts;
+      localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(nextCounts));
+      if (hasLegacy) {
+        setHumanPlayerCount(legacyCounts[AUTO_HUMAN_PLAYER_COUNT_KEY] ?? 0);
+        setDepotCount(legacyCounts[AUTO_DEPOT_COUNT_KEY] ?? 0);
+        setTopLeftCount(legacyCounts[AUTO_TOP_LEFT_COUNT_KEY] ?? 0);
+        setMiddleLeftCount(legacyCounts[AUTO_MIDDLE_LEFT_COUNT_KEY] ?? 0);
+        setBottomLeftCount(legacyCounts[AUTO_BOTTOM_LEFT_COUNT_KEY] ?? 0);
+        setTopRightCount(legacyCounts[AUTO_TOP_RIGHT_COUNT_KEY] ?? 0);
+        setMiddleRightCount(legacyCounts[AUTO_MIDDLE_RIGHT_COUNT_KEY] ?? 0);
+        setBottomRightCount(legacyCounts[AUTO_BOTTOM_RIGHT_COUNT_KEY] ?? 0);
+        AUTO_COUNT_KEYS.forEach((key) => localStorage.removeItem(key));
+      }
+    }
+  }, [initialCounts]);
+
+  const writeAutoButtonTimes = (overrides: Partial<Record<string, number>>) => {
+    const counts: Record<string, number> = {
+      [AUTO_HUMAN_PLAYER_COUNT_KEY]: overrides[AUTO_HUMAN_PLAYER_COUNT_KEY] ?? humanPlayerCount,
+      [AUTO_DEPOT_COUNT_KEY]: overrides[AUTO_DEPOT_COUNT_KEY] ?? depotCount,
+      [AUTO_TOP_LEFT_COUNT_KEY]: overrides[AUTO_TOP_LEFT_COUNT_KEY] ?? topLeftCount,
+      [AUTO_MIDDLE_LEFT_COUNT_KEY]: overrides[AUTO_MIDDLE_LEFT_COUNT_KEY] ?? middleLeftCount,
+      [AUTO_BOTTOM_LEFT_COUNT_KEY]: overrides[AUTO_BOTTOM_LEFT_COUNT_KEY] ?? bottomLeftCount,
+      [AUTO_TOP_RIGHT_COUNT_KEY]: overrides[AUTO_TOP_RIGHT_COUNT_KEY] ?? topRightCount,
+      [AUTO_MIDDLE_RIGHT_COUNT_KEY]: overrides[AUTO_MIDDLE_RIGHT_COUNT_KEY] ?? middleRightCount,
+      [AUTO_BOTTOM_RIGHT_COUNT_KEY]: overrides[AUTO_BOTTOM_RIGHT_COUNT_KEY] ?? bottomRightCount,
+    };
+    localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(counts));
+  };
 
   useEffect(() => {
     if (!isPassActive) return;
@@ -108,14 +187,14 @@ function Auto() {
   const handleHumanPlayer = () => {
     setHumanPlayerCount((prev) => {
       const next = prev + 1;
-      localStorage.setItem(AUTO_HUMAN_PLAYER_COUNT_KEY, String(next));
+      writeAutoButtonTimes({ [AUTO_HUMAN_PLAYER_COUNT_KEY]: next });
       return next;
     });
   };
   const handleDepot = () => {
     setDepotCount((prev) => {
       const next = prev + 1;
-      localStorage.setItem(AUTO_DEPOT_COUNT_KEY, String(next));
+      writeAutoButtonTimes({ [AUTO_DEPOT_COUNT_KEY]: next });
       return next;
     });
   };
@@ -125,7 +204,7 @@ function Auto() {
   ) => {
     setter((prev) => {
       const next = prev + 1;
-      localStorage.setItem(key, String(next));
+      writeAutoButtonTimes({ [key]: next });
       return next;
     });
   };
