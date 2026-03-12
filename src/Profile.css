@@ -32,18 +32,19 @@ color: rgb(243, 246, 246);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 8px;
     width: var(--profile-row-width);
 }
 .threebuttons button {
-    font-size: 16px;
-    padding: 12px 20px;
+    font-size: 14px;
+    padding: 8px 10px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;  
-
-   
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
 }
 .selected-session{
     opacity: 0.55;

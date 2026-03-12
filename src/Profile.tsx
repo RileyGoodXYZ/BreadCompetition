@@ -5,14 +5,11 @@ import { useState } from "react";
 
 function Profile() {
   const navigate = useNavigate();
-  const [scoutName, setScoutName] = useState<string>(localStorage.getItem('profile_scout_name') ?? "");
-  const [sessionType, setSessionType] = useState<string>(localStorage.getItem('profile_session_type') ?? "");
+  const storedSessionType = localStorage.getItem('profile_session_type') ?? "";
+  const normalizedSessionType =
+    storedSessionType.toLowerCase() === "test" ? "Test" : storedSessionType;
+  const [sessionType, setSessionType] = useState<string>(normalizedSessionType);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
-
-  const handleScoutNameChange = (value: string) => {
-    setScoutName(value);
-    localStorage.setItem('profile_scout_name', value);
-  };
 
   const handleSessionTypeChange = (value: string) => {
     setSessionType(value);
@@ -34,7 +31,6 @@ function Profile() {
       console.log("User Name:", userInfo.name);
       alert("Welcome, " + userInfo.name);
       if (typeof userInfo.name === 'string') {
-        setScoutName(userInfo.name);
         localStorage.setItem('profile_scout_name', userInfo.name);
       }
       setIsSignedIn(true);
@@ -53,14 +49,9 @@ function Profile() {
       <div className='maincontainer'>
         <h1 className="titleprofile">Profile</h1>
       </div>
-      {
-        (window.location.hostname === "2026-scouting-app-q77y.vercel.app" && localStorage.getItem('profile_is_signed_in') === 'true') ? (
-          <h3>Hello {localStorage.getItem("profile_scout_name")}</h3>
-        ) : (
-      
-      <textarea className='textareaprofile' placeholder='Enter your name here' 
-      value={scoutName} onChange={(e) => handleScoutNameChange(e.target.value)}></textarea>)
-      }
+      {localStorage.getItem('profile_is_signed_in') === 'true' ? (
+        <h3>Hello {localStorage.getItem("profile_scout_name")}</h3>
+      ) : null}
          <button className='signinp' onClick={() => login()}>Sign in</button>
       <div className='threebuttons'>
         
@@ -70,6 +61,13 @@ function Profile() {
           aria-pressed={sessionType === "Practice"}
         >
           Practice
+        </button>
+        <button
+          className={`rescout ${sessionType === "Test" ? "selected-session" : ""}`}
+          onClick={() => handleSessionTypeToggle("Test")}
+          aria-pressed={sessionType === "Test"}
+        >
+          Test
         </button>
         <button
           className={`rescout ${sessionType === "Rescout" ? "selected-session" : ""}`}

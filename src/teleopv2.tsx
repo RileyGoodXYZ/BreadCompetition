@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './teleopv2.css';
-import { currentScoutCanUseAuto, isPracticeSession } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
 export default function TeleopV1() {
    // Timing logic for toggle
@@ -29,7 +29,7 @@ export default function TeleopV1() {
   }, [navigate]);
   
   useEffect(() => {
-    if (currentScoutCanUseAuto() && !isPracticeSession()) {
+    if (currentScoutCanUseAuto() && !isTeleopV2Session()) {
       navigate('/endgame', { replace: true });
     }
   }, [navigate]);
@@ -136,7 +136,7 @@ export default function TeleopV1() {
 
   const handleBack = () => {
     stopAnyRunningTimer();
-    navigate(currentScoutCanUseAuto() || isPracticeSession() ? '/auto' : '/prematch');
+    navigate(currentScoutCanUseAuto() && !isTeleopV2Session() ? '/auto' : '/prematch');
   };
 
   const handleNext = () => {

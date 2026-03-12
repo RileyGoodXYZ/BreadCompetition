@@ -71,8 +71,8 @@
     border-radius: 9px;
     border-width: 4px;
     border-color: rgb(170, 63, 118);
-    width: 15vw;
-    height: 70px;
+    width: 14vw;
+    height: 55px;
     margin: 5px;
     color: rgb(241, 243, 245);
     font-weight: bold;
@@ -83,8 +83,8 @@
     border-radius: 9px;
     border-width: 4px;
     border-color: rgb(170, 63, 118);
-    width: 15vw;
-    height: 70px;
+    width: 14vw;
+    height: 55px;
     margin: 5px;
     color: rgb(241, 243, 245);
     font-weight: bold;
@@ -96,8 +96,20 @@
     border-radius: 9px;
     border-width: 4px;
     border-color: rgb(170, 63, 118);
-    width: 15vw;
-    height: 70px;
+    width: 14vw;
+    height: 55px;
+    margin: 5px;
+    color: rgb(241, 243, 245);
+    font-weight: bold;
+}
+
+.position4 {
+    background-color: rgb(243, 124, 185);
+    border-radius: 9px;
+    border-width: 4px;
+    border-color: rgb(170, 63, 118);
+    width: 14vw;
+    height: 55px;
     margin: 5px;
     color: rgb(241, 243, 245);
     font-weight: bold;
@@ -111,7 +123,7 @@
 }
 
 .container2.flipped {
-    translate: 340px -250px;
+    translate: min(64vw, 305px) -250px;
 }
 
 .prematchNext {

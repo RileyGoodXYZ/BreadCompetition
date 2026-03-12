@@ -2,7 +2,7 @@ import './Prematch.css';
 import image from './assets/rebuiltField.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
-import { currentScoutCanUseAuto, isPracticeSession } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
 function Prematch() {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ function Prematch() {
       alert("Please fill in all fields before proceeding.");
       return;
     }
-    if (currentScoutCanUseAuto() || isPracticeSession()) {
+    if (currentScoutCanUseAuto() && !isTeleopV2Session()) {
       navigate('/auto');
     } else {
       navigate('/teleopv2');
@@ -115,6 +115,12 @@ function Prematch() {
             localStorage.setItem('prematch_position', "3");
           }} style={{ opacity: position === "3" ? 0.6 : 1 }}>
             3
+          </button>
+          <button className='position4' onClick={() => {
+            setPosition("4");
+            localStorage.setItem('prematch_position', "4");
+          }} style={{ opacity: position === "4" ? 0.6 : 1 }}>
+            4
           </button>
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '-180px', flexWrap: 'wrap', width: '100%' }}>

@@ -11,6 +11,7 @@ import Auto from './Auto';
 import Endgame from './Endgame';
 import Submit from './Submit';
 import TeleopV2 from './teleopv2';
+import TeleopV3 from './teleopv3';
 import RequireAuth from './RequireAuth';
 
 
@@ -50,6 +51,11 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/teleopv2" element={
           <RequireAuth>
             <TeleopV2 />
+          </RequireAuth>
+        } />
+        <Route path="/teleopv3" element={
+          <RequireAuth>
+            <TeleopV3 />
           </RequireAuth>
         } />
         <Route path="*" element={<div>Page Not Found</div>} />

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Checkbox } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { useNavigate } from 'react-router-dom';
-import { isPracticeSession } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
 function Endgame() {
   const savedClimb = localStorage.getItem('endgame_climb') ?? 'None';
@@ -127,7 +127,15 @@ function Endgame() {
 
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: "1rem", flexWrap: 'wrap', width: '100%' }}>
-        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/teleopv2')}>Back</button>
+        <button
+          className="navBtns"
+          style={{ flex: '1 1 auto', minWidth: '100px' }}
+          onClick={() =>
+            navigate(currentScoutCanUseAuto() && !isTeleopV2Session() ? '/auto' : '/teleopv2')
+          }
+        >
+          Back
+        </button>
         <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Submit')}>Next</button>
       </div>
     </div>
