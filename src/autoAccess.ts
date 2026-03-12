@@ -26,3 +26,6 @@ export const isAsyncSession = (): boolean =>
 
 export const isTeleopV2Session = (): boolean =>
   isPracticeSession() || isTestSession() || isAsyncSession();
+
+export const isAutoDisabledSession = (): boolean =>
+  isPracticeSession();

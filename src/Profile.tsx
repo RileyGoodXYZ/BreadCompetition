@@ -2,6 +2,7 @@ import './Profile.css'
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from "react";
+import { canScoutUseAuto } from './autoAccess';
 
 function Profile() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ function Profile() {
   const normalizedSessionType =
     storedSessionType.toLowerCase() === "test" ? "Test" : storedSessionType;
   const [sessionType, setSessionType] = useState<string>(normalizedSessionType);
+  const [sessionTypeTouched, setSessionTypeTouched] = useState<boolean>(false);
   const [isSignedIn, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
 
   const handleSessionTypeChange = (value: string) => {
@@ -16,6 +18,7 @@ function Profile() {
     localStorage.setItem('profile_session_type', value);
   };
   const handleSessionTypeToggle = (value: string) => {
+    setSessionTypeTouched(true);
     const nextValue = sessionType === value ? "" : value;
     handleSessionTypeChange(nextValue);
   };
@@ -32,6 +35,10 @@ function Profile() {
       alert("Welcome, " + userInfo.name);
       if (typeof userInfo.name === 'string') {
         localStorage.setItem('profile_scout_name', userInfo.name);
+        if (canScoutUseAuto(userInfo.name) && !sessionTypeTouched) {
+          localStorage.setItem('profile_session_type', '');
+          setSessionType('');
+        }
       }
       setIsSignedIn(true);
       localStorage.setItem('profile_is_signed_in', 'true');

@@ -2,7 +2,7 @@ import './Prematch.css';
 import image from './assets/rebuiltField.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
-import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession } from './autoAccess';
 
 function Prematch() {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ function Prematch() {
       alert("Please fill in all fields before proceeding.");
       return;
     }
-    if (currentScoutCanUseAuto() && !isTeleopV2Session()) {
+    if (currentScoutCanUseAuto() && !isAutoDisabledSession()) {
       navigate('/auto');
     } else {
       navigate('/teleopv2');

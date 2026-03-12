@@ -2,7 +2,7 @@ import './Auto.css'
 import image from './assets/rebuiltField.png';
 import { useState, useEffect, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
 const AUTO_CLIMB_SELECTION_KEY = 'auto_climb_selection';
 const AUTO_PASS_COUNT_KEY = 'auto_pass_count';
@@ -94,7 +94,7 @@ function Auto() {
   const [isScoreActive, setIsScoreActive] = useState<boolean>(false);
 
   useEffect(() => {
-    if (isTeleopV2Session() || !currentScoutCanUseAuto()) {
+    if (isAutoDisabledSession() || !currentScoutCanUseAuto()) {
       navigate('/teleopv2', { replace: true });
     }
   }, [navigate]);
