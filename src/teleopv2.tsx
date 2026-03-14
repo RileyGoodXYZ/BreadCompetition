@@ -213,7 +213,8 @@ export default function TeleopV1() {
         <span style={{ minWidth: '2.5rem', textAlign: 'left' }}>{intakeState}</span> */}
         {/* Intake toggle button (replaces switch) */}
         <button
-          style={{ width: '100%' }}
+          className="intake-toggle"
+          data-state={checked ? 'on' : 'off'}
           id="intakeMode"
           onClick={() => {
             // If a timer is running, stop it and save the time

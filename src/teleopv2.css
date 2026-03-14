@@ -70,6 +70,30 @@ label {
     box-sizing: border-box;
 }
 
+.intake-toggle {
+    width: 100%;
+    height: 60px;
+    font-size: 1.05rem;
+    color: #2f1404;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: background-color 120ms, border-color 120ms, box-shadow 120ms, transform 80ms;
+}
+
+.intake-toggle[data-state="off"] {
+    background: #f6b2b2;
+    border-color: #c85b5b;
+}
+
+.intake-toggle[data-state="on"] {
+    background: #a9e5da;
+    border-color: #3c8f7f;
+}
+
+.intake-toggle:active {
+    transform: translateY(1px);
+}
+
 
 .passHoardColumn {
   flex: 1;
