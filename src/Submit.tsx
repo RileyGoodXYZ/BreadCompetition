@@ -167,6 +167,7 @@ function Submit() {
     const rawAutoButtonTimes = localStorage.getItem('auto_button_times') ?? '';
     const autoButtonKeys = [
       'auto_human_player_count',
+      'auto_depot_count',
       'auto_top_left_count',
       'auto_middle_left_count',
       'auto_bottom_left_count',
