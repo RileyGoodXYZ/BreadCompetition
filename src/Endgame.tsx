@@ -35,10 +35,11 @@ function Endgame() {
     } else if (nextStatus === 'Failed') {
       finalValue = 'Failed';
     }
+    const shouldStoreType = nextStatus === 'Success';
     localStorage.setItem('endgame_climb', finalValue);
     localStorage.setItem('endgame_climb_status', nextStatus);
-    localStorage.setItem('endgame_climb_level', nextLevel ?? '');
-    localStorage.setItem('endgame_climb_type', nextType);
+    localStorage.setItem('endgame_climb_level', shouldStoreType ? (nextLevel ?? '') : '');
+    localStorage.setItem('endgame_climb_type', shouldStoreType ? nextType : '');
   };
 
   const handleStatusSelect = (status: 'None' | 'Failed' | 'Success') => {
