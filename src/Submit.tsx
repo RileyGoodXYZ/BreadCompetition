@@ -274,6 +274,10 @@ function Submit() {
     try {
       const payload = buildPayload();
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      resetScoutingData();
+      const nextDefault = getDefaultReview();
+      setSelectedReview(nextDefault);
+      localStorage.setItem('submit_review', JSON.stringify(nextDefault));
       setBackupMessage('Backup copied to clipboard.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to copy backup.';
