@@ -223,7 +223,7 @@ function Submit() {
       is_signed_in: localStorage.getItem('profile_is_signed_in') === 'true',
       match_num: localStorage.getItem('prematch_match_num') ?? '',
       team_num: localStorage.getItem('prematch_team_num') ?? '',
-      alliance: localStorage.getItem('prematch_alliance') ?? '',
+      alliance: localStorage.getItem('prematch_alliance') ?? 'red',
       orientation: localStorage.getItem('prematch_orient') ?? '',
       position: localStorage.getItem('prematch_position') ?? '',
       review: reviewText,

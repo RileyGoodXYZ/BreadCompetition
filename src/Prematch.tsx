@@ -21,6 +21,11 @@ function Prematch() {
       navigate('/profile');
     }
   }, [navigate]);
+  useEffect(() => {
+    if (!localStorage.getItem('prematch_alliance')) {
+      localStorage.setItem('prematch_alliance', alliance);
+    }
+  }, [alliance]);
   
   const toggleAlliance = () => {
     const nextAlliance = alliance === "Red" ? "Blue" : "Red";
