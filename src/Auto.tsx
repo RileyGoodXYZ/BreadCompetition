@@ -1,6 +1,6 @@
 import './Auto.css'
 import image from './assets/rebuiltField.png';
-import { useState, useEffect, useMemo, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
@@ -18,7 +18,7 @@ const AUTO_TOP_RIGHT_COUNT_KEY = 'auto_top_right_count';
 const AUTO_MIDDLE_RIGHT_COUNT_KEY = 'auto_middle_right_count';
 const AUTO_BOTTOM_RIGHT_COUNT_KEY = 'auto_bottom_right_count';
 const AUTO_BUTTON_TIMES_KEY = 'auto_button_times';
-const AUTO_COUNT_KEYS = [
+const AUTO_SEQUENCE_KEYS = [
   AUTO_HUMAN_PLAYER_COUNT_KEY,
   AUTO_DEPOT_COUNT_KEY,
   AUTO_TOP_LEFT_COUNT_KEY,
@@ -32,75 +32,22 @@ const CLIMB_LEFT = 'left';
 const CLIMB_MIDDLE = 'middle';
 const CLIMB_RIGHT = 'right';
 
-const parseAutoButtonTimes = (raw: string | null): Record<string, number> => {
-  const counts: Record<string, number> = {};
-  AUTO_COUNT_KEYS.forEach((key) => {
-    counts[key] = 0;
-  });
-  if (!raw) return counts;
-  raw.split('\n').forEach((line) => {
-    const [key, value] = line.split('\t');
-    if (!key || !(key in counts)) return;
-    const parsed = Number(value);
-    counts[key] = Number.isFinite(parsed) ? parsed : 0;
-  });
-  return counts;
+const normalizeAutoButtonTimes = (raw: string | null): string => {
+  if (!raw) return '';
+  const normalized = raw
+    .split('\n')
+    .map((line) => line.split('\t')[0]?.trim())
+    .filter((key): key is string => Boolean(key) && AUTO_SEQUENCE_KEYS.includes(key));
+  return normalized.join('\n');
 };
 
-const deriveOrderFromAutoButtonTimes = (raw: string | null): string[] => {
-  if (!raw) return [];
-  const ordered: string[] = [];
-  raw.split('\n').forEach((line) => {
-    const [key] = line.split('\t');
-    if (!key || !AUTO_COUNT_KEYS.includes(key)) return;
-    if (!ordered.includes(key)) {
-      ordered.push(key);
-    }
-  });
-  return ordered;
+const appendAutoButtonTime = (key: string) => {
+  const existing = normalizeAutoButtonTimes(localStorage.getItem(AUTO_BUTTON_TIMES_KEY));
+  const nextValue = existing && existing.trim().length > 0 ? `${existing}\n${key}` : key;
+  localStorage.setItem(AUTO_BUTTON_TIMES_KEY, nextValue);
 };
 
-const formatAutoButtonTimes = (counts: Record<string, number>, order: string[]): string =>
-  order.map((key) => `${key}\t${counts[key] ?? 0}`).join('\n');
-
-const getOrderedAutoKeys = (
-  counts: Record<string, number>,
-  options?: { raw?: string | null; firstClickKey?: string },
-): string[] => {
-  const baseOrder = deriveOrderFromAutoButtonTimes(
-    options?.raw ?? localStorage.getItem(AUTO_BUTTON_TIMES_KEY),
-  );
-  const seen = new Set<string>();
-  const normalizedOrder: string[] = [];
-  baseOrder.forEach((key) => {
-    if (!AUTO_COUNT_KEYS.includes(key) || seen.has(key)) return;
-    seen.add(key);
-    normalizedOrder.push(key);
-  });
-  AUTO_COUNT_KEYS.forEach((key) => {
-    if (seen.has(key)) return;
-    seen.add(key);
-    normalizedOrder.push(key);
-  });
-  let clickedOrder = normalizedOrder.filter((key) => (counts[key] ?? 0) > 0);
-  if (options?.firstClickKey && (counts[options.firstClickKey] ?? 0) > 0) {
-    clickedOrder = clickedOrder.filter((key) => key !== options.firstClickKey);
-    clickedOrder.push(options.firstClickKey);
-  }
-  const unclickedOrder = normalizedOrder.filter((key) => (counts[key] ?? 0) === 0);
-  return [...clickedOrder, ...unclickedOrder];
-};
-
-const readLegacyAutoCounts = (): Record<string, number> => ({
-  [AUTO_HUMAN_PLAYER_COUNT_KEY]: Number(localStorage.getItem(AUTO_HUMAN_PLAYER_COUNT_KEY) ?? '0'),
-  [AUTO_DEPOT_COUNT_KEY]: Number(localStorage.getItem(AUTO_DEPOT_COUNT_KEY) ?? '0'),
-  [AUTO_TOP_LEFT_COUNT_KEY]: Number(localStorage.getItem(AUTO_TOP_LEFT_COUNT_KEY) ?? '0'),
-  [AUTO_MIDDLE_LEFT_COUNT_KEY]: Number(localStorage.getItem(AUTO_MIDDLE_LEFT_COUNT_KEY) ?? '0'),
-  [AUTO_BOTTOM_LEFT_COUNT_KEY]: Number(localStorage.getItem(AUTO_BOTTOM_LEFT_COUNT_KEY) ?? '0'),
-  [AUTO_TOP_RIGHT_COUNT_KEY]: Number(localStorage.getItem(AUTO_TOP_RIGHT_COUNT_KEY) ?? '0'),
-  [AUTO_MIDDLE_RIGHT_COUNT_KEY]: Number(localStorage.getItem(AUTO_MIDDLE_RIGHT_COUNT_KEY) ?? '0'),
-  [AUTO_BOTTOM_RIGHT_COUNT_KEY]: Number(localStorage.getItem(AUTO_BOTTOM_RIGHT_COUNT_KEY) ?? '0'),
-});
+const readAutoCount = (key: string) => Number(localStorage.getItem(key) ?? '0');
 
 function Auto() {
   const [passCount, setPassCount] = useState<number>(Number(localStorage.getItem(AUTO_PASS_COUNT_KEY) ?? '0'));
@@ -109,10 +56,6 @@ function Auto() {
   const navigate = useNavigate();
   const [passSeconds, setPassSeconds] = useState<number>(Number(localStorage.getItem(AUTO_PASS_SECONDS_KEY) ?? '0'));
   const [scoreSeconds, setScoreSeconds] = useState<number>(Number(localStorage.getItem(AUTO_SCORE_SECONDS_KEY) ?? '0'));
-  const initialCounts = useMemo(
-    () => parseAutoButtonTimes(localStorage.getItem(AUTO_BUTTON_TIMES_KEY)),
-    [],
-  );
   
   useEffect(() => {
     if (
@@ -123,14 +66,21 @@ function Auto() {
       navigate('/profile');
     }
   }, [navigate]);
-  const [humanPlayerCount, setHumanPlayerCount] = useState<number>(initialCounts[AUTO_HUMAN_PLAYER_COUNT_KEY] ?? 0);
-  const [depotCount, setDepotCount] = useState<number>(initialCounts[AUTO_DEPOT_COUNT_KEY] ?? 0);
-  const [topLeftCount, setTopLeftCount] = useState<number>(initialCounts[AUTO_TOP_LEFT_COUNT_KEY] ?? 0);
-  const [middleLeftCount, setMiddleLeftCount] = useState<number>(initialCounts[AUTO_MIDDLE_LEFT_COUNT_KEY] ?? 0);
-  const [bottomLeftCount, setBottomLeftCount] = useState<number>(initialCounts[AUTO_BOTTOM_LEFT_COUNT_KEY] ?? 0);
-  const [topRightCount, setTopRightCount] = useState<number>(initialCounts[AUTO_TOP_RIGHT_COUNT_KEY] ?? 0);
-  const [middleRightCount, setMiddleRightCount] = useState<number>(initialCounts[AUTO_MIDDLE_RIGHT_COUNT_KEY] ?? 0);
-  const [bottomRightCount, setBottomRightCount] = useState<number>(initialCounts[AUTO_BOTTOM_RIGHT_COUNT_KEY] ?? 0);
+  useEffect(() => {
+    const normalized = normalizeAutoButtonTimes(localStorage.getItem(AUTO_BUTTON_TIMES_KEY));
+    const existing = localStorage.getItem(AUTO_BUTTON_TIMES_KEY) ?? '';
+    if (normalized !== existing) {
+      localStorage.setItem(AUTO_BUTTON_TIMES_KEY, normalized);
+    }
+  }, []);
+  const [humanPlayerCount, setHumanPlayerCount] = useState<number>(readAutoCount(AUTO_HUMAN_PLAYER_COUNT_KEY));
+  const [depotCount, setDepotCount] = useState<number>(readAutoCount(AUTO_DEPOT_COUNT_KEY));
+  const [topLeftCount, setTopLeftCount] = useState<number>(readAutoCount(AUTO_TOP_LEFT_COUNT_KEY));
+  const [middleLeftCount, setMiddleLeftCount] = useState<number>(readAutoCount(AUTO_MIDDLE_LEFT_COUNT_KEY));
+  const [bottomLeftCount, setBottomLeftCount] = useState<number>(readAutoCount(AUTO_BOTTOM_LEFT_COUNT_KEY));
+  const [topRightCount, setTopRightCount] = useState<number>(readAutoCount(AUTO_TOP_RIGHT_COUNT_KEY));
+  const [middleRightCount, setMiddleRightCount] = useState<number>(readAutoCount(AUTO_MIDDLE_RIGHT_COUNT_KEY));
+  const [bottomRightCount, setBottomRightCount] = useState<number>(readAutoCount(AUTO_BOTTOM_RIGHT_COUNT_KEY));
   const [isPassActive, setIsPassActive] = useState<boolean>(false);
   const [isScoreActive, setIsScoreActive] = useState<boolean>(false);
 
@@ -139,45 +89,14 @@ function Auto() {
       navigate('/teleopv2', { replace: true });
     }
   }, [navigate]);
-
-  useEffect(() => {
-    const raw = localStorage.getItem(AUTO_BUTTON_TIMES_KEY);
-    if (!raw || raw.trim().length === 0) {
-      const legacyCounts = readLegacyAutoCounts();
-      const hasLegacy = Object.values(legacyCounts).some((value) => value > 0);
-      const nextCounts = hasLegacy ? legacyCounts : initialCounts;
-      const orderedKeys = getOrderedAutoKeys(nextCounts, { raw });
-      localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(nextCounts, orderedKeys));
-      if (hasLegacy) {
-        setHumanPlayerCount(legacyCounts[AUTO_HUMAN_PLAYER_COUNT_KEY] ?? 0);
-        setDepotCount(legacyCounts[AUTO_DEPOT_COUNT_KEY] ?? 0);
-        setTopLeftCount(legacyCounts[AUTO_TOP_LEFT_COUNT_KEY] ?? 0);
-        setMiddleLeftCount(legacyCounts[AUTO_MIDDLE_LEFT_COUNT_KEY] ?? 0);
-        setBottomLeftCount(legacyCounts[AUTO_BOTTOM_LEFT_COUNT_KEY] ?? 0);
-        setTopRightCount(legacyCounts[AUTO_TOP_RIGHT_COUNT_KEY] ?? 0);
-        setMiddleRightCount(legacyCounts[AUTO_MIDDLE_RIGHT_COUNT_KEY] ?? 0);
-        setBottomRightCount(legacyCounts[AUTO_BOTTOM_RIGHT_COUNT_KEY] ?? 0);
-        AUTO_COUNT_KEYS.forEach((key) => localStorage.removeItem(key));
-      }
-    }
-  }, [initialCounts]);
-
-  const writeAutoButtonTimes = (
-    overrides: Partial<Record<string, number>>,
-    firstClickKey?: string,
+  const incrementAutoCount = (
+    key: string,
+    setter: Dispatch<SetStateAction<number>>,
   ) => {
-    const counts: Record<string, number> = {
-      [AUTO_HUMAN_PLAYER_COUNT_KEY]: overrides[AUTO_HUMAN_PLAYER_COUNT_KEY] ?? humanPlayerCount,
-      [AUTO_DEPOT_COUNT_KEY]: overrides[AUTO_DEPOT_COUNT_KEY] ?? depotCount,
-      [AUTO_TOP_LEFT_COUNT_KEY]: overrides[AUTO_TOP_LEFT_COUNT_KEY] ?? topLeftCount,
-      [AUTO_MIDDLE_LEFT_COUNT_KEY]: overrides[AUTO_MIDDLE_LEFT_COUNT_KEY] ?? middleLeftCount,
-      [AUTO_BOTTOM_LEFT_COUNT_KEY]: overrides[AUTO_BOTTOM_LEFT_COUNT_KEY] ?? bottomLeftCount,
-      [AUTO_TOP_RIGHT_COUNT_KEY]: overrides[AUTO_TOP_RIGHT_COUNT_KEY] ?? topRightCount,
-      [AUTO_MIDDLE_RIGHT_COUNT_KEY]: overrides[AUTO_MIDDLE_RIGHT_COUNT_KEY] ?? middleRightCount,
-      [AUTO_BOTTOM_RIGHT_COUNT_KEY]: overrides[AUTO_BOTTOM_RIGHT_COUNT_KEY] ?? bottomRightCount,
-    };
-    const orderedKeys = getOrderedAutoKeys(counts, { firstClickKey });
-    localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(counts, orderedKeys));
+    const next = readAutoCount(key) + 1;
+    localStorage.setItem(key, String(next));
+    appendAutoButtonTime(key);
+    setter(next);
   };
 
   useEffect(() => {
@@ -235,34 +154,16 @@ function Auto() {
     localStorage.setItem(AUTO_CLIMB_SELECTION_KEY, position);
   };
   const handleHumanPlayer = () => {
-    setHumanPlayerCount((prev) => {
-      const next = prev + 1;
-      writeAutoButtonTimes(
-        { [AUTO_HUMAN_PLAYER_COUNT_KEY]: next },
-        prev === 0 ? AUTO_HUMAN_PLAYER_COUNT_KEY : undefined,
-      );
-      return next;
-    });
+    incrementAutoCount(AUTO_HUMAN_PLAYER_COUNT_KEY, setHumanPlayerCount);
   };
   const handleDepot = () => {
-    setDepotCount((prev) => {
-      const next = prev + 1;
-      writeAutoButtonTimes(
-        { [AUTO_DEPOT_COUNT_KEY]: next },
-        prev === 0 ? AUTO_DEPOT_COUNT_KEY : undefined,
-      );
-      return next;
-    });
+    incrementAutoCount(AUTO_DEPOT_COUNT_KEY, setDepotCount);
   };
   const incrementCount = (
     setter: Dispatch<SetStateAction<number>>,
     key: string,
   ) => {
-    setter((prev) => {
-      const next = prev + 1;
-      writeAutoButtonTimes({ [key]: next }, prev === 0 ? key : undefined);
-      return next;
-    });
+    incrementAutoCount(key, setter);
   };
 
     return (

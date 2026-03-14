@@ -165,9 +165,8 @@ function Submit() {
       }
     })();
     const rawAutoButtonTimes = localStorage.getItem('auto_button_times') ?? '';
-    const autoCountKeys = [
+    const autoButtonKeys = [
       'auto_human_player_count',
-      'auto_depot_count',
       'auto_top_left_count',
       'auto_middle_left_count',
       'auto_bottom_left_count',
@@ -175,25 +174,11 @@ function Submit() {
       'auto_middle_right_count',
       'auto_bottom_right_count',
     ];
-    const parsedAutoCounts: Record<string, number> = Object.fromEntries(
-      autoCountKeys.map((key) => [key, 0]),
-    );
-    if (rawAutoButtonTimes.trim().length > 0) {
-      rawAutoButtonTimes.split('\n').forEach((line) => {
-        const [key, value] = line.split('\t');
-        if (!key || !(key in parsedAutoCounts)) return;
-        const parsed = Number(value);
-        parsedAutoCounts[key] = Number.isFinite(parsed) ? parsed : 0;
-      });
-    } else {
-      autoCountKeys.forEach((key) => {
-        parsedAutoCounts[key] = Number(localStorage.getItem(key) ?? '0');
-      });
-    }
-    const autoButtonTimesText =
-      rawAutoButtonTimes.trim().length > 0
-        ? rawAutoButtonTimes
-        : autoCountKeys.map((key) => `${key}\t${parsedAutoCounts[key] ?? 0}`).join('\n');
+    const autoButtonTimesText = rawAutoButtonTimes
+      .split('\n')
+      .map((line) => line.split('\t')[0]?.trim())
+      .filter((key): key is string => Boolean(key) && autoButtonKeys.includes(key))
+      .join('\n');
     const fallbackHubState = localStorage.getItem('teleop_hub_state') ?? localStorage.getItem('teleopv2_intake_state') ?? 'Off';
     const teleopTrenchRaw = localStorage.getItem('teleop_trench_count');
     const teleopBumpRaw = localStorage.getItem('teleop_bump_count');
@@ -247,14 +232,6 @@ function Submit() {
       auto_pass_seconds: Number(localStorage.getItem('auto_pass_seconds') ?? '0'),
       auto_score_seconds: Number(localStorage.getItem('auto_score_seconds') ?? '0'),
       auto_button_times: autoButtonTimesText,
-      auto_human_player_count: parsedAutoCounts.auto_human_player_count ?? 0,
-      auto_depot_count: parsedAutoCounts.auto_depot_count ?? 0,
-      auto_top_left_count: parsedAutoCounts.auto_top_left_count ?? 0,
-      auto_middle_left_count: parsedAutoCounts.auto_middle_left_count ?? 0,
-      auto_bottom_left_count: parsedAutoCounts.auto_bottom_left_count ?? 0,
-      auto_top_right_count: parsedAutoCounts.auto_top_right_count ?? 0,
-      auto_middle_right_count: parsedAutoCounts.auto_middle_right_count ?? 0,
-      auto_bottom_right_count: parsedAutoCounts.auto_bottom_right_count ?? 0,
       hub_on: (localStorage.getItem('teleop_checked') ?? localStorage.getItem('teleopv2_checked') ?? 'false') === 'true',
       pass_or_score: passOrScoreHistory.length > 0 ? passOrScoreHistory.join(' | ') : (localStorage.getItem('teleop_pass_or_score') ?? 'Score'),
       trench_count: Number(teleopTrenchRaw ?? '0') + v2NonIntakeTrenchCount + v2IntakeTrenchCount,
