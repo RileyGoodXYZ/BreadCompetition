@@ -18,6 +18,7 @@ const AUTO_TOP_RIGHT_COUNT_KEY = 'auto_top_right_count';
 const AUTO_MIDDLE_RIGHT_COUNT_KEY = 'auto_middle_right_count';
 const AUTO_BOTTOM_RIGHT_COUNT_KEY = 'auto_bottom_right_count';
 const AUTO_BUTTON_TIMES_KEY = 'auto_button_times';
+const AUTO_BUTTON_ORDER_KEY = 'auto_button_order';
 const AUTO_COUNT_KEYS = [
   AUTO_HUMAN_PLAYER_COUNT_KEY,
   AUTO_DEPOT_COUNT_KEY,
@@ -47,8 +48,63 @@ const parseAutoButtonTimes = (raw: string | null): Record<string, number> => {
   return counts;
 };
 
-const formatAutoButtonTimes = (counts: Record<string, number>): string =>
-  AUTO_COUNT_KEYS.map((key) => `${key}\t${counts[key] ?? 0}`).join('\n');
+const parseAutoButtonOrder = (raw: string | null): string[] => {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((value): value is string => typeof value === 'string');
+  } catch {
+    return [];
+  }
+};
+
+const deriveOrderFromAutoButtonTimes = (raw: string | null): string[] => {
+  if (!raw) return [];
+  const ordered: string[] = [];
+  raw.split('\n').forEach((line) => {
+    const [key] = line.split('\t');
+    if (!key || !AUTO_COUNT_KEYS.includes(key)) return;
+    if (!ordered.includes(key)) {
+      ordered.push(key);
+    }
+  });
+  return ordered;
+};
+
+const getOrderedAutoKeys = (fallbackRaw?: string | null): string[] => {
+  const storedOrder = parseAutoButtonOrder(localStorage.getItem(AUTO_BUTTON_ORDER_KEY));
+  const baseOrder =
+    storedOrder.length > 0
+      ? storedOrder
+      : deriveOrderFromAutoButtonTimes(
+          fallbackRaw ?? localStorage.getItem(AUTO_BUTTON_TIMES_KEY),
+        );
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  baseOrder.forEach((key) => {
+    if (!AUTO_COUNT_KEYS.includes(key) || seen.has(key)) return;
+    seen.add(key);
+    ordered.push(key);
+  });
+  AUTO_COUNT_KEYS.forEach((key) => {
+    if (seen.has(key)) return;
+    seen.add(key);
+    ordered.push(key);
+  });
+  return ordered;
+};
+
+const recordAutoButtonOrder = (key: string, prevCount: number) => {
+  if (prevCount > 0) return;
+  const currentOrder = parseAutoButtonOrder(localStorage.getItem(AUTO_BUTTON_ORDER_KEY));
+  if (currentOrder.includes(key)) return;
+  currentOrder.push(key);
+  localStorage.setItem(AUTO_BUTTON_ORDER_KEY, JSON.stringify(currentOrder));
+};
+
+const formatAutoButtonTimes = (counts: Record<string, number>, order: string[]): string =>
+  order.map((key) => `${key}\t${counts[key] ?? 0}`).join('\n');
 
 const readLegacyAutoCounts = (): Record<string, number> => ({
   [AUTO_HUMAN_PLAYER_COUNT_KEY]: Number(localStorage.getItem(AUTO_HUMAN_PLAYER_COUNT_KEY) ?? '0'),
@@ -105,7 +161,8 @@ function Auto() {
       const legacyCounts = readLegacyAutoCounts();
       const hasLegacy = Object.values(legacyCounts).some((value) => value > 0);
       const nextCounts = hasLegacy ? legacyCounts : initialCounts;
-      localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(nextCounts));
+      const orderedKeys = getOrderedAutoKeys(raw);
+      localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(nextCounts, orderedKeys));
       if (hasLegacy) {
         setHumanPlayerCount(legacyCounts[AUTO_HUMAN_PLAYER_COUNT_KEY] ?? 0);
         setDepotCount(legacyCounts[AUTO_DEPOT_COUNT_KEY] ?? 0);
@@ -131,7 +188,8 @@ function Auto() {
       [AUTO_MIDDLE_RIGHT_COUNT_KEY]: overrides[AUTO_MIDDLE_RIGHT_COUNT_KEY] ?? middleRightCount,
       [AUTO_BOTTOM_RIGHT_COUNT_KEY]: overrides[AUTO_BOTTOM_RIGHT_COUNT_KEY] ?? bottomRightCount,
     };
-    localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(counts));
+    const orderedKeys = getOrderedAutoKeys();
+    localStorage.setItem(AUTO_BUTTON_TIMES_KEY, formatAutoButtonTimes(counts, orderedKeys));
   };
 
   useEffect(() => {
@@ -191,6 +249,7 @@ function Auto() {
   const handleHumanPlayer = () => {
     setHumanPlayerCount((prev) => {
       const next = prev + 1;
+      recordAutoButtonOrder(AUTO_HUMAN_PLAYER_COUNT_KEY, prev);
       writeAutoButtonTimes({ [AUTO_HUMAN_PLAYER_COUNT_KEY]: next });
       return next;
     });
@@ -198,6 +257,7 @@ function Auto() {
   const handleDepot = () => {
     setDepotCount((prev) => {
       const next = prev + 1;
+      recordAutoButtonOrder(AUTO_DEPOT_COUNT_KEY, prev);
       writeAutoButtonTimes({ [AUTO_DEPOT_COUNT_KEY]: next });
       return next;
     });
@@ -208,6 +268,7 @@ function Auto() {
   ) => {
     setter((prev) => {
       const next = prev + 1;
+      recordAutoButtonOrder(key, prev);
       writeAutoButtonTimes({ [key]: next });
       return next;
     });
