@@ -27,6 +27,7 @@ function Submit() {
 
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
+  const [backupMessage, setBackupMessage] = useState<string>('');
   const [selectedReview, setSelectedReview] = useState<string>(() => parseStoredReview() ?? getDefaultReview());
   
   useEffect(() => {
@@ -114,16 +115,7 @@ function Submit() {
     keysToClear.forEach((key) => localStorage.removeItem(key));
   };
 
-  const handleSubmit = async () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const tableName = import.meta.env.VITE_SUPABASE_TABLE ?? 'scouting_submissions';
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      setSubmitMessage('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
-      return;
-    }
-
+  const buildPayload = () => {
     const rawButtonTimes = localStorage.getItem('teleop_button_times') ?? '{}';
     const buttonTimes = (() => {
       try {
@@ -215,9 +207,9 @@ function Submit() {
         ? 'Center of Tower'
         : storedClimbType === 'Side'
           ? 'Side of Tower'
-          : '';
+        : '';
     const reviewText = selectedReview;
-    const payload = {
+    return {
       scout_name: localStorage.getItem('profile_scout_name') ?? '',
       session_type: localStorage.getItem('profile_session_type') ?? '',
       is_signed_in: localStorage.getItem('profile_is_signed_in') === 'true',
@@ -276,6 +268,30 @@ function Submit() {
       shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
       buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
     };
+  };
+
+  const handleBackupSubmit = async () => {
+    try {
+      const payload = buildPayload();
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      setBackupMessage('Backup copied to clipboard.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to copy backup.';
+      setBackupMessage(`Backup failed: ${message}`);
+    }
+  };
+
+  const handleSubmit = async () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const tableName = import.meta.env.VITE_SUPABASE_TABLE ?? 'scouting_submissions';
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setSubmitMessage('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
+      return;
+    }
+
+    const payload = buildPayload();
 
     setSubmitMessage('Submitting...');
     try {
@@ -318,6 +334,8 @@ function Submit() {
           <button className="badTeleopBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem', opacity: selectedReview === 'Bad Teleop' ? 0.6 : 1 }} onClick={() => toggleReview('Bad Teleop')}>Bad Teleop</button>
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleSubmit}>Submit</button>
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
+        <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleBackupSubmit}>Backup Submit</button>
+        {backupMessage ? <p style={{ margin: 0 }}>{backupMessage}</p> : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Back</button>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Prematch')}>Next</button>
