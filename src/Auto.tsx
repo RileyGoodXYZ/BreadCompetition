@@ -148,7 +148,6 @@ function Auto() {
     }
     setIsScoreActive((prev) => !prev);
   };
-
   const handleClimb = (position: string) => {
     setClimbSelection(position);
     localStorage.setItem(AUTO_CLIMB_SELECTION_KEY, position);
