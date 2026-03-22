@@ -28,6 +28,7 @@ function Submit() {
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
   const [backupMessage, setBackupMessage] = useState<string>('');
+  const [backupPayload, setBackupPayload] = useState<string>('');
   const [selectedReview, setSelectedReview] = useState<string>(() => parseStoredReview() ?? getDefaultReview());
   
   useEffect(() => {
@@ -87,6 +88,8 @@ function Submit() {
       'teleopv2_bump_count',
       'intake_teleopv2_bump_count',
       'teleopv2_button_times',
+      'teleopv2_intake_on_ms',
+      'teleopv2_intake_off_ms',
       'teleopv2_miss_count',
       'intake_teleopv2_miss_count',
       'intake_pass_neutral_zone',
@@ -234,6 +237,8 @@ function Submit() {
       teleop_score_time: Number(localStorage.getItem('teleop_score_time') ?? '0'),
       teleopv2_checked: localStorage.getItem('teleopv2_checked') === 'true',
       teleopv2_intake_state: localStorage.getItem('teleopv2_intake_state') ?? '',
+      teleopv2_intake_on_ms: Number(localStorage.getItem('teleopv2_intake_on_ms') ?? '0'),
+      teleopv2_intake_off_ms: Number(localStorage.getItem('teleopv2_intake_off_ms') ?? '0'),
       teleopv3_score_count: Number(localStorage.getItem('score_count') ?? '0'),
       teleopv3_pass_count: Number(localStorage.getItem('pass_count') ?? '0'),
       teleopv3_hoard_count: Number(localStorage.getItem('hoard_count') ?? '0'),
@@ -273,7 +278,9 @@ function Submit() {
   const handleBackupSubmit = async () => {
     try {
       const payload = buildPayload();
-      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      const formattedPayload = JSON.stringify(payload, null, 2);
+      setBackupPayload(formattedPayload);
+      await navigator.clipboard.writeText(formattedPayload);
       resetScoutingData();
       const nextDefault = getDefaultReview();
       setSelectedReview(nextDefault);
@@ -340,6 +347,12 @@ function Submit() {
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleBackupSubmit}>Backup Submit</button>
         {backupMessage ? <p style={{ margin: 0 }}>{backupMessage}</p> : null}
+        {backupPayload ? (
+          <div className="backupPreview">
+            <h3>Backup Preview</h3>
+            <pre>{backupPayload}</pre>
+          </div>
+        ) : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Back</button>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Prematch')}>Next</button>

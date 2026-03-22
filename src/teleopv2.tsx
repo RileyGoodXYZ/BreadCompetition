@@ -4,8 +4,17 @@ import './teleopv2.css';
 import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
 export default function TeleopV1() {
-   // Timing logic for toggle
-  const toggleStartTimeRef = useRef<number | null>(null);
+  // Timing logic for intake toggle (store ON vs OFF separately)
+  const [intakeOnMs, setIntakeOnMs] = useState<number>(
+    () => Number(localStorage.getItem('teleopv2_intake_on_ms') ?? '0')
+  );
+  const [intakeOffMs, setIntakeOffMs] = useState<number>(
+    () => Number(localStorage.getItem('teleopv2_intake_off_ms') ?? '0')
+  );
+  const intakeStartRef = useRef<number | null>(null);
+  const intakeAnimationFrameRef = useRef<number | null>(null);
+  const [intakeLiveMs, setIntakeLiveMs] = useState<number | null>(null);
+  const [intakeLiveState, setIntakeLiveState] = useState<'on' | 'off' | null>(null);
   const getPrefixedKey = (baseKey: string, intakeOn: boolean) =>
     intakeOn ? `intake_${baseKey}` : baseKey;
   const readCount = (key: string) => Number(localStorage.getItem(key) ?? '0');
@@ -57,6 +66,11 @@ export default function TeleopV1() {
     width: '100%',
   });
   const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
+  const getDisplayedIntakeSeconds = () => {
+    const runningMs = intakeStartRef.current !== null ? (intakeLiveMs ?? 0) : 0;
+    const baseMs = intakeLiveState === 'on' ? intakeOnMs : intakeOffMs;
+    return formatSeconds(baseMs + runningMs);
+  };
   const getCurrentButtonKey = (buttonId: TimedButtonId) => getPrefixedKey(buttonId, checked);
   const getStoredMsForButton = (buttonId: TimedButtonId) =>
     Number(buttonTimes[getCurrentButtonKey(buttonId)] ?? 0);
@@ -74,10 +88,53 @@ export default function TeleopV1() {
   const currentTrenchCount = checked ? intakeTrenchCount : trenchCount;
   const currentBumpCount = checked ? intakeBumpCount : bumpCount;
 
-  useEffect(() => () => {
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
+  const stopIntakeTimer = () => {
+    if (intakeStartRef.current === null) return;
+    const elapsed = Math.round(performance.now() - intakeStartRef.current);
+    if (intakeLiveState === 'on') {
+      setIntakeOnMs((prev) => {
+        const next = prev + elapsed;
+        localStorage.setItem('teleopv2_intake_on_ms', String(next));
+        return next;
+      });
+    } else if (intakeLiveState === 'off') {
+      setIntakeOffMs((prev) => {
+        const next = prev + elapsed;
+        localStorage.setItem('teleopv2_intake_off_ms', String(next));
+        return next;
+      });
     }
+    if (intakeAnimationFrameRef.current !== null) {
+      cancelAnimationFrame(intakeAnimationFrameRef.current);
+      intakeAnimationFrameRef.current = null;
+    }
+    setIntakeLiveMs(null);
+    setIntakeLiveState(null);
+    intakeStartRef.current = null;
+  };
+
+  const startIntakeTimer = (state: 'on' | 'off') => {
+    if (intakeStartRef.current !== null) return;
+    intakeStartRef.current = performance.now();
+    setIntakeLiveState(state);
+    setIntakeLiveMs(0);
+    const tick = () => {
+      if (intakeStartRef.current !== null) {
+        setIntakeLiveMs(Math.round(performance.now() - intakeStartRef.current));
+        intakeAnimationFrameRef.current = requestAnimationFrame(tick);
+      }
+    };
+    intakeAnimationFrameRef.current = requestAnimationFrame(tick);
+  };
+
+  useEffect(() => {
+    startIntakeTimer(checked ? 'on' : 'off');
+    return () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      stopIntakeTimer();
+    };
   }, []);
 
   const stopTimer = (buttonId: TimedButtonId) => {
@@ -132,6 +189,7 @@ export default function TeleopV1() {
       stopTimer(activeButton);
       setActiveButton(null);
     }
+    stopIntakeTimer();
   };
 
   const handleBack = () => {
@@ -221,6 +279,9 @@ export default function TeleopV1() {
             if (activeButton !== null) {
               stopTimer(activeButton);
             }
+
+            // Stop intake timer before switching states so time doesn't bleed between buckets
+            stopIntakeTimer();
             
             const isChecked = !checked;
             setChecked(isChecked);
@@ -234,20 +295,10 @@ export default function TeleopV1() {
               startTimer(activeButton);
             }
             
-            if (isChecked) {
-              // Toggle turned ON, start timer
-              toggleStartTimeRef.current = performance.now();
-            } else {
-              // Toggle turned OFF, stop timer and log
-              if (toggleStartTimeRef.current !== null) {
-                const elapsed = Math.round(performance.now() - toggleStartTimeRef.current);
-                console.log(`Toggle ON duration: ${elapsed} ms`);
-                toggleStartTimeRef.current = null;
-              }
-            }
+            startIntakeTimer(isChecked ? 'on' : 'off');
           }}
         >
-          Intake: {intakeState}
+          Intake: {intakeState} ({getDisplayedIntakeSeconds()}s)
         </button>
       </div>
 
@@ -303,7 +354,7 @@ export default function TeleopV1() {
               })}
             >
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : 'Hoard'}</span>
+                <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : 'Bulldoze'}</span>
               </span>
             </button>
           </div>
