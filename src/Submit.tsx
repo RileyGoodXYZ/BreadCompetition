@@ -28,7 +28,6 @@ function Submit() {
   const navigate = useNavigate();
   const [submitMessage, setSubmitMessage] = useState<string>('');
   const [backupMessage, setBackupMessage] = useState<string>('');
-  const [backupPayload, setBackupPayload] = useState<string>('');
   const [selectedReview, setSelectedReview] = useState<string>(() => parseStoredReview() ?? getDefaultReview());
   
   useEffect(() => {
@@ -279,7 +278,6 @@ function Submit() {
     try {
       const payload = buildPayload();
       const formattedPayload = JSON.stringify(payload, null, 2);
-      setBackupPayload(formattedPayload);
       await navigator.clipboard.writeText(formattedPayload);
       resetScoutingData();
       const nextDefault = getDefaultReview();
@@ -347,12 +345,6 @@ function Submit() {
         {submitMessage ? <p style={{ margin: 0 }}>{submitMessage}</p> : null}
         <button className="submitBtn" style={{ width: '100%', height: '60px', fontSize: '1.1rem' }} onClick={handleBackupSubmit}>Backup Submit</button>
         {backupMessage ? <p style={{ margin: 0 }}>{backupMessage}</p> : null}
-        {backupPayload ? (
-          <div className="backupPreview">
-            <h3>Backup Preview</h3>
-            <pre>{backupPayload}</pre>
-          </div>
-        ) : null}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '3rem', flexWrap: 'wrap', width: '100%' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Endgame')}>Back</button>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/Prematch')}>Next</button>
