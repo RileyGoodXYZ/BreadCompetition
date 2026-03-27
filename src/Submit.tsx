@@ -1,7 +1,7 @@
 import './Submit.css'
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { currentScoutCanUseAuto, isPracticeSession } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
 function Submit() {
   const getDefaultReview = (): string =>
@@ -96,18 +96,88 @@ function Submit() {
   };
 
   const buildPayload = () => {
-    const rawButtonTimes = localStorage.getItem('teleop_button_times') ?? '{}';
-    const buttonTimes = (() => {
-      try {
-        return JSON.parse(rawButtonTimes) as Record<string, number>;
-      } catch {
-        return {};
-      }
-    })();
     const rawButtonTimesV2 = localStorage.getItem('teleopv2_button_times') ?? '{}';
     const buttonTimesV2 = (() => {
       try {
         return JSON.parse(rawButtonTimesV2) as Record<string, number>;
+      } catch {
+        return {};
+      }
+    })();
+    const rawAutoButtonTimes = localStorage.getItem('auto_button_times') ?? '';
+    const autoButtonKeys = [
+      'auto_human_player_count',
+      'auto_depot_count',
+      'auto_top_left_count',
+      'auto_middle_left_count',
+      'auto_bottom_left_count',
+      'auto_top_right_count',
+      'auto_middle_right_count',
+      'auto_bottom_right_count',
+    ];
+    const autoButtonTimesText = rawAutoButtonTimes
+      .split('\n')
+      .map((line) => line.split('\t')[0]?.trim())
+      .filter((key): key is string => Boolean(key) && autoButtonKeys.includes(key))
+      .join('\n');
+    const v2Score = Number(buttonTimesV2.score ?? 0);
+    const v2Pass = Number(buttonTimesV2.pass ?? 0);
+    const v2Defense = Number(buttonTimesV2.defense ?? 0);
+    const v2Herd = Number(buttonTimesV2.herd ?? 0);
+    const storedEndgameStatus = localStorage.getItem('endgame_climb_status') ?? 'None';
+    const endgameResult =
+      storedEndgameStatus === 'Success'
+        ? 'Successful'
+        : storedEndgameStatus === 'Failed'
+          ? 'Failed'
+          : 'Not Attempted';
+    const endgameLevel = localStorage.getItem('endgame_climb_level') ?? '';
+    const storedClimbType = localStorage.getItem('endgame_climb_type') ?? '';
+    const endgameTowerPosition =
+      storedClimbType === 'Center'
+        ? 'Center of Tower'
+        : storedClimbType === 'Side'
+          ? 'Side of Tower'
+        : '';
+    const reviewText = selectedReview;
+    const basePayload = {
+      scout_name: localStorage.getItem('profile_scout_name') ?? '',
+      session_type: localStorage.getItem('profile_session_type') ?? '',
+      is_signed_in: localStorage.getItem('profile_is_signed_in') === 'true',
+      match_num: localStorage.getItem('prematch_match_num') ?? '',
+      team_num: localStorage.getItem('prematch_team_num') ?? '',
+      alliance: localStorage.getItem('prematch_alliance') ?? 'red',
+      orientation: localStorage.getItem('prematch_orient') ?? '',
+      position: localStorage.getItem('prematch_position') ?? '',
+      review: reviewText,
+      auto_climb_selection: localStorage.getItem('auto_climb_selection') ?? '',
+      auto_pass_count: Number(localStorage.getItem('auto_pass_count') ?? '0'),
+      auto_score_count: Number(localStorage.getItem('auto_score_count') ?? '0'),
+      auto_pass_seconds: Number(localStorage.getItem('auto_pass_seconds') ?? '0'),
+      auto_score_seconds: Number(localStorage.getItem('auto_score_seconds') ?? '0'),
+      auto_button_times: autoButtonTimesText,
+      climb: localStorage.getItem('endgame_climb') ?? 'None',
+      endgame_result: endgameResult,
+      endgame_level: endgameLevel,
+      endgame_tower_position: endgameTowerPosition,
+      shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
+      buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
+    };
+
+    if (isTeleopV2Session()) {
+      return {
+        ...basePayload,
+        v2_score: v2Score,
+        v2_pass: v2Pass,
+        v2_defense: v2Defense,
+        v2_herd: v2Herd,
+      };
+    }
+
+    const rawButtonTimes = localStorage.getItem('teleop_button_times') ?? '{}';
+    const buttonTimes = (() => {
+      try {
+        return JSON.parse(rawButtonTimes) as Record<string, number>;
       } catch {
         return {};
       }
@@ -136,62 +206,13 @@ function Submit() {
         return [];
       }
     })();
-    const rawAutoButtonTimes = localStorage.getItem('auto_button_times') ?? '';
-    const autoButtonKeys = [
-      'auto_human_player_count',
-      'auto_depot_count',
-      'auto_top_left_count',
-      'auto_middle_left_count',
-      'auto_bottom_left_count',
-      'auto_top_right_count',
-      'auto_middle_right_count',
-      'auto_bottom_right_count',
-    ];
-    const autoButtonTimesText = rawAutoButtonTimes
-      .split('\n')
-      .map((line) => line.split('\t')[0]?.trim())
-      .filter((key): key is string => Boolean(key) && autoButtonKeys.includes(key))
-      .join('\n');
     const fallbackHubState = localStorage.getItem('teleop_hub_state') ?? 'Off';
     const teleopTrenchRaw = localStorage.getItem('teleop_trench_count');
     const teleopBumpRaw = localStorage.getItem('teleop_bump_count');
-    const v2Score = Number(buttonTimesV2.score ?? 0);
-    const v2Pass = Number(buttonTimesV2.pass ?? 0);
-    const v2Defense = Number(buttonTimesV2.defense ?? 0);
-    const v2Herd = Number(buttonTimesV2.herd ?? 0);
-    const storedEndgameStatus = localStorage.getItem('endgame_climb_status') ?? 'None';
-    const endgameResult =
-      storedEndgameStatus === 'Success'
-        ? 'Successful'
-        : storedEndgameStatus === 'Failed'
-          ? 'Failed'
-          : 'Not Attempted';
-    const endgameLevel = localStorage.getItem('endgame_climb_level') ?? '';
-    const storedClimbType = localStorage.getItem('endgame_climb_type') ?? '';
-    const endgameTowerPosition =
-      storedClimbType === 'Center'
-        ? 'Center of Tower'
-        : storedClimbType === 'Side'
-          ? 'Side of Tower'
-        : '';
-    const reviewText = selectedReview;
+
     return {
-      scout_name: localStorage.getItem('profile_scout_name') ?? '',
-      session_type: localStorage.getItem('profile_session_type') ?? '',
-      is_signed_in: localStorage.getItem('profile_is_signed_in') === 'true',
-      match_num: localStorage.getItem('prematch_match_num') ?? '',
-      team_num: localStorage.getItem('prematch_team_num') ?? '',
-      alliance: localStorage.getItem('prematch_alliance') ?? 'red',
-      orientation: localStorage.getItem('prematch_orient') ?? '',
-      position: localStorage.getItem('prematch_position') ?? '',
-      review: reviewText,
-      auto_climb_selection: localStorage.getItem('auto_climb_selection') ?? '',
-      auto_pass_count: Number(localStorage.getItem('auto_pass_count') ?? '0'),
-      auto_score_count: Number(localStorage.getItem('auto_score_count') ?? '0'),
-      auto_pass_seconds: Number(localStorage.getItem('auto_pass_seconds') ?? '0'),
-      auto_score_seconds: Number(localStorage.getItem('auto_score_seconds') ?? '0'),
-      auto_button_times: autoButtonTimesText,
-      hub_on: (localStorage.getItem('teleop_checked') ?? localStorage.getItem('teleopv2_checked') ?? 'false') === 'true',
+      ...basePayload,
+      hub_on: (localStorage.getItem('teleop_checked') ?? 'false') === 'true',
       pass_or_score: passOrScoreHistory.length > 0 ? passOrScoreHistory.join(' | ') : (localStorage.getItem('teleop_pass_or_score') ?? 'Score'),
       trench_count: Number(teleopTrenchRaw ?? '0'),
       bump_count: Number(teleopBumpRaw ?? '0'),
@@ -206,16 +227,6 @@ function Submit() {
       myAllianceBottomPassButton: Number(buttonTimes.myAllianceBottomPassButton ?? 0),
       topScoreButton: Number(buttonTimes.topScoreButton ?? 0),
       bottomScoreButton: Number(buttonTimes.bottomScoreButton ?? 0),
-      v2_score: v2Score,
-      v2_pass: v2Pass,
-      v2_defense: v2Defense,
-      v2_herd: v2Herd,
-      climb: localStorage.getItem('endgame_climb') ?? 'None',
-      endgame_result: endgameResult,
-      endgame_level: endgameLevel,
-      endgame_tower_position: endgameTowerPosition,
-      shoot_while_climb: localStorage.getItem('endgame_shoot_while_climb') === 'true',
-      buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
     };
   };
 
