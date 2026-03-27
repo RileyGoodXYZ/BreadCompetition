@@ -58,8 +58,9 @@ label {
 }
 
 .teleop-content {
-    width: 100%;
+    width: min(92vw, 900px);
     margin: 0 auto;
+    padding: 0 min(2vw, 12px);
     box-sizing: border-box;
 }
 

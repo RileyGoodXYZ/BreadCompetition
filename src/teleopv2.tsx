@@ -4,27 +4,6 @@ import './teleopv2.css';
 import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from './autoAccess';
 
 export default function TeleopV1() {
-  // Timing logic for intake toggle (store ON vs OFF separately)
-  const [intakeOnMs, setIntakeOnMs] = useState<number>(
-    () => Number(localStorage.getItem('teleopv2_intake_on_ms') ?? '0')
-  );
-  const [intakeOffMs, setIntakeOffMs] = useState<number>(
-    () => Number(localStorage.getItem('teleopv2_intake_off_ms') ?? '0')
-  );
-  const intakeStartRef = useRef<number | null>(null);
-  const intakeAnimationFrameRef = useRef<number | null>(null);
-  const [intakeLiveMs, setIntakeLiveMs] = useState<number | null>(null);
-  const [intakeLiveState, setIntakeLiveState] = useState<'on' | 'off' | null>(null);
-  const getPrefixedKey = (baseKey: string, intakeOn: boolean) =>
-    intakeOn ? `intake_${baseKey}` : baseKey;
-  const readCount = (key: string) => Number(localStorage.getItem(key) ?? '0');
-
-  const [checked, setChecked] = useState<boolean>(localStorage.getItem('teleopv2_checked') === 'true');
-  const [intakeState, setIntakeState] = useState<string>(localStorage.getItem('teleopv2_intake_state') ?? "Off");
-  const [bumpCount, setBumpCount] = useState<number>(readCount('teleopv2_bump_count'));
-  const [intakeBumpCount, setIntakeBumpCount] = useState<number>(readCount('intake_teleopv2_bump_count'));
-  const [trenchCount, setTrenchCount] = useState<number>(readCount('teleopv2_trench_count'));
-  const [intakeTrenchCount, setIntakeTrenchCount] = useState<number>(readCount('intake_teleopv2_trench_count'));
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -43,8 +22,8 @@ export default function TeleopV1() {
     }
   }, [navigate]);
 
-  // Timing logic for pass zone, hoard, and score buttons
-  type TimedButtonId = 'pass_neutral_zone' | 'pass_other_alliance_zone' | 'hoard' | 'score';
+  // Timing logic for timer buttons
+  type TimedButtonId = 'score' | 'pass' | 'defense' | 'herd';
   const [activeButton, setActiveButton] = useState<TimedButtonId | null>(null);
   const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>(() => {
     const raw = localStorage.getItem('teleopv2_button_times');
@@ -66,14 +45,8 @@ export default function TeleopV1() {
     width: '100%',
   });
   const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
-  const getDisplayedIntakeSeconds = () => {
-    const runningMs = intakeStartRef.current !== null ? (intakeLiveMs ?? 0) : 0;
-    const baseMs = intakeLiveState === 'on' ? intakeOnMs : intakeOffMs;
-    return formatSeconds(baseMs + runningMs);
-  };
-  const getCurrentButtonKey = (buttonId: TimedButtonId) => getPrefixedKey(buttonId, checked);
   const getStoredMsForButton = (buttonId: TimedButtonId) =>
-    Number(buttonTimes[getCurrentButtonKey(buttonId)] ?? 0);
+    Number(buttonTimes[buttonId] ?? 0);
   const getLiveMsForButton = (buttonId: TimedButtonId) =>
     activeButton === buttonId ? (liveElapsedMs ?? 0) : 0;
   const getDisplayedSecondsForButton = (buttonId: TimedButtonId) => {
@@ -85,67 +58,17 @@ export default function TeleopV1() {
     activeButton === buttonId
       ? `${Math.round(getLiveMsForButton(buttonId))}ms`
       : '';
-  const currentTrenchCount = checked ? intakeTrenchCount : trenchCount;
-  const currentBumpCount = checked ? intakeBumpCount : bumpCount;
 
-  const stopIntakeTimer = () => {
-    if (intakeStartRef.current === null) return;
-    const elapsed = Math.round(performance.now() - intakeStartRef.current);
-    if (intakeLiveState === 'on') {
-      setIntakeOnMs((prev) => {
-        const next = prev + elapsed;
-        localStorage.setItem('teleopv2_intake_on_ms', String(next));
-        return next;
-      });
-    } else if (intakeLiveState === 'off') {
-      setIntakeOffMs((prev) => {
-        const next = prev + elapsed;
-        localStorage.setItem('teleopv2_intake_off_ms', String(next));
-        return next;
-      });
-    }
-    if (intakeAnimationFrameRef.current !== null) {
-      cancelAnimationFrame(intakeAnimationFrameRef.current);
-      intakeAnimationFrameRef.current = null;
-    }
-    setIntakeLiveMs(null);
-    setIntakeLiveState(null);
-    intakeStartRef.current = null;
-  };
 
-  const startIntakeTimer = (state: 'on' | 'off') => {
-    if (intakeStartRef.current !== null) return;
-    intakeStartRef.current = performance.now();
-    setIntakeLiveState(state);
-    setIntakeLiveMs(0);
-    const tick = () => {
-      if (intakeStartRef.current !== null) {
-        setIntakeLiveMs(Math.round(performance.now() - intakeStartRef.current));
-        intakeAnimationFrameRef.current = requestAnimationFrame(tick);
-      }
-    };
-    intakeAnimationFrameRef.current = requestAnimationFrame(tick);
-  };
-
-  useEffect(() => {
-    startIntakeTimer(checked ? 'on' : 'off');
-    return () => {
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      stopIntakeTimer();
-    };
-  }, []);
 
   const stopTimer = (buttonId: TimedButtonId) => {
     if (startTimeRef.current === null) return;
     const elapsed = Math.round(performance.now() - startTimeRef.current);
     setButtonTimes((prev) => {
-      const storageKey = getPrefixedKey(buttonId, checked);
-      const accumulated = Number(prev[storageKey] ?? 0) + elapsed;
+      const accumulated = Number(prev[buttonId] ?? 0) + elapsed;
       const next = {
         ...prev,
-        [storageKey]: accumulated,
+        [buttonId]: accumulated,
       };
       localStorage.setItem('teleopv2_button_times', JSON.stringify(next));
       return next;
@@ -189,7 +112,6 @@ export default function TeleopV1() {
       stopTimer(activeButton);
       setActiveButton(null);
     }
-    stopIntakeTimer();
   };
 
   const handleBack = () => {
@@ -205,238 +127,89 @@ export default function TeleopV1() {
   return (
     <div className="mainContainer">
       <div className="topHeader">
-        <h1>TELEOP V2</h1>
+        <h1>Teleop</h1>
       </div>
-      <div className="teleop-block">
-      <div style={{ width: '100%', marginBottom: '1rem' }}>
-        {/* Good switch :( :wilted}
-        {/* <label
-          className="Label"
-          htmlFor="intakeMode"
-          style={{ margin: 0, fontSize: '1rem', marginRight: '0.5rem' }}
-        >
-          Intaking
-        </label>
-        <Switch.Root
-          checked={checked}
-          id="intakeMode"
-          onCheckedChange={(isChecked) => {
-            stopAnyRunningTimer();
-            setChecked(isChecked);
-            localStorage.setItem('teleopv2_checked', String(isChecked));
-            const nextIntakeState = isChecked ? "On" : "Off";
-            setIntakeState(nextIntakeState);
-            localStorage.setItem('teleopv2_intake_state', nextIntakeState);
-            if (isChecked) {
-              // Toggle turned ON, start timer
-              toggleStartTimeRef.current = performance.now();
-            } else {
-              // Toggle turned OFF, stop timer and log
-              if (toggleStartTimeRef.current !== null) {
-                const elapsed = Math.round(performance.now() - toggleStartTimeRef.current);
-                console.log(`Toggle ON duration: ${elapsed} ms`);
-                toggleStartTimeRef.current = null;
-              }
-            }
-          }}
-          style={{
-            width: '3rem',
-            height: '1.85rem',
-            backgroundColor: checked ? '#b2c2f6' : '#ccc',
-            borderRadius: '9999px',
-            position: 'relative',
-            outline: 'none',
-            padding: '0',
-            minHeight: '0',
-            border: 'none',
-            transition: 'background-color 100ms',
-          }}
-          aria-checked={checked}
-        >
-          <Switch.Thumb
-            style={{
-              display: 'block',
-              width: '1.5rem',
-              height: '1.5rem',
-              backgroundColor: 'white',
-              borderRadius: '50%',
-              transition: 'transform 100ms',
-              willChange: 'transform',
-              position: 'absolute',
-              top: '0.15rem',
-              left: checked ? '1.35rem' : '0.125rem',
-            }}
-          />
-        </Switch.Root>
-        <span style={{ minWidth: '2.5rem', textAlign: 'left' }}>{intakeState}</span> */}
-        {/* Intake toggle button (replaces switch) */}
-        <button
-          className="intake-toggle"
-          data-state={checked ? 'on' : 'off'}
-          id="intakeMode"
-          onClick={() => {
-            // If a timer is running, stop it and save the time
-            if (activeButton !== null) {
-              stopTimer(activeButton);
-            }
-
-            // Stop intake timer before switching states so time doesn't bleed between buckets
-            stopIntakeTimer();
-            
-            const isChecked = !checked;
-            setChecked(isChecked);
-            localStorage.setItem('teleopv2_checked', String(isChecked));
-            const nextIntakeState = isChecked ? "On" : "Off";
-            setIntakeState(nextIntakeState);
-            localStorage.setItem('teleopv2_intake_state', nextIntakeState);
-            
-            // Restart the timer with the new checked state so future time goes to the other category
-            if (activeButton !== null) {
-              startTimer(activeButton);
-            }
-            
-            startIntakeTimer(isChecked ? 'on' : 'off');
-          }}
-        >
-          Intake: {intakeState} ({getDisplayedIntakeSeconds()}s)
-        </button>
-      </div>
-
       <div className="teleop-content">
-        {/* Pass and Score Row */}
+        {/* Score and Pass Row */}
         <div style={{ display: 'flex', gap: 'clamp(8px, 2.5vw, 20px)', marginBottom: '10px', width: '100%', alignItems: 'stretch' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0', gap: '10px', minWidth: 0 }}>
-            <button
-              onClick={() => toggleTimedButton('pass_neutral_zone')}
-              title={`Total: ${getDisplayedSecondsForButton('pass_neutral_zone')}s`}
-              style={getTimedButtonStyle('pass_neutral_zone', {
-                width: '100%',
-                minWidth: 0,
-                height: '70px',
-                fontSize: '1rem',
-                background: '#b2c2f6',
-                color: '#2f1404',
-                textAlign: 'center',
-              })}
-            >
-              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_neutral_zone') ? `(${getTimerTextForButton('pass_neutral_zone')})` : 'Pass Neutral Zone'}</span>
-            </button>
-            <button
-              onClick={() => toggleTimedButton('pass_other_alliance_zone')}
-              title={`Total: ${getDisplayedSecondsForButton('pass_other_alliance_zone')}s`}
-              style={getTimedButtonStyle('pass_other_alliance_zone', {
-                width: '100%',
-                minWidth: 0,
-                height: '70px',
-                fontSize: '1rem',
-                background: '#b2c2f6',
-                color: '#2f1404',
-                textAlign: 'center',
-              })}
-            >
-              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass_other_alliance_zone') ? `(${getTimerTextForButton('pass_other_alliance_zone')})` : 'Pass Other Alliance'}</span>
-            </button>
-            <button
-              data-button-id="hoard"
-              onClick={() => toggleTimedButton('hoard')}
-              title={`Total: ${getDisplayedSecondsForButton('hoard')}s`}
-              style={getTimedButtonStyle('hoard', {
-                background: '#d7b3fb',
-                color: '#2f1404',
-                width: '100%',
-                minWidth: 0,
-                height: '70px',
-                fontSize: '1.1rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-              })}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('hoard') ? `(${getTimerTextForButton('hoard')})` : 'Bulldoze'}</span>
-              </span>
-            </button>
-          </div>
-          <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', justifyContent: 'stretch', minWidth: 0 }}>
-            <button
-              onClick={() => toggleTimedButton('score')}
-              title={`Total: ${getDisplayedSecondsForButton('score')}s`}
-              style={getTimedButtonStyle('score', {
-                width: '100%',
-                minWidth: 0,
-                minHeight: 'min(200px, 26vh)',
-                fontSize: '1.4rem',
-                background: '#f6e7b2',
-                color: '#2f1404',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-              })}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('score') ? `(${getTimerTextForButton('score')})` : 'Score'}</span>
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Trench and Bump Row */}
-        <div style={{ display: 'flex', gap: 'clamp(8px, 2.5vw, 20px)', marginBottom: '10px', width: '100%', maxWidth: 'min(600px, 92vw)' }}>
           <button
-            onClick={() => {
-              const isIntakeOn = checked;
-              const next = currentTrenchCount + 1;
-              if (isIntakeOn) {
-                setIntakeTrenchCount(next);
-              } else {
-                setTrenchCount(next);
-              }
-              localStorage.setItem(getPrefixedKey('teleopv2_trench_count', isIntakeOn), String(next));
-            }}
-            style={{
-              flex: 1,
-              height: "2.5rem",
-              backgroundColor: '#d7b3fb',
+            onClick={() => toggleTimedButton('score')}
+            title={`Total: ${getDisplayedSecondsForButton('score')}s`}
+            style={getTimedButtonStyle('score', {
+              width: '100%',
+              minWidth: 0,
+              minHeight: 'min(200px, 26vh)',
+              fontSize: '1.4rem',
+              background: '#b2c2f6',
+              color: 'black',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              whiteSpace: 'nowrap',
-              fontSize: '1rem',
-            }}
+              textAlign: 'center',
+            })}
           >
-            Trench: {currentTrenchCount}
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('score') ? `(${getTimerTextForButton('score')})` : 'Score'}</span>
+            </span>
           </button>
           <button
-            onClick={() => {
-              const isIntakeOn = checked;
-              const next = currentBumpCount + 1;
-              if (isIntakeOn) {
-                setIntakeBumpCount(next);
-              } else {
-                setBumpCount(next);
-              }
-              localStorage.setItem(getPrefixedKey('teleopv2_bump_count', isIntakeOn), String(next));
-            }}
-            style={{
-              flex: 1,
-              height: "2.5rem",
-              backgroundColor: '#d7b3fb',
+            onClick={() => toggleTimedButton('pass')}
+            title={`Total: ${getDisplayedSecondsForButton('pass')}s`}
+            style={getTimedButtonStyle('pass', {
+              width: '100%',
+              minWidth: 0,
+              minHeight: 'min(200px, 26vh)',
+              fontSize: '1.4rem',
+              background: '#b2c2f6',
+              color: 'black',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              whiteSpace: 'nowrap',
-              fontSize: '1rem',
-            }}
+              textAlign: 'center',
+            })}
           >
-            Bump: {currentBumpCount}
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('pass') ? `(${getTimerTextForButton('pass')})` : 'Pass'}</span>
+            </span>
+          </button>
+        </div>
+
+        {/* Defense and Herd Row */}
+        <div style={{ display: 'flex', gap: 'clamp(8px, 2.5vw, 20px)', marginBottom: '10px', width: '100%', alignItems: 'stretch' }}>
+          <button
+            onClick={() => toggleTimedButton('defense')}
+            title={`Total: ${getDisplayedSecondsForButton('defense')}s`}
+            style={getTimedButtonStyle('defense', {
+              width: '100%',
+              minWidth: 0,
+              height: '70px',
+              fontSize: '1rem',
+              background: '#e08fb9',
+              color: 'black',
+              textAlign: 'center',
+            })}
+          >
+            <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('defense') ? `(${getTimerTextForButton('defense')})` : 'Defense'}</span>
+          </button>
+          <button
+            onClick={() => toggleTimedButton('herd')}
+            title={`Total: ${getDisplayedSecondsForButton('herd')}s`}
+            style={getTimedButtonStyle('herd', {
+              width: '100%',
+              minWidth: 0,
+              height: '70px',
+              fontSize: '1rem',
+              background: '#e08fb9',
+              color: 'black',
+              textAlign: 'center',
+            })}
+          >
+            <span style={{ display: 'inline-block', width: 180, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getTimerTextForButton('herd') ? `(${getTimerTextForButton('herd')})` : 'Herd'}</span>
           </button>
         </div>
       </div>
-      </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap', width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '5rem', flexWrap: 'wrap', width: '100%' }}>
         <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={handleBack}>Back</button>
         <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={handleNext}>Next</button>
       </div>

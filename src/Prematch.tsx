@@ -128,7 +128,7 @@ function Prematch() {
             4
           </button>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '-180px', flexWrap: 'wrap', width: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '-180px', flexWrap: 'wrap', width: '100%', marginBottom:'50px' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/profile')}>Back</button>
           <button
             className="navBtns"
