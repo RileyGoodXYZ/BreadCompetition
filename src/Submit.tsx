@@ -1,7 +1,7 @@
 import './Submit.css'
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession } from './autoAccess';
 
 function Submit() {
   const getDefaultReview = (): string =>
@@ -164,69 +164,12 @@ function Submit() {
       buddy_climb: localStorage.getItem('endgame_buddy_climb') === 'true',
     };
 
-    if (isTeleopV2Session()) {
-      return {
-        ...basePayload,
-        v2_score: v2Score,
-        v2_pass: v2Pass,
-        v2_defense: v2Defense,
-        v2_herd: v2Herd,
-      };
-    }
-
-    const rawButtonTimes = localStorage.getItem('teleop_button_times') ?? '{}';
-    const buttonTimes = (() => {
-      try {
-        return JSON.parse(rawButtonTimes) as Record<string, number>;
-      } catch {
-        return {};
-      }
-    })();
-    const rawHubStateHistory = localStorage.getItem('teleop_hub_state_history') ?? '[]';
-    const hubStateHistory = (() => {
-      try {
-        const parsed = JSON.parse(rawHubStateHistory);
-        if (Array.isArray(parsed)) {
-          return parsed.filter((value): value is string => typeof value === 'string');
-        }
-        return [];
-      } catch {
-        return [];
-      }
-    })();
-    const rawPassOrScoreHistory = localStorage.getItem('teleop_pass_or_score_history') ?? '[]';
-    const passOrScoreHistory = (() => {
-      try {
-        const parsed = JSON.parse(rawPassOrScoreHistory);
-        if (Array.isArray(parsed)) {
-          return parsed.filter((value): value is string => typeof value === 'string');
-        }
-        return [];
-      } catch {
-        return [];
-      }
-    })();
-    const fallbackHubState = localStorage.getItem('teleop_hub_state') ?? 'Off';
-    const teleopTrenchRaw = localStorage.getItem('teleop_trench_count');
-    const teleopBumpRaw = localStorage.getItem('teleop_bump_count');
-
     return {
       ...basePayload,
-      hub_on: (localStorage.getItem('teleop_checked') ?? 'false') === 'true',
-      pass_or_score: passOrScoreHistory.length > 0 ? passOrScoreHistory.join(' | ') : (localStorage.getItem('teleop_pass_or_score') ?? 'Score'),
-      trench_count: Number(teleopTrenchRaw ?? '0'),
-      bump_count: Number(teleopBumpRaw ?? '0'),
-      hub_state: hubStateHistory.length > 0 ? hubStateHistory.join(' | ') : fallbackHubState,
-      teleop_pass_time: Number(localStorage.getItem('teleop_pass_time') ?? '0'),
-      teleop_score_time: Number(localStorage.getItem('teleop_score_time') ?? '0'),
-      oppAllianceTopPassButton: Number(buttonTimes.oppAllianceTopPassButton ?? 0),
-      oppAllianceBottomPassButton: Number(buttonTimes.oppAllianceBottomPassButton ?? 0),
-      neutralTopPassButton: Number(buttonTimes.neutralTopPassButton ?? 0),
-      neutralBottomPassButton: Number(buttonTimes.neutralBottomPassButton ?? 0),
-      myAllianceTopPassButton: Number(buttonTimes.myAllianceTopPassButton ?? 0),
-      myAllianceBottomPassButton: Number(buttonTimes.myAllianceBottomPassButton ?? 0),
-      topScoreButton: Number(buttonTimes.topScoreButton ?? 0),
-      bottomScoreButton: Number(buttonTimes.bottomScoreButton ?? 0),
+      v2_score: v2Score,
+      v2_pass: v2Pass,
+      v2_defense: v2Defense,
+      v2_herd: v2Herd,
     };
   };
 
