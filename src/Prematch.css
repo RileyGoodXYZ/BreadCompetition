@@ -138,6 +138,28 @@
     translate: 0px -180px;
 }
 
+.CheckboxRoot {
+    background-color: white;
+    width: clamp(1.75rem, 5vw, 2rem);
+    height: clamp(1.75rem, 5vw, 2rem);
+    min-width: 30px;
+    min-height: 30px;
+    border-radius: 4px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.CheckboxIndicator {
+    color: #2f1404;
+}
+
+.Label {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
 
 img {
     /* width: 200px;

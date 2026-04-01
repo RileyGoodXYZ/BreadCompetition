@@ -54,6 +54,7 @@ function Submit() {
       'prematch_alliance',
       'prematch_orient',
       'prematch_position',
+      'prematch_no_show',
       // Auto
       'auto_climb_selection',
       'auto_pass_count',
@@ -149,6 +150,7 @@ function Submit() {
       alliance: localStorage.getItem('prematch_alliance') ?? 'red',
       orientation: localStorage.getItem('prematch_orient') ?? '',
       position: localStorage.getItem('prematch_position') ?? '',
+      prematch_no_show: localStorage.getItem('prematch_no_show') === 'true',
       review: reviewText,
       auto_climb_selection: localStorage.getItem('auto_climb_selection') ?? '',
       auto_pass_count: Number(localStorage.getItem('auto_pass_count') ?? '0'),

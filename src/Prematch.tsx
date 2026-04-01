@@ -2,6 +2,8 @@ import './Prematch.css';
 import image from './assets/rebuiltField.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
+import { Checkbox } from "radix-ui";
+import { CheckIcon } from "@radix-ui/react-icons";
 import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession } from './autoAccess';
 
 function Prematch() {
@@ -11,6 +13,7 @@ function Prematch() {
   const [matchNum, setMatchNum] = useState<string>(localStorage.getItem('prematch_match_num') ?? "");
   const [alliance, setAlliance] = useState<string>(localStorage.getItem('prematch_alliance') ?? "Red");
   const [orient, setOrient] = useState<string>(localStorage.getItem('prematch_orient') ?? "Normal");
+  const [noShow, setNoShow] = useState<boolean>(localStorage.getItem('prematch_no_show') === 'true');
   
   useEffect(() => {
     if (
@@ -36,6 +39,10 @@ function Prematch() {
   const handleNext = () => {
     if (teamNum === "" || matchNum === "" || position === "") {
       alert("Please fill in all fields before proceeding.");
+      return;
+    }
+    if (noShow) {
+      navigate('/endgame');
       return;
     }
     if (currentScoutCanUseAuto() && !isAutoDisabledSession()) {
@@ -128,7 +135,26 @@ function Prematch() {
             4
           </button>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '-180px', flexWrap: 'wrap', width: '100%', marginBottom:'50px' }}>
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: '-190px', flexWrap: 'wrap', gap: '0.5rem', width: '100%' }}>
+        <br></br>
+          <Checkbox.Root className="CheckboxRoot" id="prematch-no-show" onClick={() => {
+            const next = !noShow;
+            setNoShow(next);
+            localStorage.setItem('prematch_no_show', String(next));
+          }} checked={noShow}>
+            <Checkbox.Indicator className="CheckboxIndicator">
+              <CheckIcon />
+            </Checkbox.Indicator>
+          </Checkbox.Root>
+          <label className="Label" htmlFor="prematch-no-show">
+            No show
+          </label>
+          <br>
+          </br>
+       
+        </div>
+        <br></br>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '0.5rem', flexWrap: 'wrap', width: '100%', marginBottom:'50px' }}>
           <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/profile')}>Back</button>
           <button
             className="navBtns"
