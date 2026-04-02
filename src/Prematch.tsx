@@ -42,7 +42,7 @@ function Prematch() {
       return;
     }
     if (noShow) {
-      navigate('/endgame');
+      navigate('/submit');
       return;
     }
     if (currentScoutCanUseAuto() && !isAutoDisabledSession()) {
