@@ -37,7 +37,7 @@ function Prematch() {
   };
 
   const handleNext = () => {
-    if (teamNum === "" || matchNum === "" || position === "") {
+    if (teamNum === "" || matchNum === "" || (!noShow && position === "")) {
       alert("Please fill in all fields before proceeding.");
       return;
     }
