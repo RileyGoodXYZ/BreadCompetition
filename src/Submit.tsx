@@ -175,15 +175,30 @@ function Submit() {
     };
   };
 
+  const copyTextToClipboard = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const success = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    if (!success) {
+      throw new Error('Clipboard copy failed.');
+    }
+  };
+
   const handleBackupSubmit = async () => {
     try {
       const payload = buildPayload();
       const formattedPayload = JSON.stringify(payload, null, 2);
-      await navigator.clipboard.writeText(formattedPayload);
-      resetScoutingData();
-      const nextDefault = getDefaultReview();
-      setSelectedReview(nextDefault);
-      localStorage.setItem('submit_review', JSON.stringify(nextDefault));
+      await copyTextToClipboard(formattedPayload);
       setBackupMessage('Backup copied to clipboard.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to copy backup.';
