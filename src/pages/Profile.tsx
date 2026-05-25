@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from "react";
-import { canScoutUseAuto } from '../autoAccess';
+import { canScoutUseAuto } from '../utils/autoAccess';
 
 function Profile() {
   const navigate = useNavigate();

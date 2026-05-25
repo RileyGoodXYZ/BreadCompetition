@@ -1,7 +1,7 @@
 import image from '../assets/rebuiltField.png';
 import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../utils/autoAccess';
 
 const AUTO_CLIMB_SELECTION_KEY = 'auto_climb_selection';
 const AUTO_PASS_COUNT_KEY = 'auto_pass_count';

@@ -8,7 +8,7 @@ import Auto from './pages/Auto';
 import Endgame from './pages/Endgame';
 import Submit from './pages/Submit';
 import Teleop from './pages/Teleop';
-import RequireAuth from './RequireAuth';
+import RequireAuth from './utils/RequireAuth';
 
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Checkbox } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { useNavigate } from 'react-router-dom';
-import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from '../autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from '../utils/autoAccess';
 
 function Endgame() {
   const savedClimb = localStorage.getItem('endgame_climb') ?? 'None';

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../utils/autoAccess';
 
 export default function TeleopV1() {
   const navigate = useNavigate();

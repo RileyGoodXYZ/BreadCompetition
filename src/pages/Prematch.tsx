@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import { Checkbox } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
-import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession } from '../autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession } from '../utils/autoAccess';
 
 function Prematch() {
   const navigate = useNavigate();
