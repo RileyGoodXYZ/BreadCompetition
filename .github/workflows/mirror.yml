@@ -1,0 +1,26 @@
+name: Mirror to Personal Repo
+
+on:
+  push:
+  delete:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to personal repo
+        env:
+          TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
+          git remote add mirror https://x-access-token:${TOKEN}@github.com/RileyGoodXYZ/2026-Competition-Software.git
+
+          git push --mirror mirror
