@@ -1,4 +1,4 @@
-name: Mirror to Personal Repo
+name: Mirroring
 
 on:
   push:
@@ -14,15 +14,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Push to personal repo
-        env:
-          TOKEN: ${{ secrets.MIRROR_TOKEN }}
+      - name: Setup SSH
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-          git remote remove mirror || true
-          git remote add mirror https://x-access-token:${TOKEN}@github.com/RileyGoodXYZ/2026-Competition-Software.git
-
-          git push mirror --all
-          git push mirror --tags
+      - name: Mirror to personal repo
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: git@github.com:RileyGoodXYZ/2026-Competition-Software.git
+          ssh_private_key: ${{ secrets.MIRROR_SSH_KEY }}
