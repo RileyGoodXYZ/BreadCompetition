@@ -1,9 +1,8 @@
-import './Endgame.css';
 import { useState, useEffect } from 'react';
 import { Checkbox } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { useNavigate } from 'react-router-dom';
-import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from './autoAccess';
+import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from '../autoAccess';
 
 function Endgame() {
   const savedClimb = localStorage.getItem('endgame_climb') ?? 'None';
@@ -62,15 +61,13 @@ function Endgame() {
   };
 
   return (
-    <div className="mainContainer">
+    <div className="mainContainer" style={{padding: '20px'}}>
       {/* Top header */}
-      <div className="topHeader">
+      <div style={{marginBottom: '20px'}}>
         <div>
           <h1>Endgame</h1>
         </div>
       </div>
-
-
       <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
         <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 3" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 3')}>Level 3</button>
         <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 2" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 2')}>Level 2</button>
@@ -132,7 +129,7 @@ function Endgame() {
           className="navBtns"
           style={{ flex: '1 1 auto', minWidth: '100px' }}
           onClick={() =>
-            navigate(currentScoutCanUseAuto() && !isTeleopV2Session() ? '/auto' : '/teleopv2')
+            navigate(currentScoutCanUseAuto() && !isTeleopV2Session() ? '/auto' : '/teleop')
           }
         >
           Back

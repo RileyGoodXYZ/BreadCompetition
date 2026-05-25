@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './teleopv2.css';
-import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from './autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../autoAccess';
 
 export default function TeleopV1() {
   const navigate = useNavigate();
@@ -144,11 +143,11 @@ export default function TeleopV1() {
   };
 
   return (
-    <div className="mainContainer">
-      <div className="topHeader">
-        <h1>Teleop</h1>
+    <div style={{margin: '2rem auto 0', padding: '0', boxSizing: 'border-box', maxWidth: 'none', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflowX: 'hidden', overflowY: 'auto'}}>
+      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1rem', marginBottom: '1rem', padding: '0 0.5rem', width: '100%', flexWrap: 'wrap'}}>
+        <h1 style={{fontSize: '2.5rem', margin: '0', lineHeight: '1'}}>Teleop</h1>
       </div>
-      <div className="teleop-content">
+      <div style={{width: 'min(92vw, 900px)', margin: '0 auto', padding: '0 min(2vw, 12px)', boxSizing: 'border-box'}}>
         {/* Score and Pass Row */}
         <div style={{ display: 'flex', gap: 'clamp(8px, 2.5vw, 20px)', marginBottom: '10px', width: '100%', alignItems: 'stretch' }}>
           <button
@@ -234,4 +233,4 @@ export default function TeleopV1() {
       </div>
     </div>
   );
-} 
+}

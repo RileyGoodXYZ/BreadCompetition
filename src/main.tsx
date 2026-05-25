@@ -2,15 +2,12 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import './index.css'
-import './App.css'
-import './Teleop.css'
-import './teleopv3.css'
-import Profile from './Profile';
-import Prematch from './Prematch';
-import Auto from './Auto';
-import Endgame from './Endgame';
-import Submit from './Submit';
-import TeleopV2 from './teleopv2';
+import Profile from './pages/Profile';
+import Prematch from './pages/Prematch';
+import Auto from './pages/Auto';
+import Endgame from './pages/Endgame';
+import Submit from './pages/Submit';
+import Teleop from './pages/Teleop';
 import RequireAuth from './RequireAuth';
 
 
@@ -47,9 +44,9 @@ createRoot(document.getElementById('root')!).render(
             <Submit />
           </RequireAuth>
         } />
-        <Route path="/teleopv2" element={
+        <Route path="/teleop" element={
           <RequireAuth>
-            <TeleopV2 />
+            <Teleop />
           </RequireAuth>
         } />
         <Route path="*" element={<div>Page Not Found</div>} />

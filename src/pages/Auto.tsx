@@ -1,8 +1,7 @@
-import './Auto.css'
-import image from './assets/rebuiltField.png';
+import image from '../assets/rebuiltField.png';
 import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from './autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../autoAccess';
 
 const AUTO_CLIMB_SELECTION_KEY = 'auto_climb_selection';
 const AUTO_PASS_COUNT_KEY = 'auto_pass_count';
@@ -86,7 +85,7 @@ function Auto() {
 
   useEffect(() => {
     if (isAutoDisabledSession() || !currentScoutCanUseAuto()) {
-      navigate('/teleopv2', { replace: true });
+      navigate('/teleop', { replace: true });
     }
   }, [navigate]);
   const incrementAutoCount = (
@@ -168,57 +167,51 @@ function Auto() {
     return (
 
       <div>
-        <div className='ContainerTitle'>
-          <h1 >Auto</h1>
+        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', marginTop: '0.5rem', marginBottom: '0.5rem', padding: '0.5rem', gap: '0.5rem', width: '100%', maxWidth: '800px', boxSizing: 'border-box'}}>
+          <h1>Auto</h1>
         </div>
 
-        <div className='ContainerTime'>
+        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem', padding: '0.5rem', width: '100%', flexWrap: 'wrap', maxWidth: '100vw', boxSizing: 'border-box'}}>
           <div>
-          <button className='Pass' onClick ={handlePassClick} data-count={passCount}>
+          <button style={{width: '90px', height: '60px', backgroundColor: '#58b0b3', color: 'white', fontSize: '1rem', padding: '0.25rem 0.5rem', borderRadius: '8px', boxSizing: 'border-box'}} onClick={handlePassClick} data-count={passCount}>
          {isPassActive ? `Stop (${passSeconds}s passed)` : 'Pass'}
          </button>
           </div>
       
          <div> 
-          <button className='Score' onClick ={handleScoreClick} data-count={scoreCount}>
+          <button style={{width: '90px', height: '60px', backgroundColor: '#c69ef0', color: 'white', fontSize: '1rem', padding: '0.25rem 0.5rem', borderRadius: '8px', boxSizing: 'border-box'}} onClick={handleScoreClick} data-count={scoreCount}>
          {isScoreActive ? `Stop (${scoreSeconds}s passed)` : 'Score'}
          </button>
          </div>
 
         </div>
-        <div className="mapContainer">
-          <img src={image} alt="passMap" />
+        <div style={{position: 'relative', width: '100%', maxWidth: '500px', margin: '0 auto'}}>
+          <img src={image} alt="passMap" style={{maxWidth: '100%', height: 'auto', borderRadius: '8px', display: 'block', margin: '0 auto'}} />
 
-        <button className="topLeft" onClick={() => incrementCount(setTopLeftCount, AUTO_TOP_LEFT_COUNT_KEY)} data-count={topLeftCount}></button>
-        <button className="middleLeft" onClick={() => incrementCount(setMiddleLeftCount, AUTO_MIDDLE_LEFT_COUNT_KEY)} data-count={middleLeftCount}></button>
-        <button className="bottomLeft" onClick={() => incrementCount(setBottomLeftCount, AUTO_BOTTOM_LEFT_COUNT_KEY)} data-count={bottomLeftCount}></button>
-        <button className="topRight" onClick={() => incrementCount(setTopRightCount, AUTO_TOP_RIGHT_COUNT_KEY)} data-count={topRightCount}></button>
-        <button className="middleRight" onClick={() => incrementCount(setMiddleRightCount, AUTO_MIDDLE_RIGHT_COUNT_KEY)} data-count={middleRightCount}></button>
-        <button className="bottomRight" onClick={() => incrementCount(setBottomRightCount, AUTO_BOTTOM_RIGHT_COUNT_KEY)} data-count={bottomRightCount}></button>
-        <button className="humanPlayer" onClick={handleDepot} data-count={depotCount}></button>
-        <button className="depot" onClick={handleHumanPlayer} data-count={humanPlayerCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', top: '0%', left: '18%', width: '32%', height: '33.5%', opacity: '0.5'}} onClick={() => incrementCount(setTopLeftCount, AUTO_TOP_LEFT_COUNT_KEY)} data-count={topLeftCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', top: '33.5%', left: '18%', width: '32%', height: '33.5%', opacity: '0.5'}} onClick={() => incrementCount(setMiddleLeftCount, AUTO_MIDDLE_LEFT_COUNT_KEY)} data-count={middleLeftCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', top: '67%', left: '18%', width: '32%', height: '33.5%', opacity: '0.5'}} onClick={() => incrementCount(setBottomLeftCount, AUTO_BOTTOM_LEFT_COUNT_KEY)} data-count={bottomLeftCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', top: '0%', left: '50%', width: '32%', height: '33.5%', opacity: '0.5'}} onClick={() => incrementCount(setTopRightCount, AUTO_TOP_RIGHT_COUNT_KEY)} data-count={topRightCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', top: '33.5%', left: '50%', width: '32%', height: '33.5%', opacity: '0.5'}} onClick={() => incrementCount(setMiddleRightCount, AUTO_MIDDLE_RIGHT_COUNT_KEY)} data-count={middleRightCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', top: '67%', left: '50%', width: '32%', height: '33.5%', opacity: '0.5'}} onClick={() => incrementCount(setBottomRightCount, AUTO_BOTTOM_RIGHT_COUNT_KEY)} data-count={bottomRightCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', backgroundColor: '#c69ef0', top: '67%', left: '95%', width: '0.5%', height: '13%'}} onClick={handleDepot} data-count={depotCount}></button>
+        <button style={{position: 'absolute', borderRadius: '0', minWidth: '0', minHeight: '0', border: '2px solid black', backgroundColor: '#c69ef0', top: '-9%', left: '92%'}} onClick={handleHumanPlayer} data-count={humanPlayerCount}></button>
         </div>
 
         <p>Climb</p>
-        <div className='climbContainer'>
+        <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.5rem', width: '100%', flexWrap: 'wrap', marginBottom: '0.5rem', marginTop: '0.5rem', padding: '0.5rem', maxWidth: '100vw', boxSizing: 'border-box'}}>
           <div>
-          <button
-            className={`ClimbLeft ${climbSelection === "left" ? "selected" : ""}`}
-            onClick={() => handleClimb(CLIMB_LEFT)}>
+          <button style={{width: '85px', height: '55px', textAlign: 'center'}} className={`ClimbLeft ${climbSelection === "left" ? "selected" : ""}`} onClick={() => handleClimb(CLIMB_LEFT)}>
               Left
           </button>
           </div>
           
-          <button
-            className={`ClimbMiddle ${climbSelection === "middle" ? "selected" : ""}`}
-            onClick={() => handleClimb(CLIMB_MIDDLE)}>
+          <button style={{width: '85px', height: '55px', textAlign: 'center'}} className={`ClimbMiddle ${climbSelection === "middle" ? "selected" : ""}`} onClick={() => handleClimb(CLIMB_MIDDLE)}>
               Middle
           </button>
 
           <div>
-          <button
-            className={`ClimbRight ${climbSelection === "right" ? "selected" : ""}`}
-            onClick={() => handleClimb(CLIMB_RIGHT)}>
+          <button style={{width: '85px', height: '55px', textAlign: 'center'}} className={`ClimbRight ${climbSelection === "right" ? "selected" : ""}`} onClick={() => handleClimb(CLIMB_RIGHT)}>
               Right
           </button>
           </div>
@@ -229,7 +222,7 @@ function Auto() {
           <button
             className="navBtns"
             style={{ flex: '1 1 auto', minWidth: '100px' }}
-            onClick={() => navigate(isTeleopV2Session() ? '/teleopv2' : '/endgame')}
+            onClick={() => navigate(isTeleopV2Session() ? '/teleop' : '/endgame')}
           >
             Next
           </button>
@@ -239,4 +232,3 @@ function Auto() {
   }
   
   export default Auto
-  
