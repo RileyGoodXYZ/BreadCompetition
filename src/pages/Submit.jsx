@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import { currentScoutCanUseAuto, isPracticeSession } from "../utils/autoAccess";
 
 function Submit() {
-  const getDefaultReview = (): string =>
+  const getDefaultReview = () =>
     currentScoutCanUseAuto() || isPracticeSession()
       ? "Good Auto"
       : "Good Teleop";
 
-  const parseStoredReview = (): string | null => {
+  const parseStoredReview = () => {
     const stored = localStorage.getItem("submit_review");
     if (!stored) return null;
     try {
@@ -18,7 +18,7 @@ function Submit() {
       }
       if (Array.isArray(parsed)) {
         const firstReview = parsed.find(
-          (value): value is string =>
+          (value) =>
             typeof value === "string" && value.length > 0,
         );
         return firstReview ?? null;
@@ -30,9 +30,9 @@ function Submit() {
   };
 
   const navigate = useNavigate();
-  const [submitMessage, setSubmitMessage] = useState<string>("");
-  const [backupMessage, setBackupMessage] = useState<string>("");
-  const [selectedReview, setSelectedReview] = useState<string>(
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [backupMessage, setBackupMessage] = useState("");
+  const [selectedReview, setSelectedReview] = useState(
     () => parseStoredReview() ?? getDefaultReview(),
   );
 
@@ -45,7 +45,7 @@ function Submit() {
       navigate("/profile");
     }
   }, [navigate]);
-  const toggleReview = (value: string) => {
+  const toggleReview = (value) => {
     setSelectedReview((prev) => {
       const next = prev === value ? getDefaultReview() : value;
       localStorage.setItem("submit_review", JSON.stringify(next));
@@ -107,7 +107,7 @@ function Submit() {
       localStorage.getItem("teleopv2_button_times") ?? "{}";
     const buttonTimesV2 = (() => {
       try {
-        return JSON.parse(rawButtonTimesV2) as Record<string, number>;
+        return JSON.parse(rawButtonTimesV2);
       } catch {
         return {};
       }
@@ -127,7 +127,7 @@ function Submit() {
       .split("\n")
       .map((line) => line.split("\t")[0]?.trim())
       .filter(
-        (key): key is string => Boolean(key) && autoButtonKeys.includes(key),
+        (key) => Boolean(key) && autoButtonKeys.includes(key),
       )
       .join("\n");
     const v2Score = Number(buttonTimesV2.score ?? 0);
@@ -190,7 +190,7 @@ function Submit() {
     };
   };
 
-  const copyTextToClipboard = async (text: string) => {
+  const copyTextToClipboard = async (text) => {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
       return;

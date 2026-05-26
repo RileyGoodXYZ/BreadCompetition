@@ -1,5 +1,5 @@
 import image from '../assets/rebuiltField.png';
-import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../utils/autoAccess';
 
@@ -31,30 +31,30 @@ const CLIMB_LEFT = 'left';
 const CLIMB_MIDDLE = 'middle';
 const CLIMB_RIGHT = 'right';
 
-const normalizeAutoButtonTimes = (raw: string | null): string => {
+const normalizeAutoButtonTimes = (raw) => {
   if (!raw) return '';
   const normalized = raw
     .split('\n')
     .map((line) => line.split('\t')[0]?.trim())
-    .filter((key): key is string => Boolean(key) && AUTO_SEQUENCE_KEYS.includes(key));
+    .filter((key) => Boolean(key) && AUTO_SEQUENCE_KEYS.includes(key));
   return normalized.join('\n');
 };
 
-const appendAutoButtonTime = (key: string) => {
+const appendAutoButtonTime = (key) => {
   const existing = normalizeAutoButtonTimes(localStorage.getItem(AUTO_BUTTON_TIMES_KEY));
   const nextValue = existing && existing.trim().length > 0 ? `${existing}\n${key}` : key;
   localStorage.setItem(AUTO_BUTTON_TIMES_KEY, nextValue);
 };
 
-const readAutoCount = (key: string) => Number(localStorage.getItem(key) ?? '0');
+const readAutoCount = (key) => Number(localStorage.getItem(key) ?? '0');
 
 function Auto() {
-  const [passCount, setPassCount] = useState<number>(Number(localStorage.getItem(AUTO_PASS_COUNT_KEY) ?? '0'));
-  const [scoreCount, setScoreCount] = useState<number>(Number(localStorage.getItem(AUTO_SCORE_COUNT_KEY) ?? '0'));
-  const [climbSelection, setClimbSelection] = useState<string | null>(localStorage.getItem(AUTO_CLIMB_SELECTION_KEY));
+  const [passCount, setPassCount] = useState(Number(localStorage.getItem(AUTO_PASS_COUNT_KEY) ?? '0'));
+  const [scoreCount, setScoreCount] = useState(Number(localStorage.getItem(AUTO_SCORE_COUNT_KEY) ?? '0'));
+  const [climbSelection, setClimbSelection] = useState(localStorage.getItem(AUTO_CLIMB_SELECTION_KEY));
   const navigate = useNavigate();
-  const [passSeconds, setPassSeconds] = useState<number>(Number(localStorage.getItem(AUTO_PASS_SECONDS_KEY) ?? '0'));
-  const [scoreSeconds, setScoreSeconds] = useState<number>(Number(localStorage.getItem(AUTO_SCORE_SECONDS_KEY) ?? '0'));
+  const [passSeconds, setPassSeconds] = useState(Number(localStorage.getItem(AUTO_PASS_SECONDS_KEY) ?? '0'));
+  const [scoreSeconds, setScoreSeconds] = useState(Number(localStorage.getItem(AUTO_SCORE_SECONDS_KEY) ?? '0'));
   
   useEffect(() => {
     if (
@@ -72,26 +72,23 @@ function Auto() {
       localStorage.setItem(AUTO_BUTTON_TIMES_KEY, normalized);
     }
   }, []);
-  const [humanPlayerCount, setHumanPlayerCount] = useState<number>(readAutoCount(AUTO_HUMAN_PLAYER_COUNT_KEY));
-  const [depotCount, setDepotCount] = useState<number>(readAutoCount(AUTO_DEPOT_COUNT_KEY));
-  const [topLeftCount, setTopLeftCount] = useState<number>(readAutoCount(AUTO_TOP_LEFT_COUNT_KEY));
-  const [middleLeftCount, setMiddleLeftCount] = useState<number>(readAutoCount(AUTO_MIDDLE_LEFT_COUNT_KEY));
-  const [bottomLeftCount, setBottomLeftCount] = useState<number>(readAutoCount(AUTO_BOTTOM_LEFT_COUNT_KEY));
-  const [topRightCount, setTopRightCount] = useState<number>(readAutoCount(AUTO_TOP_RIGHT_COUNT_KEY));
-  const [middleRightCount, setMiddleRightCount] = useState<number>(readAutoCount(AUTO_MIDDLE_RIGHT_COUNT_KEY));
-  const [bottomRightCount, setBottomRightCount] = useState<number>(readAutoCount(AUTO_BOTTOM_RIGHT_COUNT_KEY));
-  const [isPassActive, setIsPassActive] = useState<boolean>(false);
-  const [isScoreActive, setIsScoreActive] = useState<boolean>(false);
+  const [humanPlayerCount, setHumanPlayerCount] = useState(readAutoCount(AUTO_HUMAN_PLAYER_COUNT_KEY));
+  const [depotCount, setDepotCount] = useState(readAutoCount(AUTO_DEPOT_COUNT_KEY));
+  const [topLeftCount, setTopLeftCount] = useState(readAutoCount(AUTO_TOP_LEFT_COUNT_KEY));
+  const [middleLeftCount, setMiddleLeftCount] = useState(readAutoCount(AUTO_MIDDLE_LEFT_COUNT_KEY));
+  const [bottomLeftCount, setBottomLeftCount] = useState(readAutoCount(AUTO_BOTTOM_LEFT_COUNT_KEY));
+  const [topRightCount, setTopRightCount] = useState(readAutoCount(AUTO_TOP_RIGHT_COUNT_KEY));
+  const [middleRightCount, setMiddleRightCount] = useState(readAutoCount(AUTO_MIDDLE_RIGHT_COUNT_KEY));
+  const [bottomRightCount, setBottomRightCount] = useState(readAutoCount(AUTO_BOTTOM_RIGHT_COUNT_KEY));
+  const [isPassActive, setIsPassActive] = useState(false);
+  const [isScoreActive, setIsScoreActive] = useState(false);
 
   useEffect(() => {
     if (isAutoDisabledSession() || !currentScoutCanUseAuto()) {
       navigate('/teleop', { replace: true });
     }
   }, [navigate]);
-  const incrementAutoCount = (
-    key: string,
-    setter: Dispatch<SetStateAction<number>>,
-  ) => {
+  const incrementAutoCount = (key, setter) => {
     const next = readAutoCount(key) + 1;
     localStorage.setItem(key, String(next));
     appendAutoButtonTime(key);
@@ -147,7 +144,7 @@ function Auto() {
     }
     setIsScoreActive((prev) => !prev);
   };
-  const handleClimb = (position: string) => {
+  const handleClimb = (position) => {
     setClimbSelection(position);
     localStorage.setItem(AUTO_CLIMB_SELECTION_KEY, position);
   };
@@ -157,10 +154,7 @@ function Auto() {
   const handleDepot = () => {
     incrementAutoCount(AUTO_DEPOT_COUNT_KEY, setDepotCount);
   };
-  const incrementCount = (
-    setter: Dispatch<SetStateAction<number>>,
-    key: string,
-  ) => {
+  const incrementCount = (setter, key) => {
     incrementAutoCount(key, setter);
   };
 
@@ -231,4 +225,4 @@ function Auto() {
     )
   }
   
-  export default Auto
+  export default Auto;

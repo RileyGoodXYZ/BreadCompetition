@@ -13,7 +13,7 @@ import RequireAuth from './utils/RequireAuth';
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId="1052919843340-og0i5nd5otropoqgtdqbla3lrsr4o1pd.apps.googleusercontent.com">
   <BrowserRouter>
@@ -49,10 +49,8 @@ createRoot(document.getElementById('root')!).render(
             <Teleop />
           </RequireAuth>
         } />
-        <Route path="*" element={<div>Page Not Found</div>} />
       </Routes>
     </BrowserRouter>
     </GoogleOAuthProvider>
   </StrictMode>,
-  
 )

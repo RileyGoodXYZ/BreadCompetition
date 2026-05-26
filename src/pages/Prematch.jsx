@@ -7,12 +7,12 @@ import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession } from
 
 function Prematch() {
   const navigate = useNavigate();
-  const [position, setPosition] = useState<string>(localStorage.getItem('prematch_position') ?? "");
-  const [teamNum, setTeamNum] = useState<string>(localStorage.getItem('prematch_team_num') ?? "");
-  const [matchNum, setMatchNum] = useState<string>(localStorage.getItem('prematch_match_num') ?? "");
-  const [alliance, setAlliance] = useState<string>(localStorage.getItem('prematch_alliance') ?? "Red");
-  const [orient, setOrient] = useState<string>(localStorage.getItem('prematch_orient') ?? "Normal");
-  const [noShow, setNoShow] = useState<boolean>(localStorage.getItem('prematch_no_show') === 'true');
+  const [position, setPosition] = useState(localStorage.getItem('prematch_position') ?? "");
+  const [teamNum, setTeamNum] = useState(localStorage.getItem('prematch_team_num') ?? "");
+  const [matchNum, setMatchNum] = useState(localStorage.getItem('prematch_match_num') ?? "");
+  const [alliance, setAlliance] = useState(localStorage.getItem('prematch_alliance') ?? "Red");
+  const [orient, setOrient] = useState(localStorage.getItem('prematch_orient') ?? "Normal");
+  const [noShow, setNoShow] = useState(localStorage.getItem('prematch_no_show') === 'true');
   
   useEffect(() => {
     if (

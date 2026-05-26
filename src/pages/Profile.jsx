@@ -8,15 +8,15 @@ function Profile() {
   const storedSessionType = localStorage.getItem('profile_session_type') ?? "";
   const normalizedSessionType =
     storedSessionType.toLowerCase() === "test" ? "Test" : storedSessionType;
-  const [sessionType, setSessionType] = useState<string>(normalizedSessionType);
-  const [sessionTypeTouched, setSessionTypeTouched] = useState<boolean>(false);
-  const [isSignedIn, setIsSignedIn] = useState<boolean>(localStorage.getItem('profile_is_signed_in') === 'true');
+  const [sessionType, setSessionType] = useState(normalizedSessionType);
+  const [sessionTypeTouched, setSessionTypeTouched] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(localStorage.getItem('profile_is_signed_in') === 'true');
 
-  const handleSessionTypeChange = (value: string) => {
+  const handleSessionTypeChange = (value) => {
     setSessionType(value);
     localStorage.setItem('profile_session_type', value);
   };
-  const handleSessionTypeToggle = (value: string) => {
+  const handleSessionTypeToggle = (value) => {
     setSessionTypeTouched(true);
     const nextValue = sessionType === value ? "" : value;
     handleSessionTypeChange(nextValue);
@@ -51,7 +51,7 @@ function Profile() {
   });
 
   return (
-    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', paddingTop: '20px', width: '100%', '--profile-row-width': 'min(84vw, 320px)'} as React.CSSProperties}>
+    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', paddingTop: '20px', width: '100%', '--profile-row-width': 'min(84vw, 320px)'}}>
       <div className='maincontainer'>
         <h1 style={{display: 'inline', justifyContent: 'center', alignItems: 'center', textAlign: 'center', color: 'rgb(243, 246, 246)'}}>Profile</h1>
       </div>

@@ -7,14 +7,14 @@ import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from '..
 function Endgame() {
   const savedClimb = localStorage.getItem('endgame_climb') ?? 'None';
   const savedClimbType = localStorage.getItem('endgame_climb_type') ?? 'Center';
-  const initialClimbStatus: 'None' | 'Failed' | 'Success' = savedClimb === 'None' ? 'None' : (savedClimb === 'Failed' ? 'Failed' : 'Success');
-  const initialClimbLevel: 'Level 1' | 'Level 2' | 'Level 3' | null =
+  const initialClimbStatus = savedClimb === 'None' ? 'None' : (savedClimb === 'Failed' ? 'Failed' : 'Success');
+  const initialClimbLevel =
     savedClimb === 'Level 1' || savedClimb === 'Level 2' || savedClimb === 'Level 3' ? savedClimb : null;
-  const [climbStatus, setClimbStatus] = useState<'None' | 'Failed' | 'Success'>(initialClimbStatus);
-  const [climbLevel, setClimbLevel] = useState<'Level 1' | 'Level 2' | 'Level 3' | null>(initialClimbLevel);
-  const [climbType, setClimbType] = useState<'Center' | 'Side'>(savedClimbType === 'Side' ? 'Side' : 'Center');
-  const [shootWhileClimb, setShootWhileClimb] = useState<boolean>(localStorage.getItem('endgame_shoot_while_climb') === 'true');
-  const [buddyClimb, setBuddyClimb] = useState<boolean>(localStorage.getItem('endgame_buddy_climb') === 'true');
+  const [climbStatus, setClimbStatus] = useState(initialClimbStatus);
+  const [climbLevel, setClimbLevel] = useState(initialClimbLevel);
+  const [climbType, setClimbType] = useState(savedClimbType === 'Side' ? 'Side' : 'Center');
+  const [shootWhileClimb, setShootWhileClimb] = useState(localStorage.getItem('endgame_shoot_while_climb') === 'true');
+  const [buddyClimb, setBuddyClimb] = useState(localStorage.getItem('endgame_buddy_climb') === 'true');
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -27,7 +27,7 @@ function Endgame() {
     }
   }, [navigate]);
 
-  const persistClimb = (nextStatus: 'None' | 'Failed' | 'Success', nextLevel: 'Level 1' | 'Level 2' | 'Level 3' | null, nextType: 'Center' | 'Side') => {
+  const persistClimb = (nextStatus, nextLevel, nextType) => {
     let finalValue = 'None';
     if (nextStatus === 'Success') {
       finalValue = nextLevel ?? 'None';
@@ -41,7 +41,7 @@ function Endgame() {
     localStorage.setItem('endgame_climb_type', shouldStoreType ? nextType : '');
   };
 
-  const handleStatusSelect = (status: 'None' | 'Failed' | 'Success') => {
+  const handleStatusSelect = (status) => {
     setClimbStatus(status);
     if (status !== 'Success') {
       setClimbLevel(null);
@@ -49,13 +49,13 @@ function Endgame() {
     persistClimb(status, status === 'Success' ? climbLevel : null, climbType);
   };
 
-  const handleLevelSelect = (level: 'Level 1' | 'Level 2' | 'Level 3' | null) => {
+  const handleLevelSelect = (level) => {
     setClimbLevel(level);
     setClimbStatus('Success');
     persistClimb('Success', level, climbType);
   };
 
-  const handleClimbTypeSelect = (type: 'Center' | 'Side') => {
+  const handleClimbTypeSelect = (type) => {
     setClimbType(type);
     persistClimb(climbStatus, climbLevel, type);
   };

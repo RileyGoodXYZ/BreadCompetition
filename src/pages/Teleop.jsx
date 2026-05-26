@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type CSSProperties } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession, isTeleopV2Session } from '../utils/autoAccess';
 
@@ -22,44 +22,43 @@ export default function TeleopV1() {
   }, [navigate]);
 
   // Timing logic for timer buttons
-  type TimedButtonId = 'score' | 'pass' | 'defense' | 'herd';
-  const [runningButtons, setRunningButtons] = useState<Record<TimedButtonId, boolean>>({
+  const [runningButtons, setRunningButtons] = useState({
     score: false,
     pass: false,
     defense: false,
     herd: false,
   });
-  const [buttonTimes, setButtonTimes] = useState<{ [key: string]: number }>(() => {
+  const [buttonTimes, setButtonTimes] = useState(() => {
     const raw = localStorage.getItem('teleopv2_button_times');
     if (!raw) return {};
     try {
-      return JSON.parse(raw) as { [key: string]: number };
+      return JSON.parse(raw);
     } catch {
       return {};
     }
   });
-  const startTimesRef = useRef<Partial<Record<TimedButtonId, number>>>({});
-  const animationFrameRef = useRef<number | null>(null);
-  const [liveElapsedMs, setLiveElapsedMs] = useState<Partial<Record<TimedButtonId, number>>>({});
-  const isRunning = (buttonId: TimedButtonId) => Boolean(runningButtons[buttonId]);
-  const getTimedButtonStyle = (buttonId: TimedButtonId, baseStyle: CSSProperties): CSSProperties => ({
+  const startTimesRef = useRef({});
+  const animationFrameRef = useRef(null);
+  const [liveElapsedMs, setLiveElapsedMs] = useState({});
+  const isRunning = (buttonId) => Boolean(runningButtons[buttonId]);
+  const getTimedButtonStyle = (buttonId, baseStyle) => ({
     ...baseStyle,
     transform: isRunning(buttonId) ? 'translateY(1px)' : 'translateY(0)',
     boxShadow: isRunning(buttonId) ? 'inset 0 3px 6px rgba(0, 0, 0, 0.35)' : 'none',
     opacity: isRunning(buttonId) ? 0.7 : 1,
     width: '100%',
   });
-  const formatSeconds = (ms: number) => (ms / 1000).toFixed(2);
-  const getStoredMsForButton = (buttonId: TimedButtonId) =>
+  const formatSeconds = (ms) => (ms / 1000).toFixed(2);
+  const getStoredMsForButton = (buttonId) =>
     Number(buttonTimes[buttonId] ?? 0);
-  const getLiveMsForButton = (buttonId: TimedButtonId) =>
+  const getLiveMsForButton = (buttonId) =>
     isRunning(buttonId) ? (liveElapsedMs[buttonId] ?? 0) : 0;
-  const getDisplayedSecondsForButton = (buttonId: TimedButtonId) => {
+  const getDisplayedSecondsForButton = (buttonId) => {
     const storedMs = getStoredMsForButton(buttonId);
     const runningMs = getLiveMsForButton(buttonId);
     return formatSeconds(storedMs + runningMs);
   };
-  const getTimerTextForButton = (buttonId: TimedButtonId) =>
+  const getTimerTextForButton = (buttonId) =>
     isRunning(buttonId)
       ? `${Math.round(getLiveMsForButton(buttonId))}ms`
       : '';
@@ -70,7 +69,7 @@ export default function TeleopV1() {
       const now = performance.now();
       setLiveElapsedMs((prev) => {
         const next = { ...prev };
-        (Object.keys(startTimesRef.current) as TimedButtonId[]).forEach((id) => {
+        (Object.keys(startTimesRef.current)).forEach((id) => {
           const start = startTimesRef.current[id];
           if (start !== undefined) {
             next[id] = Math.round(now - start);
@@ -91,7 +90,7 @@ export default function TeleopV1() {
     }
   };
 
-  const stopTimer = (buttonId: TimedButtonId) => {
+  const stopTimer = (buttonId) => {
     const start = startTimesRef.current[buttonId];
     if (start === undefined) return;
     const elapsed = Math.round(performance.now() - start);
@@ -111,7 +110,7 @@ export default function TeleopV1() {
     stopAnimationFrameIfIdle();
   };
 
-  const startTimer = (buttonId: TimedButtonId) => {
+  const startTimer = (buttonId) => {
     if (startTimesRef.current[buttonId] !== undefined) return;
     startTimesRef.current[buttonId] = performance.now();
     setRunningButtons((prev) => ({ ...prev, [buttonId]: true }));
@@ -119,7 +118,7 @@ export default function TeleopV1() {
     ensureAnimationFrame();
   };
 
-  const toggleTimedButton = (buttonId: TimedButtonId) => {
+  const toggleTimedButton = (buttonId) => {
     if (isRunning(buttonId)) {
       stopTimer(buttonId);
       return;
@@ -128,7 +127,7 @@ export default function TeleopV1() {
   };
 
   const stopAnyRunningTimer = () => {
-    const runningIds = Object.keys(startTimesRef.current) as TimedButtonId[];
+    const runningIds = Object.keys(startTimesRef.current);
     runningIds.forEach((id) => stopTimer(id));
   };
 

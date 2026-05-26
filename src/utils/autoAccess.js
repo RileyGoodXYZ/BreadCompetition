@@ -5,31 +5,31 @@ const AUTO_ALLOWED_SCOUTS = new Set([
   'test scout',
 ]);
 
-const normalizeScoutName = (name: string): string => name.trim().toLowerCase().replace(/\s+/g, ' ');
-const normalizeSessionType = (sessionType: string | null | undefined): string =>
+const normalizeScoutName = (name) => name.trim().toLowerCase().replace(/\s+/g, ' ');
+const normalizeSessionType = (sessionType) =>
   (sessionType ?? '').trim().toLowerCase();
 
-export const canScoutUseAuto = (name: string | null | undefined): boolean =>
+export const canScoutUseAuto = (name) =>
   AUTO_ALLOWED_SCOUTS.has(normalizeScoutName(name ?? ''));
 
-export const isPracticeSession = (): boolean =>
+export const isPracticeSession = () =>
   normalizeSessionType(localStorage.getItem('profile_session_type')) === 'practice';
 
-export const isTestSession = (): boolean =>
+export const isTestSession = () =>
   normalizeSessionType(localStorage.getItem('profile_session_type')) === 'test';
 
-export const isAsyncSession = (): boolean =>
+export const isAsyncSession = () =>
   normalizeSessionType(localStorage.getItem('profile_session_type')) === 'async';
 
-export const isRescoutSession = (): boolean =>
+export const isRescoutSession = () =>
   normalizeSessionType(localStorage.getItem('profile_session_type')) === 'rescout';
 
-export const isTeleopV2Session = (): boolean =>
+export const isTeleopV2Session = () =>
   isPracticeSession() || isTestSession() || isAsyncSession() || isRescoutSession();
 
-export const isAutoDisabledSession = (): boolean =>
+export const isAutoDisabledSession = () =>
   isPracticeSession() || isRescoutSession() || isAsyncSession();
 
-export const currentScoutCanUseAuto = (): boolean =>
+export const currentScoutCanUseAuto = () =>
   !isAutoDisabledSession() &&
   (isTestSession() || canScoutUseAuto(localStorage.getItem('profile_scout_name')));
