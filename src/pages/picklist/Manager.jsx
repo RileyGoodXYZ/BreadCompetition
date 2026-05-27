@@ -114,7 +114,7 @@ export default function Manager() {
                 Robot Comparison
               </h3>
             </div>
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-6">
               {slots.map((robot, idx) =>
                 robot ? (
                   <RobotCard

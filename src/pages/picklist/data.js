@@ -273,7 +273,7 @@ export const TEAM_POOL = [
   },
   {
     team: "9470",
-    name: "VANGUARD X",
+    name: "Ctrl Alt Defeat",
     drivetrain: "SWERVE DRIVE",
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuD8adcZ6mvxCfslLsGwQFRl9YJsBlxCjyb-GyHNLPJB9bRehjlLBRcC4SchK4cHpP4JNlpf8iuyAO73Rq7ZF2s467VEwutPXryHLI6WOfpteUjrGPD6CEKQOt7suX5Hjfpqg3DBuLYRiv6OtRAjOG-is84DH0iKLOc1M-GuzwgRlEGLPJjzo_GoZpBZB4qu2qdTHYq5fYR8GR0-p6Gh4H3RqlEZJkU4uorK2rv6RD-4i-ijtHgxY83K1YgVHrajdi5CJHhy40c7uRg",
