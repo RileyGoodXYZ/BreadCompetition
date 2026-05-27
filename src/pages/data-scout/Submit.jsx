@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { currentScoutCanUseAuto, isPracticeSession } from "../utils/autoAccess";
+import { currentScoutCanUseAuto, isPracticeSession } from "../../utils/autoAccess";
 
 function Submit() {
   const getDefaultReview = () =>

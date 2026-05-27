@@ -1,9 +1,9 @@
-import image from '../assets/rebuiltField.png';
+import image from '../../assets/rebuiltField.png';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import { Checkbox } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
-import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession } from '../utils/autoAccess';
+import { currentScoutCanUseAuto, isAutoDisabledSession, isPracticeSession } from '../../utils/autoAccess';
 
 function Prematch() {
   const navigate = useNavigate();
@@ -126,7 +126,7 @@ function Prematch() {
               style={{
                 transform: orient === "Flipped" ? 'scaleX(-1)' : 'none',
                 margin: '5px',
-                height: '400px',
+                height: '350px',
                 marginTop: '40px'
               }}
             />
@@ -219,7 +219,7 @@ function Prematch() {
             4
           </button>
         </div>
-        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: '-275px', flexWrap: 'wrap', gap: '0.5rem', width: '100%' }}>
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: '-305px', flexWrap: 'wrap', gap: '0.5rem', width: '100%' }}>
         <br></br>
           <Checkbox.Root 
             style={{
