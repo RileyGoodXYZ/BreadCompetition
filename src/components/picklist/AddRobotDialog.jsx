@@ -77,7 +77,7 @@ export function AddRobotDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg w-[calc(100vw-1.5rem)]">
         <DialogHeader>
           <DialogTitle>
             {multi ? "Add Robots" : "Add Robot to Comparison"}

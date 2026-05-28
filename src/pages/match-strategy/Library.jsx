@@ -1,29 +1,39 @@
+import { useState } from "react";
 import { Plus, Swords } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Shell } from "@/components/picklist/Shell";
 import { TopBar } from "@/components/picklist/TopBar";
 import { Button } from "@/components/ui/button";
+import { NewStrategyDialog } from "@/components/match-strategy/NewStrategyDialog";
+import { useMatchStrategy } from "@/lib/match-strategy-store";
 import { cn } from "@/lib/utils";
-import { STRATEGIES } from "./data";
 
 // Match strategy home page
 export default function MatchStrategyLibrary() {
   const navigate = useNavigate();
+  const { strategies, createStrategy } = useMatchStrategy();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   const open = (id) => navigate(`/match-strategy/${id}`);
+  const handleCreate = (payload) => {
+    const id = createStrategy(payload);
+    setDialogOpen(false);
+    navigate(`/match-strategy/${id}`);
+  };
 
   return (
     <Shell>
       <TopBar variant="library" />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
-        <div className="max-w-7xl mx-auto w-full px-6 py-10">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
           {/* Page header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
             <div>
-              <h1 className="text-5xl font-bold tracking-tight text-primary-container leading-[1.05]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-primary-container leading-[1.05]">
                 Match Strategy
               </h1>
-              <p className="text-on-surface-variant text-lg mt-2 max-w-xl">
+              <p className="text-on-surface-variant text-base sm:text-lg mt-2 max-w-xl">
                 Plan plays and counter-plays for upcoming matches.
               </p>
             </div>
@@ -31,7 +41,7 @@ export default function MatchStrategyLibrary() {
               variant="primary"
               size="lg"
               className="self-start md:self-auto"
-              onClick={() => open("new")}
+              onClick={() => setDialogOpen(true)}
             >
               <Plus className="w-5 h-5" />
               New Strategy
@@ -39,28 +49,34 @@ export default function MatchStrategyLibrary() {
           </div>
 
           {/* Section header */}
-          <div className="flex items-center gap-3 mb-7">
+          <div className="flex items-center gap-3 mb-5 sm:mb-7">
             <div className="p-2 bg-secondary-container rounded-md">
-              <Swords className="w-5 h-5 text-on-secondary-fixed-variant" />
+              <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-on-secondary-fixed-variant" />
             </div>
-            <h3 className="text-2xl font-semibold uppercase tracking-tight text-on-surface">
+            <h3 className="text-lg sm:text-2xl font-semibold uppercase tracking-tight text-on-surface">
               Upcoming Matches
             </h3>
-            <div className="h-px flex-1 bg-outline-variant/50 ml-4" />
+            <div className="h-px flex-1 bg-outline-variant/50 ml-2 sm:ml-4" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {STRATEGIES.map((s) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {strategies.map((s) => (
               <StrategyCard
                 key={s.id}
                 strategy={s}
                 onOpen={() => open(s.id)}
               />
             ))}
-            <CreateStrategyCard onClick={() => open("new")} />
+            <CreateStrategyCard onClick={() => setDialogOpen(true)} />
           </div>
         </div>
       </div>
+
+      <NewStrategyDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onCreate={handleCreate}
+      />
     </Shell>
   );
 }

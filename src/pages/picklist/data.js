@@ -10,27 +10,21 @@ export const SHARED_PICKLISTS = [
   {
     id: "champs-2024",
     title: "Chezy Champs 2024 Final",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBvYI4F0hg0UQZkq94SYe7Y7Kc3iNqQwcfAYEz4jMvWVo8vstkJ9CjFqWLSDvvrGuHnWJdtuz56vS1rVyx9uBs5o7pUWi7EJXJ3o8K43dhcuIFvxKK4OGfhvqv-2ElI2w03o7PlZtwAj0rUcnNwewYMvvSPd-MumjOZSInuF7P6ZyN3x8fB37jl6FDgrnYvo6CGX3EzWai19Ov14OwumeQzf8FGAEGBClf4_bTNH1-zonDohaQTzEqQNWFa5Gtx6JpqrphwipR_fl8",
-    status: "synced",
+    event: "Chezy Champs 2024",
     collaborators: ["JD", "AK", "MN", "PL", "SR", "TY"],
     updatedLabel: "Updated 2h ago",
   },
   {
     id: "svr-defensive",
     title: "SVR Regional - Defensive Tier",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDZTRbLsIUvhAC6L5GwB10OuRnCk5t4WSZIc1QP77P2m-qIfjRWN3Pa9A4NufDjD3vpvR6I3SFoVeW4sXSkS49iVHWE7AQctG_YSmOTLpL4UMKqB7RvFKZiiAB5ty6XCZnXdsix5677Hf5kzJZO9BrJnAmBSgWB5FtEfRnnsxHkN0MIuBTIj3K0z7Lotlprq7Digt87GJjOpEm1QMxdaeGwlq3nskmkWQN1I1QVbXccA02A-2EDK2uRJ5pGM6YOOGrfz5xB2aeTr2A",
-    status: "synced",
+    event: "SVR Regional",
     collaborators: ["SM", "KL", "RT"],
     updatedLabel: "Updated 5h ago",
   },
   {
     id: "hou-auto",
     title: "HOU Champs: Auto Reliability",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD0X5FRDkDHSBzFgj9vq1eeaVOqnFSHK5j6bj2EH9WK2ga_rZLcGrBVKf_359FTNBLZnenWtNE6mCFJ0WtjzYow00Gpe4CUXS6fXTKQRaM8u1CD0vtGxxV-9qV6Ml5M_866FkJgozD-KPKFQk38iryg8RQQFTk_0RQpdWxDslA73cuaSodoDYdpBI3ffaQXiOMdeAUlP1S00-ZTf4tbbur0Xm1_jjR5JjUzpukPiGJ71nq3cpqO3p7KLIThfIf9pr9Uk2Bf8hYOLeE",
-    status: "drafting",
+    event: "Houston Champs",
     collaborators: ["TR"],
     updatedLabel: "Updated 1d ago",
   },
@@ -40,25 +34,31 @@ export const MY_PICKLISTS = [
   {
     id: "rapid-eval-intake",
     title: "Rapid Eval: Intake Speed",
+    event: "SVR Regional",
     icon: TrendingUp,
     bars: [0.75, 0.5, 0.66],
     teamCount: 12,
+    collaborators: ["JD"],
     updatedLabel: "15m ago",
   },
   {
     id: "climber-stats-w4",
     title: "Climber Stats - Week 4",
+    event: "Week 4 Scrimmage",
     icon: Cpu,
     bars: [0.66, 0.33, 0.5],
     teamCount: 8,
+    collaborators: ["JD", "MN"],
     updatedLabel: "2d ago",
   },
   {
     id: "reliability-index",
     title: "Overall Reliability Index",
+    event: "Multi-Event",
     icon: Activity,
     bars: [1, 0.75, 0.8],
     teamCount: 24,
+    collaborators: ["JD", "AK", "TR"],
     updatedLabel: "3d ago",
   },
 ];

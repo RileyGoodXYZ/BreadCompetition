@@ -11,7 +11,9 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { Shell } from "@/components/picklist/Shell";
+import { MobileMenuButton } from "@/components/picklist/Sidebar";
 import { AddRobotDialog } from "@/components/picklist/AddRobotDialog";
+import { MetricViewDialog } from "@/components/picklist/MetricViewDialog";
 import { cn } from "@/lib/utils";
 import {
   TEAM_POOL,
@@ -38,6 +40,7 @@ export default function RobotData() {
 
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [metricView, setMetricView] = useState(null);
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -89,9 +92,9 @@ export default function RobotData() {
       />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
-        <div className="max-w-7xl mx-auto w-full px-8 py-6">
-          <header className="mb-6">
-            <h1 className="text-5xl font-semibold text-on-surface tracking-tight">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+          <header className="mb-5 sm:mb-6">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-semibold text-on-surface tracking-tight">
               Robot Analytics
             </h1>
           </header>
@@ -99,12 +102,13 @@ export default function RobotData() {
           {cards.length === 0 ? (
             <EmptyState onAddRobot={() => setAddOpen(true)} />
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {cards.map((robot) => (
                 <RobotAnalyticsCard
                   key={robot.team}
                   robot={robot}
                   onRemove={() => removeRobot(robot.team)}
+                  onMetricClick={setMetricView}
                 />
               ))}
               <AddAnotherRobotCard onClick={() => setAddOpen(true)} />
@@ -120,6 +124,12 @@ export default function RobotData() {
         alreadyInUse={displayedTeams}
         multi
         onPickMany={addManyRobots}
+      />
+
+      <MetricViewDialog
+        open={metricView !== null}
+        onOpenChange={(o) => !o && setMetricView(null)}
+        metric={metricView}
       />
     </Shell>
   );
@@ -174,11 +184,12 @@ function AnalyticsTopBar({
   const showSuggestions = focused && hasQuery;
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-4 w-full px-8 h-20 border-b border-outline-variant/30 bg-surface/90 backdrop-blur-md shrink-0">
-      <div className="flex-1 max-w-2xl relative">
+    <header className="sticky top-0 z-20 flex items-center gap-2 sm:gap-4 w-full px-3 sm:px-6 lg:px-8 h-14 sm:h-20 border-b border-outline-variant/30 bg-surface/90 backdrop-blur-md shrink-0">
+      <MobileMenuButton />
+      <div className="flex-1 max-w-2xl relative min-w-0">
         <label className="relative block">
           <span className="sr-only">Search robots</span>
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant pointer-events-none" />
+          <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant pointer-events-none" />
           <input
             type="search"
             value={query}
@@ -192,7 +203,7 @@ function AnalyticsTopBar({
               }
             }}
             placeholder="Search robots..."
-            className="w-full h-12 pl-12 pr-4 rounded-full bg-surface-container-low border border-outline-variant/60 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+            className="w-full h-10 sm:h-12 pl-10 sm:pl-12 pr-3 sm:pr-4 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm sm:text-base text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
           />
         </label>
 
@@ -205,13 +216,21 @@ function AnalyticsTopBar({
         )}
       </div>
 
-      <div className="flex-1" />
+      <div className="hidden lg:block flex-1" />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <button
           type="button"
           onClick={onAddRobot}
-          className="inline-flex items-center gap-2.5 h-12 px-6 rounded-full bg-primary-container text-on-primary font-semibold hover:opacity-95 active:scale-[0.98] transition shadow-warm-sm"
+          aria-label="Add robot"
+          className="sm:hidden inline-flex items-center justify-center h-10 w-10 rounded-full bg-primary-container text-on-primary hover:opacity-95 active:scale-[0.98] transition shadow-warm-sm"
+        >
+          <Plus className="w-5 h-5" strokeWidth={2.5} />
+        </button>
+        <button
+          type="button"
+          onClick={onAddRobot}
+          className="hidden sm:inline-flex items-center gap-2.5 h-11 sm:h-12 px-5 sm:px-6 rounded-full bg-primary-container text-on-primary font-semibold hover:opacity-95 active:scale-[0.98] transition shadow-warm-sm"
         >
           <span className="w-5 h-5 rounded-full bg-on-primary/15 flex items-center justify-center">
             <Plus className="w-4 h-4" strokeWidth={2.5} />
@@ -219,7 +238,7 @@ function AnalyticsTopBar({
           Add Robot
         </button>
 
-        <AvatarPrimitive.Root className="ml-1 relative flex h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-primary-container/20">
+        <AvatarPrimitive.Root className="hidden sm:flex ml-1 relative h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-primary-container/20">
           <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center bg-primary-container text-on-primary text-xs font-bold">
             BR
           </AvatarPrimitive.Fallback>
@@ -286,7 +305,7 @@ function IconButton({ children, label }) {
   );
 }
 
-function RobotAnalyticsCard({ robot, onRemove }) {
+function RobotAnalyticsCard({ robot, onRemove, onMetricClick }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -301,14 +320,14 @@ function RobotAnalyticsCard({ robot, onRemove }) {
       {open && (
         <>
           <div className="grid grid-cols-12 gap-0 border-b border-outline-variant/40">
-            <div className="col-span-12 xl:col-span-8 p-6 border-b xl:border-b-0 xl:border-r border-outline-variant/40">
+            <div className="col-span-12 xl:col-span-8 p-4 sm:p-6 border-b xl:border-b-0 xl:border-r border-outline-variant/40">
               <PointBreakdownChart matches={robot.matches} />
             </div>
             <div className="col-span-12 xl:col-span-4">
               <StatGrid stats={robot.stats} />
             </div>
           </div>
-          <MatchDataTable rows={robot.rows} />
+          <MatchDataTable rows={robot.rows} onMetricClick={onMetricClick} />
         </>
       )}
     </article>
@@ -318,7 +337,7 @@ function RobotAnalyticsCard({ robot, onRemove }) {
 function CardHeader({ robot, onRemove, collapsed, onToggle }) {
   return (
     <div className="bg-primary-container text-on-primary">
-      <div className="flex items-center gap-3 px-6 py-4">
+      <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4">
         <button
           type="button"
           onClick={onToggle}
@@ -333,16 +352,16 @@ function CardHeader({ robot, onRemove, collapsed, onToggle }) {
           )}
         </button>
 
-        <h3 className="text-base font-semibold tracking-tight whitespace-nowrap">
+        <h3 className="text-sm sm:text-base font-semibold tracking-tight truncate">
           {robot.team} - {robot.name}
         </h3>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="text-right leading-tight">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-on-primary/70">
+            <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-on-primary/70">
               EPA Rank
             </div>
-            <div className="text-sm font-semibold">
+            <div className="text-xs sm:text-sm font-semibold">
               {robot.epaRank} of {robot.epaTotal}
             </div>
           </div>
@@ -531,7 +550,7 @@ function Stat({ label, value, variant, valueMuted, className }) {
   return (
     <div
       className={cn(
-        "px-4 py-5 flex flex-col justify-center gap-1.5",
+        "px-3 sm:px-4 py-3 sm:py-5 flex flex-col justify-center gap-1 sm:gap-1.5",
         isDark && "bg-primary-container text-on-primary",
         isCoral && "bg-accent-coral text-on-surface",
         !isDark && !isCoral && "bg-surface-container-lowest",
@@ -540,7 +559,7 @@ function Stat({ label, value, variant, valueMuted, className }) {
     >
       <span
         className={cn(
-          "text-[10px] font-bold uppercase tracking-widest",
+          "text-[9px] sm:text-[10px] font-bold uppercase tracking-widest",
           isDark ? "text-on-primary/80" : "text-on-surface-variant"
         )}
       >
@@ -548,9 +567,9 @@ function Stat({ label, value, variant, valueMuted, className }) {
       </span>
       <span
         className={cn(
-          "font-mono text-2xl font-semibold leading-none",
+          "font-mono text-lg sm:text-2xl font-semibold leading-none",
           isDark && "text-on-primary",
-          isCoral && (valueMuted ? "text-on-surface/85 text-base" : "text-on-surface"),
+          isCoral && (valueMuted ? "text-on-surface/85 text-sm sm:text-base" : "text-on-surface"),
           !isDark && !isCoral && "text-on-surface"
         )}
       >
@@ -562,38 +581,53 @@ function Stat({ label, value, variant, valueMuted, className }) {
 
 const TABLE_COLUMNS = [
   { id: "match", header: "Match" },
-  { id: "scoreBps", header: "Score BPS" },
-  { id: "passBps", header: "Pass BPS" },
-  { id: "defBps", header: "Def BPS" },
-  { id: "drive", header: "Drive (1-6)" },
-  { id: "pass", header: "Pass (1-4)" },
-  { id: "defense", header: "Def (1-4)" },
-  { id: "steal", header: "Steal (1-4)" },
+  { id: "scoreBps", header: "Score BPS", clickable: true },
+  { id: "passBps", header: "Pass BPS", clickable: true },
+  { id: "defBps", header: "Def BPS", clickable: true },
+  { id: "drive", header: "Drive (1-6)", clickable: true },
+  { id: "pass", header: "Pass (1-4)", clickable: true },
+  { id: "defense", header: "Def (1-4)", clickable: true },
+  { id: "steal", header: "Steal (1-4)", clickable: true },
   { id: "brokeDie", header: "Broke/Die?" },
   { id: "driveNote", header: "Drive Note" },
   { id: "defNote", header: "Def Note" },
 ];
 
-function MatchDataTable({ rows = [] }) {
+function MatchDataTable({ rows = [], onMetricClick }) {
   return (
     <div className="overflow-x-auto scrollbar-warm">
-      <table className="w-full border-collapse text-sm min-w-[1100px]">
+      <table className="w-full border-collapse text-xs sm:text-sm min-w-275">
         <thead className="bg-surface-container-low border-b border-outline-variant/40">
           <tr>
-            {TABLE_COLUMNS.map((c) => (
-              <th
-                key={c.id}
-                className="px-4 py-3 text-left text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap"
-              >
-                {c.header}
-              </th>
-            ))}
+            {TABLE_COLUMNS.map((c) =>
+              c.clickable && onMetricClick ? (
+                <th
+                  key={c.id}
+                  className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap"
+                >
+                  <button
+                    type="button"
+                    onClick={() => onMetricClick(c)}
+                    className="text-on-surface-variant hover:text-primary-container hover:underline underline-offset-4 decoration-2 decoration-primary-container/40 transition-colors"
+                  >
+                    {c.header}
+                  </button>
+                </th>
+              ) : (
+                <th
+                  key={c.id}
+                  className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap"
+                >
+                  {c.header}
+                </th>
+              )
+            )}
           </tr>
         </thead>
         <tbody className="divide-y divide-outline-variant/30">
           {rows.map((row) => (
             <tr key={row.match} className="hover:bg-primary-container/3">
-              <td className="px-4 py-4 font-bold text-on-surface text-base text-center">
+              <td className="px-3 py-2 font-bold text-on-surface text-sm sm:text-base text-center">
                 {row.match}
               </td>
               <BpsCell value={row.scoreBps} bold={row.highlight} />
@@ -607,13 +641,13 @@ function MatchDataTable({ rows = [] }) {
               <NumCell value={row.pass} />
               <NumCell value={row.defense} />
               <NumCell value={row.steal} />
-              <td className="px-4 py-4 text-center text-on-surface-variant">
+              <td className="px-3 py-2 text-center text-on-surface-variant">
                 {row.brokeDie ? "TRUE" : "FALSE"}
               </td>
-              <td className="px-4 py-4 text-on-surface-variant max-w-[260px] truncate">
+              <td className="px-3 py-2 text-on-surface-variant max-w-65 truncate">
                 {row.driveNote}
               </td>
-              <td className="px-4 py-4 text-on-surface-variant">
+              <td className="px-3 py-2 text-on-surface-variant">
                 {row.defNote}
               </td>
             </tr>
@@ -628,7 +662,7 @@ function BpsCell({ value, bold, highlight }) {
   return (
     <td
       className={cn(
-        "px-4 py-4 font-mono",
+        "px-3 py-2 font-mono",
         highlight && "bg-chart-scoring/30",
         bold ? "font-bold text-on-surface" : "text-on-surface"
       )}
@@ -642,7 +676,7 @@ function NumCell({ value }) {
   return (
     <td
       className={cn(
-        "px-4 py-4 text-center font-mono",
+        "px-3 py-2 text-center font-mono",
         value === "-" ? "text-on-surface-variant" : "text-on-surface"
       )}
     >

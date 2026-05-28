@@ -9,6 +9,8 @@ const badgeVariants = cva(
       variant: {
         synced: "bg-blue-600 text-white px-2 py-1 rounded-sm",
         drafting: "bg-[#c46a1c] text-white px-2 py-1 rounded-sm",
+        event:
+          "bg-secondary-container text-on-secondary-container px-2 py-1 rounded-sm",
         stable:
           "bg-primary-container/85 text-on-primary px-3 py-1 rounded-full",
         reeval:

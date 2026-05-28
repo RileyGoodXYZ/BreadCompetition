@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef(function DialogContent(
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "picklist-app fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
+          "picklist-app fixed left-1/2 top-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2",
           "bg-surface-container-lowest border border-outline-variant/60 rounded-lg shadow-warm-lg",
           "font-sans text-left text-on-surface",
           "flex flex-col max-h-[90vh] overflow-hidden",
@@ -62,7 +62,7 @@ function DialogHeader({ className, ...props }) {
   return (
     <div
       className={cn(
-        "p-6 pb-4 flex flex-col gap-1 border-b border-outline-variant/60",
+        "p-4 sm:p-6 sm:pb-4 flex flex-col gap-1 border-b border-outline-variant/60",
         className
       )}
       {...props}
@@ -74,7 +74,7 @@ function DialogFooter({ className, ...props }) {
   return (
     <div
       className={cn(
-        "p-5 bg-surface-container-low border-t border-outline-variant/60 flex items-center justify-end gap-3",
+        "p-3 sm:p-5 bg-surface-container-low border-t border-outline-variant/60 flex items-center justify-end gap-2 sm:gap-3",
         className
       )}
       {...props}
@@ -90,7 +90,7 @@ const DialogTitle = React.forwardRef(function DialogTitle(
     <DialogPrimitive.Title
       ref={ref}
       className={cn(
-        "text-2xl font-semibold tracking-tight text-on-surface",
+        "text-xl sm:text-2xl font-semibold tracking-tight text-on-surface",
         className
       )}
       {...props}

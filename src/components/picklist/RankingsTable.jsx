@@ -49,7 +49,7 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
     .filter((c) => c.checked && METRIC_COLUMNS[c.id])
     .map((c) => c.id);
 
-  const minWidth = 720 + activeMetricCols.length * 120;
+  const minWidth = 600 + activeMetricCols.length * 110;
 
   const [dragIdx, setDragIdx] = useState(null);
   const [hover, setHover] = useState(null); 
@@ -103,7 +103,7 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
         >
           <thead className="bg-surface-container border-b border-outline-variant/30">
             <tr>
-              <Th className="w-14" />
+              <Th className="w-10" />
               <Th>#</Th>
               <Th>Robot</Th>
               {activeMetricCols.map((id) => (
@@ -145,10 +145,10 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
                         draggable ? `Drag to reorder ${t.number}` : undefined
                       }
                     >
-                      <GripVertical className="w-5 h-5" />
+                      <GripVertical className="w-4 h-4" />
                     </span>
                   </Td>
-                  <Td className="font-mono text-on-surface">
+                  <Td className="font-mono text-sm text-on-surface">
                     {String(t.rank).padStart(2, "0")}
                   </Td>
                   <Td>
@@ -158,12 +158,12 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
                       // as the start of a row drag.
                       onMouseDown={(e) => e.stopPropagation()}
                       draggable={false}
-                      className="flex items-center gap-4 group/link"
+                      className="flex items-center gap-2.5 group/link"
                     >
-                      <div className="w-9 h-9 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[12px] text-primary-container">
+                      <div className="w-7 h-7 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[11px] text-primary-container">
                         {t.number}
                       </div>
-                      <span className="font-semibold text-on-surface whitespace-nowrap group-hover/link:underline underline-offset-4 decoration-2 decoration-primary-container/40">
+                      <span className="font-semibold text-sm text-on-surface whitespace-nowrap group-hover/link:underline underline-offset-4 decoration-2 decoration-primary-container/40">
                         {t.name}
                       </span>
                     </Link>
@@ -194,7 +194,7 @@ function Th({ className = "", children }) {
   return (
     <th
       className={cn(
-        "px-4 py-4 text-left text-[12px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
+        "px-3 py-2.5 text-left text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
         className
       )}
     >
@@ -205,7 +205,7 @@ function Th({ className = "", children }) {
 
 function Td({ className = "", children }) {
   return (
-    <td className={cn("px-4 py-4 whitespace-nowrap", className)}>{children}</td>
+    <td className={cn("px-3 py-2 whitespace-nowrap", className)}>{children}</td>
   );
 }
 

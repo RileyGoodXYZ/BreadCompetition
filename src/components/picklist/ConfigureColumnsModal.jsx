@@ -80,7 +80,7 @@ export function ConfigureColumnsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="w-[calc(100vw-1.5rem)]">
         <DialogHeader>
           <DialogTitle>Configure Data Columns</DialogTitle>
           <DialogDescription>

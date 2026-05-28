@@ -16,8 +16,8 @@ export function RobotCard({
     <article
       className={cn(
         "relative bg-surface-container-lowest border border-primary-container/10 rounded-lg overflow-hidden",
-        "flex flex-col p-6 shadow-warm-sm transition-all hover:shadow-warm-md",
-        "h-180",
+        "flex flex-col p-4 sm:p-6 shadow-warm-sm transition-all hover:shadow-warm-md",
+        "h-140 sm:h-180",
         className
       )}
     >
@@ -45,7 +45,7 @@ export function RobotCard({
         </div>
 
         {/* Robot image */}
-        <div className="h-48 relative bg-surface-container-highest rounded-md overflow-hidden mb-4 border border-primary-container/10 shadow-inner group">
+        <div className="h-32 sm:h-48 relative bg-surface-container-highest rounded-md overflow-hidden mb-3 sm:mb-4 border border-primary-container/10 shadow-inner group">
           {robot.image && (
             <img
               src={robot.image}
@@ -60,7 +60,7 @@ export function RobotCard({
 
         {/* Trend — taller, with header + peak label */}
         {robot.trend && (
-          <div className="mb-4 space-y-2">
+          <div className="mb-3 sm:mb-4 space-y-2">
             <div className="flex justify-between items-center px-1">
               <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-tighter">
                 Performance Trend
@@ -78,7 +78,7 @@ export function RobotCard({
                 </span>
               )}
             </div>
-            <div className="flex items-end gap-1.5 h-24 bg-surface-container/50 p-3 rounded-md">
+            <div className="flex items-end gap-1 sm:gap-1.5 h-16 sm:h-24 bg-surface-container/50 p-2 sm:p-3 rounded-md">
               {robot.trend.bars.map((b, i) => {
                 const tone = b.tone ?? "primary";
                 const h = Math.max(0.06, Math.min(1, b.height));
@@ -108,12 +108,12 @@ export function RobotCard({
       <div
         ref={scrollRef}
         onScroll={onScroll}
-        className="flex-1 overflow-y-auto scrollbar-warm pr-2 mb-6"
+        className="flex-1 overflow-y-auto scrollbar-warm pr-2 mb-3 sm:mb-6"
       >
-        <table className="w-full text-[12px]">
+        <table className="w-full text-[11px] sm:text-[12px]">
           <tbody className="divide-y divide-outline-variant/10">
             {robot.metrics?.map((m) => (
-              <tr key={m.label} className="flex justify-between py-1.5">
+              <tr key={m.label} className="flex justify-between py-1 sm:py-1.5">
                 <td className="font-bold uppercase text-on-surface-variant">
                   {m.label}
                 </td>

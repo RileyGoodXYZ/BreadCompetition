@@ -127,15 +127,15 @@ export const STRATEGIES = [
     scenarios: [
       {
         id: "win-auto",
-        title: "Our Win Auto",
+        title: "Win Auto",
         tone: "ours",
         teams: ["5940", "118", "2056"],
         cells: {},
       },
       {
         id: "lose-auto",
-        title: "Our Lose Auto",
-        tone: "ours-muted",
+        title: "Lose Auto",
+        tone: "ours",
         teams: ["5940", "118", "2056"],
         cells: {},
       },
@@ -159,15 +159,15 @@ export const STRATEGIES = [
     scenarios: [
       {
         id: "win-auto",
-        title: "Our Win Auto",
+        title: "Win Auto",
         tone: "ours",
         teams: ["5940", "1678", "118"],
         cells: {},
       },
       {
         id: "lose-auto",
-        title: "Our Lose Auto",
-        tone: "ours-muted",
+        title: "Lose Auto",
+        tone: "ours",
         teams: ["5940", "1678", "118"],
         cells: {},
       },

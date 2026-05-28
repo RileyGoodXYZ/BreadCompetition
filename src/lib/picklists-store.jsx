@@ -81,6 +81,19 @@ export function PicklistsProvider({ children }) {
     [findKind, setterFor]
   );
 
+  const createPicklist = useCallback(({ title, event }) => {
+    const id = `p-${Date.now()}`;
+    const picklist = {
+      id,
+      title,
+      event,
+      teamCount: 0,
+      updatedLabel: "Just now",
+    };
+    setMyLists((prev) => [picklist, ...prev]);
+    return id;
+  }, []);
+
   const value = useMemo(
     () => ({
       sharedLists,
@@ -91,6 +104,7 @@ export function PicklistsProvider({ children }) {
       setArchived,
       rename,
       remove,
+      createPicklist,
     }),
     [
       sharedLists,
@@ -101,6 +115,7 @@ export function PicklistsProvider({ children }) {
       setArchived,
       rename,
       remove,
+      createPicklist,
     ]
   );
 

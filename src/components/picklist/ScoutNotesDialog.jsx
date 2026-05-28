@@ -14,9 +14,9 @@ export function ScoutNotesDialog({ open, onOpenChange, robot }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl w-[calc(100vw-1.5rem)]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-2xl">
             {robot ? (
               <>
                 <Link
@@ -40,7 +40,7 @@ export function ScoutNotesDialog({ open, onOpenChange, robot }) {
             </p>
           ) : (
             <div className="overflow-x-auto scrollbar-warm">
-              <table className="w-full border-collapse text-left min-w-[720px]">
+              <table className="w-full border-collapse text-left min-w-160">
                 <thead className="bg-surface-container border-b border-outline-variant/30">
                   <tr>
                     <Th>Match</Th>
@@ -48,7 +48,7 @@ export function ScoutNotesDialog({ open, onOpenChange, robot }) {
                     <Th>Teleop</Th>
                     <Th>Endgame</Th>
                     <Th>Scouter</Th>
-                    <Th className="min-w-[260px]">Note</Th>
+                    <Th className="min-w-50">Note</Th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/20">
@@ -84,7 +84,7 @@ export function ScoutNotesDialog({ open, onOpenChange, robot }) {
 function Th({ className = "", children }) {
   return (
     <th
-      className={`px-4 py-3 text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider ${className}`}
+      className={`px-3 py-2 text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider ${className}`}
     >
       {children}
     </th>
@@ -92,5 +92,5 @@ function Th({ className = "", children }) {
 }
 
 function Td({ className = "", children }) {
-  return <td className={`px-4 py-3 align-top text-sm ${className}`}>{children}</td>;
+  return <td className={`px-3 py-2 align-top text-xs sm:text-sm ${className}`}>{children}</td>;
 }

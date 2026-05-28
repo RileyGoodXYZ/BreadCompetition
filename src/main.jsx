@@ -15,6 +15,7 @@ import MatchStrategyLibrary from './pages/match-strategy/Library';
 import MatchStrategyDetail from './pages/match-strategy/Detail';
 import RequireAuth from './utils/RequireAuth';
 import { PicklistsProvider } from './lib/picklists-store';
+import { MatchStrategyProvider } from './lib/match-strategy-store';
 
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -23,6 +24,8 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId="1052919843340-og0i5nd5otropoqgtdqbla3lrsr4o1pd.apps.googleusercontent.com">
   <BrowserRouter>
+      <PicklistsProvider>
+      <MatchStrategyProvider>
       <Routes>
         <Route path="/" element={
             <Profile />
@@ -55,36 +58,17 @@ createRoot(document.getElementById('root')).render(
             <Teleop />
           </RequireAuth>
         } />
-        <Route
-          path="/picklists"
-          element={
-            <PicklistsProvider>
-              <Library />
-            </PicklistsProvider>
-          }
-        />
-        <Route
-          path="/robot-data"
-          element={
-            <PicklistsProvider>
-              <RobotData />
-            </PicklistsProvider>
-          }
-        />
-        <Route
-          path="/picklists/:id"
-          element={
-            <PicklistsProvider>
-              <Manager />
-            </PicklistsProvider>
-          }
-        />
+        <Route path="/picklists" element={<Library />} />
+        <Route path="/robot-data" element={<RobotData />} />
+        <Route path="/picklists/:id" element={<Manager />} />
         <Route path="/match-strategy" element={<MatchStrategyLibrary />} />
         <Route
           path="/match-strategy/:id"
           element={<MatchStrategyDetail />}
         />
       </Routes>
+      </MatchStrategyProvider>
+      </PicklistsProvider>
     </BrowserRouter>
     </GoogleOAuthProvider>
   </StrictMode>,
