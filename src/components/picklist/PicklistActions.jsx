@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { usePicklists } from "@/lib/picklists-store";
 import { cn } from "@/lib/utils";
 
-// Picklist action dropdow 
+// Picklist action dropdown
 export function PicklistActions({
   picklist: picklistProp,
   picklistId,

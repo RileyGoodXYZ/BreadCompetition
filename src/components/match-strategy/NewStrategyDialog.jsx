@@ -44,7 +44,6 @@ export function NewStrategyDialog({ open, onOpenChange, onCreate }) {
 
   const blueIsOurs = blue.includes(OUR_TEAM);
   const redIsOurs = red.includes(OUR_TEAM);
-  // Tie/missing 5940 → default blue = ours so the table still renders.
   const ourIsBlue = blueIsOurs || !redIsOurs;
 
   const submit = (e) => {

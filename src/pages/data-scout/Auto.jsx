@@ -62,7 +62,7 @@ function Auto() {
       localStorage.getItem('profile_is_signed_in') !== 'true' &&
       !isPracticeSession()
     ) {
-      navigate('/profile');
+      navigate('/data-scout/profile');
     }
   }, [navigate]);
   useEffect(() => {
@@ -85,7 +85,7 @@ function Auto() {
 
   useEffect(() => {
     if (isAutoDisabledSession() || !currentScoutCanUseAuto()) {
-      navigate('/teleop', { replace: true });
+      navigate('/data-scout/teleop', { replace: true });
     }
   }, [navigate]);
   const incrementAutoCount = (key, setter) => {
@@ -212,11 +212,11 @@ function Auto() {
 
         </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap', width: '100%' }}>
-          <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/prematch')}>Back</button>
+          <button className="navBtns" style={{ flex: '1 1 auto', minWidth: '100px' }} onClick={() => navigate('/data-scout/prematch')}>Back</button>
           <button
             className="navBtns"
             style={{ flex: '1 1 auto', minWidth: '100px' }}
-            onClick={() => navigate(isTeleopV2Session() ? '/teleop' : '/endgame')}
+            onClick={() => navigate(isTeleopV2Session() ? '/data-scout/teleop' : '/data-scout/endgame')}
           >
             Next
           </button>

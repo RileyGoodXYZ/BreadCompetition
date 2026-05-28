@@ -23,7 +23,7 @@ function Endgame() {
       localStorage.getItem('profile_is_signed_in') !== 'true' &&
       !isPracticeSession()
     ) {
-      navigate('/profile');
+      navigate('/data-scout/profile');
     }
   }, [navigate]);
 
@@ -129,12 +129,12 @@ function Endgame() {
           className="navBtns"
           style={{ flex: '1 1 auto', minWidth: '100px' }}
           onClick={() =>
-            navigate(currentScoutCanUseAuto() && !isTeleopV2Session() ? '/auto' : '/teleop')
+            navigate(currentScoutCanUseAuto() && !isTeleopV2Session() ? '/data-scout/auto' : '/data-scout/teleop')
           }
         >
           Back
         </button>
-        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/Submit')}>Next</button>
+        <button className = "navBtns" style={{ flex: '1 1 auto', minWidth: '100px'}} onClick={() => navigate('/data-scout/submit')}>Next</button>
       </div>
     </div>
   );

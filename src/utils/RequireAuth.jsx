@@ -9,7 +9,7 @@ const RequireAuth = ({ children }) => {
   const allowWithoutSignIn = isPracticeSession();
   if (window.location.hostname !== 'localhost' && !isSignedIn && !allowWithoutSignIn) {
     alert("Please sign in!");
-    return <Navigate to="/profile" state={{ from: location }} replace />;
+    return <Navigate to="/data-scout/profile" state={{ from: location }} replace />;
   }
   return <>{children}</>;
 };

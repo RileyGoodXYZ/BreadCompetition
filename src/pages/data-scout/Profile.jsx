@@ -104,7 +104,7 @@ function Profile() {
             alert('Please sign in first.');
             return;
           }
-          navigate('/Prematch');
+          navigate('/data-scout/prematch');
         }}
         disabled={
           window.location.hostname !== 'localhost' &&

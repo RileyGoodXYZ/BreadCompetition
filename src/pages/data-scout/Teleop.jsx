@@ -11,13 +11,13 @@ export default function TeleopV1() {
       localStorage.getItem('profile_is_signed_in') !== 'true' &&
       !isPracticeSession()
     ) {
-      navigate('/profile');
+      navigate('/data-scout/profile');
     }
   }, [navigate]);
   
   useEffect(() => {
     if (currentScoutCanUseAuto() && !isTeleopV2Session()) {
-      navigate('/endgame', { replace: true });
+      navigate('/data-scout/endgame', { replace: true });
     }
   }, [navigate]);
 
@@ -133,12 +133,12 @@ export default function TeleopV1() {
 
   const handleBack = () => {
     stopAnyRunningTimer();
-    navigate(currentScoutCanUseAuto() && !isAutoDisabledSession() ? '/auto' : '/prematch');
+    navigate(currentScoutCanUseAuto() && !isAutoDisabledSession() ? '/data-scout/auto' : '/data-scout/prematch');
   };
 
   const handleNext = () => {
     stopAnyRunningTimer();
-    navigate('/endgame');
+    navigate('/data-scout/endgame');
   };
 
   return (

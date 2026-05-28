@@ -34,7 +34,9 @@ export default function Library() {
   const activeShared = sharedLists.filter((p) => !p.archived).sort(byStarred);
   const activeMy = myLists.filter((p) => !p.archived).sort(byStarred);
   const archived = [
-    ...sharedLists.filter((p) => p.archived).map((p) => ({ ...p, _kind: "shared" })),
+    ...sharedLists
+      .filter((p) => p.archived)
+      .map((p) => ({ ...p, _kind: "shared" })),
     ...myLists.filter((p) => p.archived).map((p) => ({ ...p, _kind: "my" })),
   ];
 
@@ -92,7 +94,18 @@ export default function Library() {
                   onOpen={() => openPicklist(p.id)}
                 />
               ))}
-              <CreatePicklistCard onClick={() => setDialogOpen(true)} />
+              <button
+                type="button"
+                onClick={() => setDialogOpen(true)}
+                className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
+              >
+                <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
+                  <Plus className="w-8 h-8" strokeWidth={2} />
+                </span>
+                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary-container transition-colors">
+                  Create New
+                </span>
+              </button>
             </div>
           </section>
 
@@ -134,13 +147,7 @@ function SectionHeader({ icon: Icon, title }) {
 }
 
 function PicklistCard({ picklist, variant, onOpen }) {
-  const {
-    title,
-    event,
-    collaborators = [],
-    updatedLabel,
-    starred,
-  } = picklist;
+  const { title, event, collaborators = [], updatedLabel, starred } = picklist;
   const isShared = variant === "shared";
   const visibleCollabs = collaborators.slice(0, 4);
   const overflow = collaborators.length - visibleCollabs.length;
@@ -205,23 +212,6 @@ function PicklistCard({ picklist, variant, onOpen }) {
         </div>
       </div>
     </article>
-  );
-}
-
-function CreatePicklistCard({ onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
-    >
-      <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
-        <Plus className="w-8 h-8" strokeWidth={2} />
-      </span>
-      <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary-container transition-colors">
-        Create New
-      </span>
-    </button>
   );
 }
 

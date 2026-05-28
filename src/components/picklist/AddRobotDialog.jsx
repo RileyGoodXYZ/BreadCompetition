@@ -12,16 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
-/**
- * Modal picker for choosing one (or many) teams from the scouted pool.
- *
- *  pool          – all available teams (TEAM_POOL)
- *  alreadyInUse  – team numbers already on the board (excluded from results)
- *  multi         – false: single pick, auto-closes (default)
- *                  true:  checkbox list + Add-selected footer
- *  onPick(team)  – fired in single mode (one team)
- *  onPickMany(teams) – fired in multi mode (array of teams)
- */
+// Modal picker for choosing one (or many) teams from the scouted pool.
 export function AddRobotDialog({
   open,
   onOpenChange,

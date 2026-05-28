@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { label: "Picklists", icon: ListChecks, href: "/picklists" },
   { label: "Robot Data", icon: BarChart3, href: "/robot-data" },
   { label: "Match Strategy", icon: Swords, href: "/match-strategy" },
-  { label: "Match Scouting", icon: Cpu, href: "/prematch" },
+  { label: "Match Scouting", icon: Cpu, href: "/data-scout/prematch" },
   { label: "Pit Scouting", icon: Wrench, href: "/pit" },
   { label: "Settings", icon: Cog, href: "/settings" },
 ];

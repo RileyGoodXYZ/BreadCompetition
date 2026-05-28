@@ -21,7 +21,7 @@ import { installViewportTracker } from './lib/viewport';
 installViewportTracker();
 
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -30,33 +30,30 @@ createRoot(document.getElementById('root')).render(
       <PicklistsProvider>
       <MatchStrategyProvider>
       <Routes>
-        <Route path="/" element={
-            <Profile />
-        } />
-        <Route path="/profile" element={
-            <Profile />
-        } />
-        <Route path="/prematch" element={
+        <Route path="/" element={<Navigate to="/data-scout" replace />} />
+        <Route path="/data-scout" element={<Profile />} />
+        <Route path="/data-scout/profile" element={<Profile />} />
+        <Route path="/data-scout/prematch" element={
           <RequireAuth>
             <Prematch />
           </RequireAuth>
         } />
-        <Route path="/auto" element={
+        <Route path="/data-scout/auto" element={
           <RequireAuth>
             <Auto />
           </RequireAuth>
         } />
-        <Route path="/endgame" element={
+        <Route path="/data-scout/endgame" element={
           <RequireAuth>
             <Endgame />
           </RequireAuth>
         } />
-        <Route path="/submit" element={
+        <Route path="/data-scout/submit" element={
           <RequireAuth>
             <Submit />
           </RequireAuth>
         } />
-        <Route path="/teleop" element={
+        <Route path="/data-scout/teleop" element={
           <RequireAuth>
             <Teleop />
           </RequireAuth>

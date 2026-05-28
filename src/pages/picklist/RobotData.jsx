@@ -22,18 +22,13 @@ import {
 } from "./data";
 
 export default function RobotData() {
-  // Deep-link support: /robot-data?team=5940 opens the page focused on
-  // a specific team (used by every "team name" link across the app).
   const [searchParams] = useSearchParams();
   const targetTeam = searchParams.get("team");
 
-  // Starts with the URL target if present, otherwise the default team.
   const [displayedTeams, setDisplayedTeams] = useState(() =>
     targetTeam ? [targetTeam] : [INITIAL_ANALYTICS_TEAM]
   );
 
-  // React to subsequent ?team= changes (user clicked a link from
-  // elsewhere while already on /robot-data).
   useEffect(() => {
     if (targetTeam) setDisplayedTeams([targetTeam]);
   }, [targetTeam]);

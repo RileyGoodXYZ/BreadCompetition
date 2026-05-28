@@ -42,7 +42,7 @@ function Submit() {
       localStorage.getItem("profile_is_signed_in") !== "true" &&
       !isPracticeSession()
     ) {
-      navigate("/profile");
+      navigate("/data-scout/profile");
     }
   }, [navigate]);
   const toggleReview = (value) => {
@@ -452,14 +452,14 @@ function Submit() {
           <button
             className="navBtns"
             style={{ flex: "1 1 auto", minWidth: "100px" }}
-            onClick={() => navigate("/Endgame")}
+            onClick={() => navigate("/data-scout/endgame")}
           >
             Back
           </button>
           <button
             className="navBtns"
             style={{ flex: "1 1 auto", minWidth: "100px" }}
-            onClick={() => navigate("/Prematch")}
+            onClick={() => navigate("/data-scout/prematch")}
           >
             Next
           </button>

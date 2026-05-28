@@ -20,7 +20,7 @@ function Prematch() {
       localStorage.getItem('profile_is_signed_in') !== 'true' &&
       !isPracticeSession()
     ) {
-      navigate('/profile');
+      navigate('/data-scout/profile');
     }
   }, [navigate]);
   useEffect(() => {
@@ -41,13 +41,13 @@ function Prematch() {
       return;
     }
     if (noShow) {
-      navigate('/submit');
+      navigate('/data-scout/submit');
       return;
     }
     if (currentScoutCanUseAuto() && !isAutoDisabledSession()) {
-      navigate('/auto');
+      navigate('/data-scout/auto');
     } else {
-      navigate('/teleop');
+      navigate('/data-scout/teleop');
     }
   }
 
@@ -268,7 +268,7 @@ function Prematch() {
           <button 
             className="navBtns" 
             style={{ flex: '1 1 auto', minWidth: '100px' }} 
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/data-scout/profile')}
           >
             Back
           </button>
