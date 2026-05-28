@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { GripVertical } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -14,15 +14,15 @@ const BELOW = "below";
 
 const METRIC_COLUMNS = {
   auto: {
-    header: "Auto Avg",
+    header: "Auto",
     cell: (t) => <Mono>{t.auto}</Mono>,
   },
   teleop: {
-    header: "Teleop Avg",
+    header: "Teleop",
     cell: (t) => <Mono>{t.teleop}</Mono>,
   },
   climb: {
-    header: "Climb %",
+    header: "Climb",
     cell: (t) => <Mono>{t.climb}</Mono>,
   },
   speaker: {
@@ -35,10 +35,14 @@ const METRIC_COLUMNS = {
   },
   defense: {
     header: "Defense",
-    cell: (t) => <Badge variant="soft">{t.defense}</Badge>,
+    cell: (t) => (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm bg-surface-container border border-outline-variant/40 text-on-surface-variant text-[10px] font-semibold uppercase tracking-wider">
+        {t.defense}
+      </span>
+    ),
   },
   consistency: {
-    header: "Consistency",
+    header: "Consist.",
     cell: (t) => <Mono>{t.consistency}</Mono>,
   },
 };
@@ -49,10 +53,10 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
     .filter((c) => c.checked && METRIC_COLUMNS[c.id])
     .map((c) => c.id);
 
-  const minWidth = 600 + activeMetricCols.length * 110;
+  const minWidth = 460 + activeMetricCols.length * 64;
 
   const [dragIdx, setDragIdx] = useState(null);
-  const [hover, setHover] = useState(null); 
+  const [hover, setHover] = useState(null);
 
   const draggable = typeof onReorder === "function";
 
@@ -103,20 +107,22 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
         >
           <thead className="bg-surface-container border-b border-outline-variant/30">
             <tr>
-              <Th className="w-10" />
-              <Th>#</Th>
+              <Th className="w-6 px-1" />
+              <Th className="w-8 px-1.5">#</Th>
               <Th>Robot</Th>
               {activeMetricCols.map((id) => (
-                <Th key={id}>{METRIC_COLUMNS[id].header}</Th>
+                <DataTh key={id}>{METRIC_COLUMNS[id].header}</DataTh>
               ))}
-              <Th>Status</Th>
+              <Th className="px-2">Status</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20">
             {teams.map((t, i) => {
               const isDragging = dragIdx === i;
-              const isHoverAbove = hover?.idx === i && hover.position === ABOVE && dragIdx !== i;
-              const isHoverBelow = hover?.idx === i && hover.position === BELOW && dragIdx !== i;
+              const isHoverAbove =
+                hover?.idx === i && hover.position === ABOVE && dragIdx !== i;
+              const isHoverBelow =
+                hover?.idx === i && hover.position === BELOW && dragIdx !== i;
               return (
                 <tr
                   key={t.number}
@@ -135,7 +141,7 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
                       "shadow-[inset_0_-2px_0_0_var(--color-primary-container)]"
                   )}
                 >
-                  <Td className="text-center">
+                  <Td className="text-center px-1">
                     <span
                       className={cn(
                         "inline-flex text-outline group-hover:text-primary-container transition-colors",
@@ -148,7 +154,7 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
                       <GripVertical className="w-4 h-4" />
                     </span>
                   </Td>
-                  <Td className="font-mono text-sm text-on-surface">
+                  <Td className="font-mono text-sm text-on-surface px-1.5">
                     {String(t.rank).padStart(2, "0")}
                   </Td>
                   <Td>
@@ -158,9 +164,9 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
                       // as the start of a row drag.
                       onMouseDown={(e) => e.stopPropagation()}
                       draggable={false}
-                      className="flex items-center gap-2.5 group/link"
+                      className="flex items-center gap-2 group/link"
                     >
-                      <div className="w-7 h-7 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[11px] text-primary-container">
+                      <div className="w-7 h-7 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[11px] text-primary-container shrink-0">
                         {t.number}
                       </div>
                       <span className="font-semibold text-sm text-on-surface whitespace-nowrap group-hover/link:underline underline-offset-4 decoration-2 decoration-primary-container/40">
@@ -169,9 +175,9 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
                     </Link>
                   </Td>
                   {activeMetricCols.map((id) => (
-                    <Td key={id}>{METRIC_COLUMNS[id].cell(t)}</Td>
+                    <DataTd key={id}>{METRIC_COLUMNS[id].cell(t)}</DataTd>
                   ))}
-                  <Td>
+                  <Td className="px-2">
                     <Badge
                       variant={
                         STATUS_VARIANT[t.status?.toLowerCase()] ?? "soft"
@@ -203,14 +209,42 @@ function Th({ className = "", children }) {
   );
 }
 
+function DataTh({ className = "", children }) {
+  return (
+    <th
+      className={cn(
+        "px-1.5 py-2.5 text-center text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
+        className
+      )}
+    >
+      {children}
+    </th>
+  );
+}
+
 function Td({ className = "", children }) {
   return (
     <td className={cn("px-3 py-2 whitespace-nowrap", className)}>{children}</td>
   );
 }
 
+function DataTd({ className = "", children }) {
+  return (
+    <td
+      className={cn(
+        "px-1.5 py-2 whitespace-nowrap text-center",
+        className
+      )}
+    >
+      {children}
+    </td>
+  );
+}
+
 function Mono({ children }) {
   return (
-    <span className="font-mono text-on-surface-variant">{children}</span>
+    <span className="font-mono text-on-surface-variant text-sm">
+      {children}
+    </span>
   );
 }

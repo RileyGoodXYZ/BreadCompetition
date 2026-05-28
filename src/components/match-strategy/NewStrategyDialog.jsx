@@ -68,7 +68,10 @@ export function NewStrategyDialog({ open, onOpenChange, onCreate }) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={submit} className="px-4 sm:px-6 py-4 space-y-5">
+        <form
+          onSubmit={submit}
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-warm px-3 py-3 sm:px-6 sm:py-4 space-y-3 sm:space-y-5"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Match" htmlFor="ns-match">
               <input
@@ -77,7 +80,7 @@ export function NewStrategyDialog({ open, onOpenChange, onCreate }) {
                 value={match}
                 onChange={(e) => setMatch(e.target.value)}
                 placeholder="Qualification 42"
-                className="w-full h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+                className="w-full h-9 sm:h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
               />
             </Field>
             <Field label="Event" htmlFor="ns-event">
@@ -86,7 +89,7 @@ export function NewStrategyDialog({ open, onOpenChange, onCreate }) {
                 value={event}
                 onChange={(e) => setEvent(e.target.value)}
                 placeholder="SVR Regional"
-                className="w-full h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+                className="w-full h-9 sm:h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
               />
             </Field>
           </div>
@@ -107,7 +110,7 @@ export function NewStrategyDialog({ open, onOpenChange, onCreate }) {
           />
 
           {allFilled && !blueIsOurs && !redIsOurs && (
-            <p className="text-[11px] text-on-surface-variant italic">
+            <p className="text-[10px] sm:text-[11px] text-on-surface-variant italic leading-snug">
               Our team isn't on either alliance. Defaulting Blue to
               "Our Alliance".
             </p>
@@ -126,7 +129,7 @@ export function NewStrategyDialog({ open, onOpenChange, onCreate }) {
           </DialogClose>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             disabled={!allFilled}
             onClick={submit}
           >
@@ -141,7 +144,7 @@ export function NewStrategyDialog({ open, onOpenChange, onCreate }) {
 function AllianceFieldset({ title, color, teams, isOurs, onChange }) {
   return (
     <fieldset className="space-y-2">
-      <legend className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+      <legend className="flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 sm:mb-2">
         <span
           className={cn(
             "w-2 h-2 rounded-full",
@@ -164,7 +167,7 @@ function AllianceFieldset({ title, color, teams, isOurs, onChange }) {
             onChange={(e) => onChange(i, e.target.value)}
             placeholder={`Team ${i + 1}`}
             className={cn(
-              "w-full h-10 px-3 rounded-md bg-surface-container-low border text-sm font-mono text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition text-center",
+              "w-full h-9 sm:h-10 px-2 sm:px-3 rounded-md bg-surface-container-low border text-sm font-mono text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition text-center",
               t === OUR_TEAM
                 ? "border-primary-container ring-2 ring-primary-container/20"
                 : "border-outline-variant/60"
@@ -179,7 +182,7 @@ function AllianceFieldset({ title, color, teams, isOurs, onChange }) {
 function Field({ label, htmlFor, children }) {
   return (
     <label htmlFor={htmlFor} className="block space-y-1.5">
-      <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+      <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
         {label}
       </span>
       {children}

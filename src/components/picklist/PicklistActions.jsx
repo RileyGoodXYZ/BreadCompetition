@@ -155,10 +155,10 @@ function RenameDialogBody({ picklist, onCommit }) {
           e.preventDefault();
           submit();
         }}
-        className="px-6 pt-2 pb-6"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-warm px-3 sm:px-6 pt-2 pb-3 sm:pb-6"
       >
         <label className="block space-y-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
             Name
           </span>
           <input
@@ -166,7 +166,7 @@ function RenameDialogBody({ picklist, onCommit }) {
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="w-full h-11 px-4 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+            className="w-full h-9 sm:h-11 px-3 sm:px-4 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
           />
         </label>
       </form>
@@ -182,7 +182,7 @@ function RenameDialogBody({ picklist, onCommit }) {
         </DialogClose>
         <Button
           variant="primary"
-          size="md"
+          size="sm"
           disabled={trimmed.length === 0}
           onClick={submit}
         >

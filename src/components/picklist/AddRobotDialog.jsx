@@ -77,7 +77,7 @@ export function AddRobotDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg w-[calc(100vw-1.5rem)]">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {multi ? "Add Robots" : "Add Robot to Comparison"}
@@ -89,7 +89,7 @@ export function AddRobotDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-6 pt-4">
+        <div className="px-3 pt-3 sm:px-6 sm:pt-4">
           <label className="relative block">
             <span className="sr-only">Search teams</span>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant pointer-events-none" />
@@ -99,12 +99,12 @@ export function AddRobotDialog({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by team number or name…"
-              className="w-full h-10 pl-9 pr-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+              className="w-full h-9 sm:h-10 pl-9 pr-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
             />
           </label>
         </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-warm px-4 pb-4 pt-3 min-h-0">
+        <div className="flex-1 overflow-y-auto scrollbar-warm px-2 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3 min-h-0">
           {candidates.length === 0 ? (
             <p className="text-sm text-on-surface-variant py-8 text-center">
               No matching teams.
@@ -114,7 +114,7 @@ export function AddRobotDialog({
               {candidates.map((t) =>
                 multi ? (
                   <li key={t.team}>
-                    <label className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer bg-surface-container-low hover:bg-primary-container/5 border border-outline-variant/40 hover:border-primary-container/40 transition-colors">
+                    <label className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md cursor-pointer bg-surface-container-low hover:bg-primary-container/5 border border-outline-variant/40 hover:border-primary-container/40 transition-colors">
                       <Checkbox
                         checked={selected.has(t.team)}
                         onCheckedChange={() => toggle(t.team)}
@@ -127,7 +127,7 @@ export function AddRobotDialog({
                     <button
                       type="button"
                       onClick={() => pickSingle(t)}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-md text-left bg-surface-container-low hover:bg-primary-container/5 border border-outline-variant/40 hover:border-primary-container/40 transition-colors"
+                      className="w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md text-left bg-surface-container-low hover:bg-primary-container/5 border border-outline-variant/40 hover:border-primary-container/40 transition-colors"
                     >
                       <TeamRowBody team={t} />
                     </button>
@@ -151,7 +151,7 @@ export function AddRobotDialog({
             </DialogClose>
             <Button
               variant="primary"
-              size="md"
+              size="sm"
               disabled={selected.size === 0}
               onClick={confirmMulti}
             >
@@ -168,14 +168,14 @@ export function AddRobotDialog({
 function TeamRowBody({ team }) {
   return (
     <>
-      <div className="w-10 h-10 shrink-0 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-xs text-primary-container">
+      <div className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[11px] sm:text-xs text-primary-container">
         {team.team}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-on-surface truncate">
+        <div className="text-xs sm:text-sm font-semibold text-on-surface truncate">
           {team.name}
         </div>
-        <div className="text-[11px] font-mono text-on-surface-variant truncate">
+        <div className="text-[10px] sm:text-[11px] font-mono text-on-surface-variant truncate">
           Auto {team.metrics?.find((m) => m.label === "Auto")?.value} · Teleop{" "}
           {team.metrics?.find((m) => m.label === "Teleop")?.value}
         </div>

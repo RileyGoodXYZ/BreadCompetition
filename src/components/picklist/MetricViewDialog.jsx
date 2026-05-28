@@ -121,10 +121,10 @@ export function MetricViewDialog({ open, onOpenChange, metric }) {
                           onClick={() => onOpenChange(false)}
                           className="flex items-center gap-2.5 hover:underline underline-offset-4 decoration-2 decoration-primary-container/40"
                         >
-                          <div className="w-7 h-7 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[11px] text-primary-container">
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[10px] sm:text-[11px] text-primary-container shrink-0">
                             {row.team}
                           </div>
-                          <span className="font-semibold text-sm text-on-surface">
+                          <span className="font-semibold text-xs sm:text-sm text-on-surface">
                             {row.name}
                           </span>
                         </Link>
@@ -170,7 +170,7 @@ function Th({ className = "", children }) {
   return (
     <th
       className={cn(
-        "px-3 py-2 text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
+        "px-2 py-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
         className
       )}
     >
@@ -181,7 +181,12 @@ function Th({ className = "", children }) {
 
 function Td({ className = "", children }) {
   return (
-    <td className={cn("px-3 py-2 whitespace-nowrap text-sm", className)}>
+    <td
+      className={cn(
+        "px-2 py-1.5 sm:px-3 sm:py-2 whitespace-nowrap text-xs sm:text-sm",
+        className
+      )}
+    >
       {children}
     </td>
   );

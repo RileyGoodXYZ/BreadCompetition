@@ -80,7 +80,7 @@ export function ConfigureColumnsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1.5rem)]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Configure Data Columns</DialogTitle>
           <DialogDescription>
@@ -88,7 +88,7 @@ export function ConfigureColumnsModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto scrollbar-warm px-4 py-4">
+        <div className="flex-1 overflow-y-auto scrollbar-warm px-3 sm:px-4 py-3 sm:py-4">
           <ul className="space-y-2">
             {columns.map((col, i) => {
               const isDragging = dragIdx === i;
@@ -106,7 +106,7 @@ export function ConfigureColumnsModal({
                   onDrop={onDrop(i)}
                   onDragEnd={onDragEnd}
                   className={cn(
-                    "group flex items-center gap-3 p-3 bg-surface-container-low rounded-full border border-outline-variant/60 hover:border-primary-container transition-colors",
+                    "group flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-surface-container-low rounded-full border border-outline-variant/60 hover:border-primary-container transition-colors",
                     isDragging && "opacity-40",
                     isHoverAbove &&
                       "shadow-[inset_0_2px_0_0_var(--color-primary-container)]",
@@ -118,16 +118,16 @@ export function ConfigureColumnsModal({
                     className="text-on-surface-variant cursor-grab active:cursor-grabbing group-hover:text-primary-container transition-colors"
                     aria-label={`Drag ${col.label}`}
                   >
-                    <GripVertical className="w-5 h-5" />
+                    <GripVertical className="w-4 h-4 sm:w-5 sm:h-5" />
                   </span>
-                  <label className="flex items-center gap-3 flex-1 cursor-pointer">
+                  <label className="flex items-center gap-2 sm:gap-3 flex-1 cursor-pointer">
                     <Checkbox
                       checked={col.checked}
                       onCheckedChange={() => toggle(col.id)}
                     />
                     <span
                       className={cn(
-                        "text-sm font-medium flex-1 transition-colors",
+                        "text-xs sm:text-sm font-medium flex-1 transition-colors",
                         col.checked
                           ? "text-on-surface"
                           : "text-on-surface-variant"
@@ -154,7 +154,7 @@ export function ConfigureColumnsModal({
           </DialogClose>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             onClick={() => {
               onSave?.(columns);
               onOpenChange?.(false);

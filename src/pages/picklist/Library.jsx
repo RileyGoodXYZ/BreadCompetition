@@ -43,14 +43,14 @@ export default function Library() {
       <TopBar variant="library" />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-10">
           {/* Page header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-6 mb-6 sm:mb-12">
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-primary-container leading-[1.05]">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-primary-container leading-[1.05]">
                 Picklist Library
               </h1>
-              <p className="text-on-surface-variant text-base sm:text-lg mt-2 max-w-xl">
+              <p className="text-on-surface-variant text-sm sm:text-lg mt-1 sm:mt-2 max-w-xl">
                 Manage, view, and create picklists
               </p>
             </div>
@@ -66,9 +66,9 @@ export default function Library() {
           </div>
 
           {/* Shared section */}
-          <section className="mb-10 sm:mb-16">
+          <section className="mb-6 sm:mb-16">
             <SectionHeader icon={Users} title="Shared Picklists" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
               {activeShared.map((p) => (
                 <PicklistCard
                   key={p.id}
@@ -81,9 +81,9 @@ export default function Library() {
           </section>
 
           {/* My section */}
-          <section className="mb-10 sm:mb-16">
+          <section className="mb-6 sm:mb-16">
             <SectionHeader icon={User} title="My Picklists" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
               {activeMy.map((p) => (
                 <PicklistCard
                   key={p.id}
@@ -148,7 +148,7 @@ function PicklistCard({ picklist, variant, onOpen }) {
   return (
     <article
       onClick={onOpen}
-      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded-lg cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-md p-5 flex flex-col gap-4"
+      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded-md sm:rounded-lg cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-md p-3 sm:p-5 flex flex-col gap-3 sm:gap-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2 min-w-0">
@@ -162,7 +162,7 @@ function PicklistCard({ picklist, variant, onOpen }) {
         <PicklistActions picklist={picklist} />
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-3 pt-2 border-t border-outline-variant/30">
+      <div className="mt-auto flex items-center justify-between gap-2 sm:gap-3 pt-2 border-t border-outline-variant/30">
         {isShared ? (
           collaborators.length > 0 ? (
             <div className="flex -space-x-2">
@@ -213,7 +213,7 @@ function CreatePicklistCard({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group border-2 border-dashed border-outline-variant/60 rounded-lg flex flex-col items-center justify-center min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
+      className="group border-2 border-dashed border-outline-variant/60 rounded-md sm:rounded-lg flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
     >
       <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
         <Plus className="w-8 h-8" strokeWidth={2} />

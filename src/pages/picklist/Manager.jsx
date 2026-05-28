@@ -106,15 +106,15 @@ export default function Manager() {
       />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-12 pb-20">
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-8 space-y-6 sm:space-y-12 pb-20">
           {/* Robot Comparison */}
           <section>
-            <div className="flex items-center justify-between mb-5 sm:mb-7">
-              <h3 className="text-lg sm:text-2xl font-semibold tracking-tight text-on-surface border-l-4 border-primary-container pl-3 sm:pl-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-7">
+              <h3 className="text-base sm:text-2xl font-semibold tracking-tight text-on-surface border-l-4 border-primary-container pl-2 sm:pl-4">
                 Robot Comparison
               </h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-6">
               {slots.map((robot, idx) =>
                 robot ? (
                   <RobotCard
@@ -139,8 +139,8 @@ export default function Manager() {
 
           {/* Picklist Rankings */}
           <section>
-            <div className="flex items-center justify-between gap-3 mb-5 sm:mb-7">
-              <h3 className="text-lg sm:text-2xl font-semibold tracking-tight text-on-surface border-l-4 border-primary-container pl-3 sm:pl-4">
+            <div className="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-7">
+              <h3 className="text-base sm:text-2xl font-semibold tracking-tight text-on-surface border-l-4 border-primary-container pl-2 sm:pl-4">
                 Picklist Rankings
               </h3>
               <Button
@@ -195,8 +195,8 @@ function EmptySlotCard({ onAdd }) {
       type="button"
       onClick={onAdd}
       className={cn(
-        "group h-48 sm:h-180 rounded-lg border-2 border-dashed border-outline-variant/60",
-        "flex flex-col items-center justify-center gap-3 transition-all",
+        "group h-40 sm:h-180 rounded-md sm:rounded-lg border-2 border-dashed border-outline-variant/60",
+        "flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all",
         "hover:border-primary-container hover:bg-primary-container/5"
       )}
     >

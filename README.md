@@ -1,6 +1,7 @@
 This is a React + JavaScript + Vite project. 
 - To get started, run: `npm install`
 - To preview changes, run `npm run dev`
+- To preview changes on mobile, run `npm run dev -- --host` and enter the network link on your phone
 - To verify build, run `npm run build`
 
 # File structure

@@ -188,6 +188,19 @@ body.picklist-mode {
     font-weight: inherit;
     font-family: inherit;
   }
+
+  /*
+   * iOS Safari auto-zooms the viewport when focusing an input whose computed
+   * font-size is below 16px. Force every form field on touch-sized viewports
+   * to at least 16px so focus never triggers an unwanted zoom-in.
+   */
+  @media (max-width: 640px) {
+    .picklist-app input,
+    .picklist-app textarea,
+    .picklist-app select {
+      font-size: 16px;
+    }
+  }
 }
 
 .font-mono {

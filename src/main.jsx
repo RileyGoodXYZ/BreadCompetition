@@ -16,6 +16,9 @@ import MatchStrategyDetail from './pages/match-strategy/Detail';
 import RequireAuth from './utils/RequireAuth';
 import { PicklistsProvider } from './lib/picklists-store';
 import { MatchStrategyProvider } from './lib/match-strategy-store';
+import { installViewportTracker } from './lib/viewport';
+
+installViewportTracker();
 
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';

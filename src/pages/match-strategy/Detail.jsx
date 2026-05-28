@@ -27,21 +27,21 @@ export default function MatchStrategyDetail() {
       <DetailTopBar />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
-        <div className="max-w-350 mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+        <div className="max-w-350 mx-auto w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
           {strategy ? (
             <>
-              <header className="mb-6 sm:mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
+              <header className="mb-4 sm:mb-8">
+                <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-on-surface">
                   {strategy.title}
                 </h1>
                 {strategy.event && (
-                  <p className="text-on-surface-variant text-sm sm:text-base mt-1">
+                  <p className="text-on-surface-variant text-xs sm:text-base mt-0.5 sm:mt-1">
                     {strategy.event}
                   </p>
                 )}
               </header>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-6 sm:gap-y-10 mb-6 sm:mb-10">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-4 sm:gap-y-10 mb-4 sm:mb-10">
                 <AllianceColumn
                   title="Our Alliance"
                   color="blue"
@@ -92,16 +92,16 @@ function DetailTopBar() {
 function AllianceColumn({ title, color, teamNumbers }) {
   return (
     <section>
-      <h2 className="flex items-center gap-2.5 text-xl font-semibold text-on-surface pb-3 mb-4 border-b border-outline-variant/40">
+      <h2 className="flex items-center gap-2 sm:gap-2.5 text-base sm:text-xl font-semibold text-on-surface pb-2 sm:pb-3 mb-2 sm:mb-4 border-b border-outline-variant/40">
         <span
           className={cn(
-            "w-2.5 h-2.5 rounded-full",
+            "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full",
             color === "blue" ? "bg-blue-600" : "bg-red-600"
           )}
         />
         {title}
       </h2>
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {teamNumbers.map((tn) => {
           const team = STRATEGY_TEAM_STATS[tn] ?? placeholderTeam(tn);
           return <TeamCard key={tn} team={team} color={color} />;
@@ -124,7 +124,7 @@ function placeholderTeam(tn) {
 
 function TeamCard({ team, color }) {
   return (
-    <article className="bg-surface-container-lowest border border-outline-variant/50 rounded-2xl px-4 sm:px-5 py-3 sm:py-4">
+    <article className="bg-surface-container-lowest border border-outline-variant/50 rounded-md sm:rounded-2xl px-3 sm:px-5 py-2.5 sm:py-4">
       <div className="flex items-center gap-2 sm:gap-3">
         <h4 className="text-base sm:text-lg font-bold text-on-surface leading-tight truncate">
           <Link
@@ -217,7 +217,7 @@ function StrategyTimelineTable({ strategy }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-outline-variant/50 overflow-hidden bg-surface-container-lowest">
+      <div className="rounded-md sm:rounded-2xl border border-outline-variant/50 overflow-hidden bg-surface-container-lowest">
         <div className="overflow-x-auto scrollbar-warm">
           <table className="w-full border-collapse min-w-250">
             <thead>
@@ -396,9 +396,12 @@ function AddColumnDialog({ open, onOpenChange, onAdd }) {
         <DialogHeader>
           <DialogTitle>Add Column</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="px-4 sm:px-6 py-4">
+        <form
+          onSubmit={submit}
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-warm px-3 py-3 sm:px-6 sm:py-4"
+        >
           <label className="block space-y-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
               Column label
             </span>
             <input
@@ -406,7 +409,7 @@ function AddColumnDialog({ open, onOpenChange, onAdd }) {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g. Defense Plan"
-              className="w-full h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+              className="w-full h-9 sm:h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
             />
           </label>
         </form>
@@ -422,7 +425,7 @@ function AddColumnDialog({ open, onOpenChange, onAdd }) {
           </DialogClose>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             disabled={!trimmed}
             onClick={submit}
           >
@@ -463,9 +466,12 @@ function AddScenarioDialog({ open, onOpenChange, onAdd }) {
         <DialogHeader>
           <DialogTitle>Add Scenario</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="px-4 sm:px-6 py-4 space-y-4">
+        <form
+          onSubmit={submit}
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-warm px-3 py-3 sm:px-6 sm:py-4 space-y-3 sm:space-y-4"
+        >
           <label className="block space-y-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
               Title
             </span>
             <input
@@ -473,11 +479,11 @@ function AddScenarioDialog({ open, onOpenChange, onAdd }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Pressed by defense"
-              className="w-full h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+              className="w-full h-9 sm:h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
             />
           </label>
           <div className="space-y-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
               Alliance
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -510,7 +516,7 @@ function AddScenarioDialog({ open, onOpenChange, onAdd }) {
           </DialogClose>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             disabled={!trimmed}
             onClick={submit}
           >
@@ -536,7 +542,7 @@ function ConfirmDeleteDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <div className="px-4 sm:px-6 py-4 text-sm text-on-surface-variant">
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-warm px-3 py-3 sm:px-6 sm:py-4 text-xs sm:text-sm text-on-surface-variant">
           {target && (
             <p className="mb-2">
               <span className="font-semibold text-on-surface">{target}</span>{" "}
@@ -557,7 +563,7 @@ function ConfirmDeleteDialog({
           </DialogClose>
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             onClick={onConfirm}
             className="bg-error hover:bg-error/90 text-on-error shadow-none"
           >
@@ -580,7 +586,7 @@ function ToneButton({ active, color, onClick, children }) {
       type="button"
       onClick={onClick}
       className={cn(
-        "h-10 px-3 rounded-md border text-sm font-semibold transition-colors",
+        "h-9 sm:h-10 px-2 sm:px-3 rounded-md border text-xs sm:text-sm font-semibold transition-colors",
         active
           ? activeClasses
           : "border-outline-variant/60 text-on-surface-variant hover:border-primary-container hover:text-on-surface bg-surface-container-low"

@@ -14,9 +14,9 @@ export function ScoutNotesDialog({ open, onOpenChange, robot }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[calc(100vw-1.5rem)]">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-2xl">
+          <DialogTitle>
             {robot ? (
               <>
                 <Link
@@ -84,7 +84,7 @@ export function ScoutNotesDialog({ open, onOpenChange, robot }) {
 function Th({ className = "", children }) {
   return (
     <th
-      className={`px-3 py-2 text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider ${className}`}
+      className={`px-2 py-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider ${className}`}
     >
       {children}
     </th>
@@ -92,5 +92,5 @@ function Th({ className = "", children }) {
 }
 
 function Td({ className = "", children }) {
-  return <td className={`px-3 py-2 align-top text-xs sm:text-sm ${className}`}>{children}</td>;
+  return <td className={`px-2 py-1.5 sm:px-3 sm:py-2 align-top text-xs sm:text-sm ${className}`}>{children}</td>;
 }

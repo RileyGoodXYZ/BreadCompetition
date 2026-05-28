@@ -92,9 +92,9 @@ export default function RobotData() {
       />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
-          <header className="mb-5 sm:mb-6">
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-semibold text-on-surface tracking-tight">
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
+          <header className="mb-3 sm:mb-6">
+            <h1 className="text-xl sm:text-4xl lg:text-5xl font-semibold text-on-surface tracking-tight">
               Robot Analytics
             </h1>
           </header>
@@ -102,7 +102,7 @@ export default function RobotData() {
           {cards.length === 0 ? (
             <EmptyState onAddRobot={() => setAddOpen(true)} />
           ) : (
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-3 sm:space-y-6">
               {cards.map((robot) => (
                 <RobotAnalyticsCard
                   key={robot.team}
@@ -140,7 +140,7 @@ function AddAnotherRobotCard({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full border-2 border-dashed border-outline-variant/60 rounded-xl py-5 flex items-center justify-center gap-2 text-on-surface-variant hover:border-primary-container hover:text-primary-container hover:bg-primary-container/5 transition-all"
+      className="w-full border-2 border-dashed border-outline-variant/60 rounded-md sm:rounded-xl py-3 sm:py-5 flex items-center justify-center gap-2 text-on-surface-variant hover:border-primary-container hover:text-primary-container hover:bg-primary-container/5 transition-all"
     >
       <Plus className="w-5 h-5" strokeWidth={2.2} />
       <span className="text-sm font-semibold">Add another robot</span>
@@ -150,7 +150,7 @@ function AddAnotherRobotCard({ onClick }) {
 
 function EmptyState({ onAddRobot }) {
   return (
-    <div className="border border-dashed border-outline-variant/60 rounded-xl py-16 px-6 text-center">
+    <div className="border border-dashed border-outline-variant/60 rounded-md sm:rounded-xl py-10 sm:py-16 px-4 sm:px-6 text-center">
       <div className="w-12 h-12 rounded-full bg-secondary-container/60 text-primary-container flex items-center justify-center mx-auto mb-4">
         <Plus className="w-5 h-5" strokeWidth={2.4} />
       </div>
@@ -309,7 +309,7 @@ function RobotAnalyticsCard({ robot, onRemove, onMetricClick }) {
   const [open, setOpen] = useState(true);
 
   return (
-    <article className="rounded-xl overflow-hidden border border-primary-container/20 bg-surface-container-lowest shadow-warm-sm">
+    <article className="rounded-md sm:rounded-xl overflow-hidden border border-primary-container/20 bg-surface-container-lowest shadow-warm-sm">
       <CardHeader
         robot={robot}
         onRemove={onRemove}
@@ -320,7 +320,7 @@ function RobotAnalyticsCard({ robot, onRemove, onMetricClick }) {
       {open && (
         <>
           <div className="grid grid-cols-12 gap-0 border-b border-outline-variant/40">
-            <div className="col-span-12 xl:col-span-8 p-4 sm:p-6 border-b xl:border-b-0 xl:border-r border-outline-variant/40">
+            <div className="col-span-12 xl:col-span-8 p-3 sm:p-6 border-b xl:border-b-0 xl:border-r border-outline-variant/40">
               <PointBreakdownChart matches={robot.matches} />
             </div>
             <div className="col-span-12 xl:col-span-4">

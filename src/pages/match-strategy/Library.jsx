@@ -26,14 +26,14 @@ export default function MatchStrategyLibrary() {
       <TopBar variant="library" />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-10">
           {/* Page header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-6 mb-6 sm:mb-12">
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-primary-container leading-[1.05]">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-primary-container leading-[1.05]">
                 Match Strategy
               </h1>
-              <p className="text-on-surface-variant text-base sm:text-lg mt-2 max-w-xl">
+              <p className="text-on-surface-variant text-sm sm:text-lg mt-1 sm:mt-2 max-w-xl">
                 Plan plays and counter-plays for upcoming matches.
               </p>
             </div>
@@ -49,17 +49,17 @@ export default function MatchStrategyLibrary() {
           </div>
 
           {/* Section header */}
-          <div className="flex items-center gap-3 mb-5 sm:mb-7">
-            <div className="p-2 bg-secondary-container rounded-md">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-7">
+            <div className="p-1.5 sm:p-2 bg-secondary-container rounded-md">
               <Swords className="w-4 h-4 sm:w-5 sm:h-5 text-on-secondary-fixed-variant" />
             </div>
-            <h3 className="text-lg sm:text-2xl font-semibold uppercase tracking-tight text-on-surface">
+            <h3 className="text-base sm:text-2xl font-semibold uppercase tracking-tight text-on-surface">
               Upcoming Matches
             </h3>
-            <div className="h-px flex-1 bg-outline-variant/50 ml-2 sm:ml-4" />
+            <div className="h-px flex-1 bg-outline-variant/50 ml-1 sm:ml-4" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
             {strategies.map((s) => (
               <StrategyCard
                 key={s.id}
@@ -99,10 +99,10 @@ function StrategyCard({ strategy, onOpen }) {
   return (
     <article
       onClick={onOpen}
-      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-5 cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-lg"
+      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded-md sm:rounded-lg p-3 sm:p-5 cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-lg"
     >
-      <div className="flex items-start justify-between gap-3 mb-1">
-        <h4 className="text-lg font-semibold text-primary-container leading-tight">
+      <div className="flex items-start justify-between gap-2 sm:gap-3 mb-1">
+        <h4 className="text-base sm:text-lg font-semibold text-primary-container leading-tight">
           {title}
         </h4>
         {favored && (
@@ -115,7 +115,7 @@ function StrategyCard({ strategy, onOpen }) {
         {event} · {updatedLabel}
       </p>
 
-      <div className="mt-5 space-y-2">
+      <div className="mt-3 sm:mt-5 space-y-1.5 sm:space-y-2">
         <AllianceRow label="Ours" color="blue" teams={ourAlliance} />
         <AllianceRow label="Opp" color="red" teams={opponentAlliance} />
       </div>
@@ -160,7 +160,7 @@ function CreateStrategyCard({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group border-2 border-dashed border-outline-variant/60 rounded-lg flex flex-col items-center justify-center min-h-[170px] transition-all hover:border-primary-container hover:bg-primary-container/5"
+      className="group border-2 border-dashed border-outline-variant/60 rounded-md sm:rounded-lg flex flex-col items-center justify-center min-h-28 sm:min-h-42.5 transition-all hover:border-primary-container hover:bg-primary-container/5"
     >
       <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
         <Plus className="w-8 h-8" strokeWidth={2} />
