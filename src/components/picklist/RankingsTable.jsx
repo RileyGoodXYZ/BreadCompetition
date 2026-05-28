@@ -53,7 +53,7 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
     .filter((c) => c.checked && METRIC_COLUMNS[c.id])
     .map((c) => c.id);
 
-  const minWidth = 460 + activeMetricCols.length * 64;
+  const minWidth = 460 + activeMetricCols.length * 52;
 
   const [dragIdx, setDragIdx] = useState(null);
   const [hover, setHover] = useState(null);
@@ -160,8 +160,6 @@ export function RankingsTable({ teams, columns = [], onReorder }) {
                   <Td>
                     <Link
                       to={`/robot-data?team=${t.number}`}
-                      // Stop a click on the link from being interpreted
-                      // as the start of a row drag.
                       onMouseDown={(e) => e.stopPropagation()}
                       draggable={false}
                       className="flex items-center gap-2 group/link"
@@ -213,7 +211,7 @@ function DataTh({ className = "", children }) {
   return (
     <th
       className={cn(
-        "px-1.5 py-2.5 text-center text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
+        "px-0 py-2.5 text-center text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
         className
       )}
     >
@@ -232,7 +230,7 @@ function DataTd({ className = "", children }) {
   return (
     <td
       className={cn(
-        "px-1.5 py-2 whitespace-nowrap text-center",
+        "px-1 py-2 whitespace-nowrap text-center",
         className
       )}
     >

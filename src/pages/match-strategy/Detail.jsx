@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Search, Cpu, Plus, X, Trash2 } from "lucide-react";
+import { Search, Plus, X, Trash2 } from "lucide-react";
 import { Shell } from "@/components/picklist/Shell";
 import { MobileMenuButton } from "@/components/picklist/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -124,7 +124,7 @@ function placeholderTeam(tn) {
 
 function TeamCard({ team, color }) {
   return (
-    <article className="bg-surface-container-lowest border border-outline-variant/50 rounded-md sm:rounded-2xl px-3 sm:px-5 py-2.5 sm:py-4">
+    <article className="bg-surface-container-lowest border border-outline-variant/50 rounded sm:rounded-md px-2.5 sm:px-4 py-2 sm:py-3">
       <div className="flex items-center gap-2 sm:gap-3">
         <h4 className="text-base sm:text-lg font-bold text-on-surface leading-tight truncate">
           <Link
@@ -142,7 +142,6 @@ function TeamCard({ team, color }) {
         >
           {color}
         </span>
-        <Cpu className="ml-auto w-5 h-5 text-on-surface-variant shrink-0" />
       </div>
       <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5 mb-3 sm:mb-4">
         Team {team.team}
@@ -217,18 +216,18 @@ function StrategyTimelineTable({ strategy }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md sm:rounded-2xl border border-outline-variant/50 overflow-hidden bg-surface-container-lowest">
+      <div className="rounded sm:rounded-md border border-outline-variant/50 overflow-hidden bg-surface-container-lowest">
         <div className="overflow-x-auto scrollbar-warm">
           <table className="w-full border-collapse min-w-250">
             <thead>
               <tr>
-                <th className="sticky left-0 z-10 bg-secondary-container py-2.5 px-3 sm:px-4 text-left text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-secondary-container w-28 sm:w-36 shadow-[1px_0_0_0_var(--color-outline-variant)]">
+                <th className="sticky left-0 z-10 bg-secondary-container py-2.5 px-3 sm:px-4 text-left text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-secondary-container w-10 sm:w-36 shadow-[1px_0_0_0_var(--color-outline-variant)]">
                   Timeline
                 </th>
                 {columns.map((col) => (
                   <th
                     key={col.id}
-                    className="py-2.5 px-3 sm:px-4 text-left text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant whitespace-nowrap border-l border-outline-variant/30 group/col"
+                    className="py-2.5 px-2 sm:px-2.5 text-left text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant whitespace-nowrap border-l border-outline-variant/30 group/col"
                   >
                     <span className="inline-flex items-center gap-1.5">
                       {col.label}
@@ -327,22 +326,22 @@ function ScenarioBlock({ scenario, columns, onSetCell, onRemove }) {
         <td
           colSpan={colSpan}
           className={cn(
-            "py-2 px-3 sm:px-4 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest sticky left-0",
+            "p-0 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest",
             scenario.tone === "ours" && "bg-blue-600 text-white",
             scenario.tone === "opponent" && "bg-red-600 text-white"
           )}
         >
-          <span className="inline-flex items-center justify-between w-full">
+          <div className="sticky left-0 inline-flex items-center gap-3 px-3 sm:px-4 py-2 w-fit">
             <span>Scenario: {scenario.title}</span>
             <button
               type="button"
               onClick={onRemove}
               aria-label={`Remove ${scenario.title} scenario`}
-              className="ml-3 w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
+              className="w-6 h-6 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
             >
               <X className="w-3.5 h-3.5" strokeWidth={2.5} />
             </button>
-          </span>
+          </div>
         </td>
       </tr>
       {scenario.teams.map((teamNum) => (
@@ -355,7 +354,7 @@ function ScenarioBlock({ scenario, columns, onSetCell, onRemove }) {
             return (
               <td
                 key={col.id}
-                className="border-l border-outline-variant/30 px-1.5 sm:px-2 py-1 sm:py-1.5 align-top"
+                className="border-l border-outline-variant/30 px-1 sm:px-1.5 py-1 sm:py-1.5 align-top"
               >
                 <textarea
                   value={text}

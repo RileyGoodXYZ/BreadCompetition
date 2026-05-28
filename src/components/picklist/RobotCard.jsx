@@ -15,8 +15,8 @@ export function RobotCard({
   return (
     <article
       className={cn(
-        "relative bg-surface-container-lowest border border-primary-container/10 rounded-md sm:rounded-lg overflow-hidden",
-        "flex flex-col p-3 sm:p-6 shadow-warm-sm transition-all hover:shadow-warm-md",
+        "relative bg-surface-container-lowest border border-primary-container/10 rounded sm:rounded-md overflow-hidden",
+        "flex flex-col p-2.5 sm:p-5 shadow-warm-sm transition-all hover:shadow-warm-md",
         "h-140 sm:h-180",
         className
       )}

@@ -195,7 +195,7 @@ function EmptySlotCard({ onAdd }) {
       type="button"
       onClick={onAdd}
       className={cn(
-        "group h-40 sm:h-180 rounded-md sm:rounded-lg border-2 border-dashed border-outline-variant/60",
+        "group h-40 sm:h-180 rounded sm:rounded-md border-2 border-dashed border-outline-variant/60",
         "flex flex-col items-center justify-center gap-2 sm:gap-3 transition-all",
         "hover:border-primary-container hover:bg-primary-container/5"
       )}

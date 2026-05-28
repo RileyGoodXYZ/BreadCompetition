@@ -148,7 +148,7 @@ function PicklistCard({ picklist, variant, onOpen }) {
   return (
     <article
       onClick={onOpen}
-      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded-md sm:rounded-lg cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-md p-3 sm:p-5 flex flex-col gap-3 sm:gap-4"
+      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded sm:rounded-md cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-md p-2.5 sm:p-4 flex flex-col gap-3 sm:gap-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2 min-w-0">
@@ -213,7 +213,7 @@ function CreatePicklistCard({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group border-2 border-dashed border-outline-variant/60 rounded-md sm:rounded-lg flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
+      className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
     >
       <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
         <Plus className="w-8 h-8" strokeWidth={2} />

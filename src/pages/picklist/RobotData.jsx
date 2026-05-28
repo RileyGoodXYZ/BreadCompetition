@@ -140,7 +140,7 @@ function AddAnotherRobotCard({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full border-2 border-dashed border-outline-variant/60 rounded-md sm:rounded-xl py-3 sm:py-5 flex items-center justify-center gap-2 text-on-surface-variant hover:border-primary-container hover:text-primary-container hover:bg-primary-container/5 transition-all"
+      className="w-full border-2 border-dashed border-outline-variant/60 rounded sm:rounded-lg py-2.5 sm:py-4 flex items-center justify-center gap-2 text-on-surface-variant hover:border-primary-container hover:text-primary-container hover:bg-primary-container/5 transition-all"
     >
       <Plus className="w-5 h-5" strokeWidth={2.2} />
       <span className="text-sm font-semibold">Add another robot</span>
@@ -150,7 +150,7 @@ function AddAnotherRobotCard({ onClick }) {
 
 function EmptyState({ onAddRobot }) {
   return (
-    <div className="border border-dashed border-outline-variant/60 rounded-md sm:rounded-xl py-10 sm:py-16 px-4 sm:px-6 text-center">
+    <div className="border border-dashed border-outline-variant/60 rounded sm:rounded-lg py-8 sm:py-14 px-3 sm:px-5 text-center">
       <div className="w-12 h-12 rounded-full bg-secondary-container/60 text-primary-container flex items-center justify-center mx-auto mb-4">
         <Plus className="w-5 h-5" strokeWidth={2.4} />
       </div>
@@ -309,7 +309,7 @@ function RobotAnalyticsCard({ robot, onRemove, onMetricClick }) {
   const [open, setOpen] = useState(true);
 
   return (
-    <article className="rounded-md sm:rounded-xl overflow-hidden border border-primary-container/20 bg-surface-container-lowest shadow-warm-sm">
+    <article className="rounded sm:rounded-lg overflow-hidden border border-primary-container/20 bg-surface-container-lowest shadow-warm-sm">
       <CardHeader
         robot={robot}
         onRemove={onRemove}

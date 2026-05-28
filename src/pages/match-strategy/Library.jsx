@@ -99,7 +99,7 @@ function StrategyCard({ strategy, onOpen }) {
   return (
     <article
       onClick={onOpen}
-      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded-md sm:rounded-lg p-3 sm:p-5 cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-lg"
+      className="group scout-card-gradient bg-surface-container-lowest border border-outline-variant/40 rounded sm:rounded-md p-2.5 sm:p-4 cursor-pointer transition-all hover:border-primary-container/40 hover:shadow-warm-lg"
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3 mb-1">
         <h4 className="text-base sm:text-lg font-semibold text-primary-container leading-tight">
@@ -160,7 +160,7 @@ function CreateStrategyCard({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group border-2 border-dashed border-outline-variant/60 rounded-md sm:rounded-lg flex flex-col items-center justify-center min-h-28 sm:min-h-42.5 transition-all hover:border-primary-container hover:bg-primary-container/5"
+      className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-28 sm:min-h-42.5 transition-all hover:border-primary-container hover:bg-primary-container/5"
     >
       <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
         <Plus className="w-8 h-8" strokeWidth={2} />
