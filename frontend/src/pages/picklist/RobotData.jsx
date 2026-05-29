@@ -10,8 +10,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { Shell } from "@/components/picklist/Shell";
-import { MobileMenuButton } from "@/components/picklist/Sidebar";
+import { Shell } from "@/components/Shell";
+import { MobileMenuButton } from "@/components/Sidebar";
 import { AddRobotDialog } from "@/components/picklist/AddRobotDialog";
 import { MetricViewDialog } from "@/components/picklist/MetricViewDialog";
 import { cn } from "@/lib/utils";

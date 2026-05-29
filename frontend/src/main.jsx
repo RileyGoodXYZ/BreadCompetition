@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import './index.css'
+import Home from './pages/Home';
 import Profile from './pages/data-scout/Profile';
 import Prematch from './pages/data-scout/Prematch';
 import Auto from './pages/data-scout/Auto';
@@ -21,7 +22,7 @@ import { installViewportTracker } from './lib/viewport';
 installViewportTracker();
 
 
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -30,7 +31,7 @@ createRoot(document.getElementById('root')).render(
       <PicklistsProvider>
       <MatchStrategyProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/data-scout" replace />} />
+        <Route path="/" element={<Home />} />
         <Route path="/data-scout" element={<Profile />} />
         <Route path="/data-scout/profile" element={<Profile />} />
         <Route path="/data-scout/prematch" element={

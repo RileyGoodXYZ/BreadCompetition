@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Search, Plus, X, Trash2 } from "lucide-react";
-import { Shell } from "@/components/picklist/Shell";
-import { MobileMenuButton } from "@/components/picklist/Sidebar";
+import { Shell } from "@/components/Shell";
+import { MobileMenuButton } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

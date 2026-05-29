@@ -9,8 +9,8 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Shell } from "@/components/picklist/Shell";
-import { TopBar } from "@/components/picklist/TopBar";
+import { Shell } from "@/components/Shell";
+import { TopBar } from "@/components/TopBar";
 import { PicklistActions } from "@/components/picklist/PicklistActions";
 import { NewPicklistDialog } from "@/components/picklist/NewPicklistDialog";
 import { Button } from "@/components/ui/button";

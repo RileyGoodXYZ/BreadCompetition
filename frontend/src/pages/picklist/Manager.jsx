@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Plus, Sliders, Star } from "lucide-react";
-import { Shell } from "@/components/picklist/Shell";
-import { TopBar } from "@/components/picklist/TopBar";
+import { Shell } from "@/components/Shell";
+import { TopBar } from "@/components/TopBar";
 import { RobotCard } from "@/components/picklist/RobotCard";
 import { RankingsTable } from "@/components/picklist/RankingsTable";
 import { ConfigureColumnsModal } from "@/components/picklist/ConfigureColumnsModal";

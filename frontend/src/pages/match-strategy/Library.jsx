@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Plus, Swords } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { Shell } from "@/components/picklist/Shell";
-import { TopBar } from "@/components/picklist/TopBar";
+import { Shell } from "@/components/Shell";
+import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/ui/button";
 import { NewStrategyDialog } from "@/components/match-strategy/NewStrategyDialog";
 import { useMatchStrategy } from "@/lib/match-strategy-store";

@@ -5,7 +5,7 @@ import {
   ListChecks,
   Cog,
   Wrench,
-  HelpCircle,
+  User,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileNav } from "./Shell";
+import logo from "@/assets/logo.png";
 
 const NAV_ITEMS = [
   { label: "Home", icon: Home, href: "/" },
@@ -29,7 +30,7 @@ const NAV_ITEMS = [
 ];
 
 const FOOTER_ITEMS = [
-  { label: "Help", icon: HelpCircle, href: "#" },
+  { label: "Profile", icon: User, href: "/data-scout/profile" },
   { label: "Logout", icon: LogOut, href: "#" },
 ];
 
@@ -100,13 +101,17 @@ export function Sidebar({ defaultCollapsed = false }) {
         aria-hidden={!mobileOpen}
       >
         <div className="flex items-center justify-between mb-8 px-4">
-          <div>
-            <h1 className="text-xl font-black text-primary-container tracking-tight leading-none">
-              Team 5940
-            </h1>
-            <p className="text-[10px] font-semibold tracking-[0.2em] text-on-surface-variant/80 mt-1">
-              BREAD ROBOTICS
-            </p>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img
+              src={logo}
+              alt="Team 5940 Bread Robotics"
+              className="w-10 h-10 shrink-0 object-contain"
+            />
+            <div className="min-w-0">
+              <h1 className="text-[10px] font-semibold tracking-[0.2em] text-on-surface-variant/80 mt-1">
+                BREAD
+              </h1>
+            </div>
           </div>
           <button
             type="button"
@@ -140,44 +145,51 @@ export function Sidebar({ defaultCollapsed = false }) {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col h-full py-6 px-3 bg-surface-container border-r border-outline-variant/30 shrink-0 overflow-hidden relative",
+          "hidden lg:flex flex-col h-full py-6 px-3 bg-surface-container border-r border-outline-variant/30 shrink-0 overflow-visible relative",
           "transition-[width] duration-300 ease-out",
-          collapsed ? "w-20" : "w-64"
+          collapsed ? "w-20" : "w-55"
         )}
       >
-        {/* Collapse toggle handle */}
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          className="absolute top-6 -right-3 z-10 w-6 h-6 bg-surface-container-high border border-outline-variant/40 rounded-full flex items-center justify-center hover:bg-surface-bright transition-colors shadow-sm"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <ChevronRight className="w-3.5 h-3.5 text-primary-container" />
-          ) : (
-            <ChevronLeft className="w-3.5 h-3.5 text-primary-container" />
-          )}
-        </button>
-
-        {/* Brand */}
+        {/* Brand + collapse toggle */}
         <div
           className={cn(
-            "mb-10 transition-all",
-            collapsed ? "px-2 text-center" : "px-4"
+            "mb-6 transition-all",
+            collapsed ? "px-2 text-center" : "pr-0"
           )}
         >
           {collapsed ? (
-            <div className="text-2xl font-black text-primary-container leading-none">
-              5940
+            <div className="flex flex-col items-center gap-3">
+              <img
+                src={logo}
+                alt="Team 5940 Bread Robotics"
+                className="w-10 h-10 object-contain"
+              />
+              <button
+                onClick={() => setCollapsed((c) => !c)}
+                className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary-container hover:bg-surface-bright transition-colors shadow-sm inline-flex items-center justify-center"
+                aria-label="Expand sidebar"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           ) : (
-            <>
-              <h1 className="text-2xl font-black text-primary-container tracking-tight leading-none">
-                Team 5940
+            <div className="flex items-center gap-3">
+              <img
+                src={logo}
+                alt="Team 5940 Bread Robotics"
+                className="w-10 h-10 shrink-0 object-contain"
+              />
+              <h1 className="text-4xl font-black text-primary-container tracking-tight leading-none min-w-0">
+                BREAD
               </h1>
-              <p className="text-[11px] font-semibold tracking-[0.2em] text-on-surface-variant/80 mt-1.5">
-                BREAD ROBOTICS
-              </p>
-            </>
+              <button
+                onClick={() => setCollapsed((c) => !c)}
+                className="ml-auto shrink-0 w-6 h-6 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary-container hover:bg-surface-bright transition-colors shadow-sm inline-flex items-center justify-center"
+                aria-label="Collapse sidebar"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+            </div>
           )}
         </div>
 

@@ -53,7 +53,6 @@ export function TopBar({
             Save
           </Button>
           {extras}
-          <UserAvatar user={user} className="hidden sm:flex" />
         </div>
       </header>
     );
@@ -77,30 +76,7 @@ export function TopBar({
         >
           <Search className="w-4 h-4" />
         </button>
-        <UserAvatar user={user} />
       </div>
     </header>
-  );
-}
-
-function UserAvatar({ user, className }) {
-  return (
-    <AvatarPrimitive.Root
-      className={cn(
-        "relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 border-primary-container/20",
-        className
-      )}
-    >
-      {user?.avatarUrl && (
-        <AvatarPrimitive.Image
-          src={user.avatarUrl}
-          alt={user.name}
-          className="h-full w-full object-cover"
-        />
-      )}
-      <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center bg-primary-container text-on-primary text-[10px] font-bold uppercase tracking-wide">
-        {user?.initials ?? "BR"}
-      </AvatarPrimitive.Fallback>
-    </AvatarPrimitive.Root>
   );
 }
