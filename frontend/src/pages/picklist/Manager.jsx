@@ -1,12 +1,19 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Plus, Sliders, Star } from "lucide-react";
+import { Pencil, Plus, Sliders, Star, Trash2 } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { TopBar } from "@/components/TopBar";
 import { RobotCard } from "@/components/picklist/RobotCard";
 import { RankingsTable } from "@/components/picklist/RankingsTable";
 import { ConfigureColumnsModal } from "@/components/picklist/ConfigureColumnsModal";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AddRobotDialog } from "@/components/picklist/AddRobotDialog";
 import { ScoutNotesDialog } from "@/components/picklist/ScoutNotesDialog";
 import { PicklistActions } from "@/components/picklist/PicklistActions";
@@ -49,6 +56,49 @@ export default function Manager() {
   const [configOpen, setConfigOpen] = useState(false);
   const [addSlotIdx, setAddSlotIdx] = useState(null); // null = closed
   const [notesRobot, setNotesRobot] = useState(null); // null = closed
+
+  // Picklist-row notes: { [teamNumber]: string }
+  const [rowNotes, setRowNotes] = useState({});
+  // The team whose note dialog is open (null = closed). Dialog opens in
+  // "view" mode and can flip to "edit" with the Edit button.
+  const [noteDialogTeam, setNoteDialogTeam] = useState(null);
+  const [noteEditing, setNoteEditing] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
+
+  useEffect(() => {
+    if (noteDialogTeam) {
+      const existing = rowNotes[noteDialogTeam.number] ?? "";
+      setNoteDraft(existing);
+      setNoteEditing(!existing);
+    } else {
+      setNoteEditing(false);
+      setNoteDraft("");
+    }
+  }, [noteDialogTeam, rowNotes]);
+
+  const openNote = (team) => setNoteDialogTeam(team);
+  const closeNote = () => setNoteDialogTeam(null);
+  const saveNote = () => {
+    if (!noteDialogTeam) return;
+    const value = noteDraft.trim();
+    setRowNotes((prev) => {
+      const next = { ...prev };
+      if (value) next[noteDialogTeam.number] = value;
+      else delete next[noteDialogTeam.number];
+      return next;
+    });
+    setNoteEditing(false);
+    if (!value) closeNote();
+  };
+  const clearNote = () => {
+    if (!noteDialogTeam) return;
+    setRowNotes((prev) => {
+      const next = { ...prev };
+      delete next[noteDialogTeam.number];
+      return next;
+    });
+    closeNote();
+  };
 
   // Rankings live in local state so the user's drag-reorders persist.
   const [rankings, setRankings] = useState(RANKINGS);
@@ -158,6 +208,8 @@ export default function Manager() {
               teams={rankings}
               columns={columns}
               onReorder={reorderRankings}
+              notes={rowNotes}
+              onOpenNote={openNote}
             />
           </section>
         </div>
@@ -185,6 +237,86 @@ export default function Manager() {
         onOpenChange={(open) => !open && setNotesRobot(null)}
         robot={notesRobot}
       />
+
+      <Dialog
+        open={noteDialogTeam !== null}
+        onOpenChange={(open) => !open && closeNote()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {noteDialogTeam
+                ? `Note · ${noteDialogTeam.number} ${noteDialogTeam.name}`
+                : "Robot Note"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-3 sm:px-6 py-3 sm:py-4">
+            {noteEditing ? (
+              <textarea
+                autoFocus
+                value={noteDraft}
+                onChange={(e) => setNoteDraft(e.target.value)}
+                placeholder="e.g. inconsistent climb under defense; check bumper damage"
+                rows={5}
+                className="w-full resize-y rounded-md border border-outline-variant/60 bg-surface px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-container/30 min-h-24"
+              />
+            ) : (
+              <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">
+                {noteDraft || (
+                  <span className="text-on-surface-variant italic">
+                    No notes yet.
+                  </span>
+                )}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            {noteEditing ? (
+              <>
+                {rowNotes[noteDialogTeam?.number] && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearNote}
+                    className="mr-auto text-error hover:text-error"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const existing = rowNotes[noteDialogTeam?.number] ?? "";
+                    if (existing) {
+                      setNoteDraft(existing);
+                      setNoteEditing(false);
+                    } else {
+                      closeNote();
+                    }
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={saveNote}>
+                  Save
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" onClick={closeNote}>
+                  Close
+                </Button>
+                <Button size="sm" onClick={() => setNoteEditing(true)}>
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Shell>
   );
 }

@@ -17,7 +17,6 @@ export function RobotCard({
       className={cn(
         "relative bg-surface-container-lowest border border-primary-container/10 rounded sm:rounded-md overflow-hidden",
         "flex flex-col p-2.5 sm:p-5 shadow-warm-sm transition-all hover:shadow-warm-md",
-        "h-140 sm:h-180",
         className
       )}
     >
@@ -62,21 +61,9 @@ export function RobotCard({
         {robot.trend && (
           <div className="mb-3 sm:mb-4 space-y-2">
             <div className="flex justify-between items-center px-1">
-              <span className="text-[10px] font-bold uppercase text-on-surface-variant tracking-tighter">
-                Performance Trend
+              <span className=" font-bold  text-on-surface-variant tracking-tighter">
+                Data graph 
               </span>
-              {robot.trend.peakLabel && (
-                <span
-                  className={cn(
-                    "text-[10px] font-medium",
-                    robot.trend.peakTone === "error"
-                      ? "text-error"
-                      : "text-primary-container"
-                  )}
-                >
-                  {robot.trend.peakLabel}
-                </span>
-              )}
             </div>
             <div className="flex items-end gap-1 sm:gap-1.5 h-16 sm:h-24 bg-surface-container/50 p-2 sm:p-3 rounded-md">
               {robot.trend.bars.map((b, i) => {
@@ -102,28 +89,6 @@ export function RobotCard({
             </div>
           </div>
         )}
-      </div>
-
-      {/* Scrollable metrics — controlled by parent for cross-card sync */}
-      <div
-        ref={scrollRef}
-        onScroll={onScroll}
-        className="flex-1 overflow-y-auto scrollbar-warm pr-2 mb-3 sm:mb-6"
-      >
-        <table className="w-full text-[11px] sm:text-[12px]">
-          <tbody className="divide-y divide-outline-variant/10">
-            {robot.metrics?.map((m) => (
-              <tr key={m.label} className="flex justify-between py-1 sm:py-1.5">
-                <td className="font-bold uppercase text-on-surface-variant">
-                  {m.label}
-                </td>
-                <td className="font-mono font-bold text-primary-container">
-                  {m.value}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
 
       <div className="flex-none">
