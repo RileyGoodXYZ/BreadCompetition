@@ -64,3 +64,24 @@ class TeamUpsert(TeamBase):
 
 class TeamRecord(TeamBase):
     updated_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Events
+#
+# `event_key` mirrors TBA (e.g. `2026casj`) so we can sync from upstream
+# later. Everything decorative (location, dates string, status text used by
+# the Home shell) lives in `data`.
+# ---------------------------------------------------------------------------
+class EventBase(BaseModel):
+    event_key: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
+class EventUpsert(EventBase):
+    pass
+
+
+class EventRecord(EventBase):
+    updated_at: datetime

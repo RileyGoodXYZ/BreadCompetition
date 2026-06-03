@@ -30,3 +30,19 @@ CREATE TABLE IF NOT EXISTS teams (
   data         TEXT    NOT NULL DEFAULT '{}',   -- drivetrain, image_url, nickname, ...
   updated_at   TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ---------------------------------------------------------------------------
+-- Events
+--
+-- One row per competition (regional, district, off-season). `event_key`
+-- mirrors TBA's convention (`2026casj` = 2026 Silicon Valley Regional) so we
+-- can sync upstream cleanly later. `data` carries display fields the UI
+-- already uses on the Home shell (`schedule.js::CURRENT_EVENT`): location,
+-- shortName, dates, status string.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS events (
+  event_key   TEXT    PRIMARY KEY,
+  name        TEXT    NOT NULL,
+  data        TEXT    NOT NULL DEFAULT '{}',
+  updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
