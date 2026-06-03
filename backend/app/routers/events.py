@@ -124,6 +124,11 @@ def delete_event(event_key: str) -> Response:
 
 # ---------------------------------------------------------------------------
 # Event attendance (teams at this event)
+#
+# STUDENT EXERCISE — these three endpoints are intentionally stubbed.
+# The route signatures and docstrings spell out exactly what to build;
+# the bodies raise 501 until implemented. Use `teams.py` and the event
+# metadata endpoints above as reference patterns.
 # ---------------------------------------------------------------------------
 
 @router.get("/{event_key}/teams")
@@ -133,78 +138,78 @@ def list_event_teams(
 ) -> list[dict[str, Any]]:
     """Teams attending this event.
 
-    This is what AddRobotDialog and the RobotData typeahead consume. We
-    return the *full team object* (name, drivetrain, image, etc.) joined
-    from `teams`, not just the team numbers — saves the UI from doing
-    N+1 lookups to render the picker.
+    This is what AddRobotDialog and the RobotData typeahead consume on
+    the frontend. Return the *full team object* (name, drivetrain,
+    image, etc.) joined from `teams`, not just the team numbers —
+    saves the UI from doing N+1 lookups to render the picker.
 
-    TODO(impl):
-      - Don't bother paginating; even Champs has ~600 teams per division.
-      - When team is registered to an event but missing from the global
-        `teams` catalog (race during seed), we silently drop them via
-        INNER JOIN. Either upsert a stub team during registration or
-        switch to LEFT JOIN and synthesize a `{name: "Team N"}` fallback.
-    """
-    sql = """
-        SELECT t.*
-        FROM event_teams et
-        JOIN teams t ON t.team_number = et.team_number
-        WHERE et.event_key = ?
-    """
-    params: list[Any] = [event_key]
-    if q:
-        sql += " AND (CAST(t.team_number AS TEXT) LIKE ? OR LOWER(t.name) LIKE ?)"
-        needle = f"%{q.lower()}%"
-        params.extend([needle, needle])
-    sql += " ORDER BY t.team_number ASC"
+    TODO(student): implement.
 
-    with get_conn() as conn:
-        rows = conn.execute(sql, params).fetchall()
-    return [_team_row_to_dict(r) for r in rows]
+    Approach:
+      1. Build a SQL query that joins `event_teams` to `teams` on
+         `team_number`, filtered by `et.event_key = ?`. Example:
+
+           SELECT t.*
+           FROM event_teams et
+           JOIN teams t ON t.team_number = et.team_number
+           WHERE et.event_key = ?
+           ORDER BY t.team_number ASC
+
+      2. If `q` is provided, also filter:
+         `AND (CAST(t.team_number AS TEXT) LIKE ? OR LOWER(t.name) LIKE ?)`
+         with `?` bound to `%<q.lower()>%`.
+      3. Use `with get_conn() as conn:` to execute (see `teams.py::list_teams`).
+      4. Return `[_team_row_to_dict(r) for r in rows]`.
+
+    Edge cases worth thinking about:
+      - INNER JOIN silently drops event_teams rows whose `team_number`
+        isn't in the `teams` catalog. Decide: is that desirable, or
+        should you LEFT JOIN and synthesize a `{name: "Team N"}` row?
+      - Don't bother paginating; Champs has ~600 teams per division at
+        most.
+    """
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="TODO(student): see docstring",
+    )
 
 
 @router.post("/{event_key}/teams", status_code=status.HTTP_201_CREATED)
 def register_event_teams(event_key: str, payload: EventTeamRegister) -> dict[str, Any]:
     """Register one or more teams as attending this event.
 
-    Bulk by design — TBA dumps the full attendance list and we want to
-    push it in one round-trip.
+    Bulk by design — a TBA sync or seed script wants to push the full
+    attendance list (40-80 teams) in one round-trip.
 
-    TODO(impl):
-      - Today this 404s if `event_key` doesn't exist (FK violation
-        surfaces as IntegrityError). Catch it and return a clean 404.
-      - Teams must already exist in the global `teams` catalog (FK).
-        Either upsert stub teams here, or require the seed script to
-        push teams before events. Latter is cleaner.
-      - Idempotent via INSERT OR IGNORE; returns the resulting count
-        of attending teams so the client can verify.
+    TODO(student): implement.
+
+    Approach:
+      1. First, verify the event exists. Query `SELECT 1 FROM events
+         WHERE event_key = ?`; raise 404 if no row. Doing this upfront
+         is cleaner than letting the FK violation surface as a 500.
+      2. Bulk-insert with `conn.executemany(...)` using
+         `INSERT OR IGNORE INTO event_teams (event_key, team_number)
+         VALUES (?, ?)` — IGNORE makes the call idempotent (re-registering
+         an already-attending team is a no-op, not an error).
+      3. Return a small dict the client can use to verify, e.g.:
+           {
+             "event_key": event_key,
+             "registered": payload.team_numbers,
+             "attendance_count": <SELECT COUNT(*) FROM event_teams WHERE event_key = ?>
+           }
+
+    Edge cases:
+      - Teams must already exist in the global `teams` catalog (FK
+        constraint). Decide whether to upsert stub teams here or
+        require the seed script to push teams before events. Latter
+        is cleaner.
+      - If `payload.team_numbers` is empty, the Pydantic model
+        (`Field(min_length=1)`) already rejects it with 422.
     """
-    with get_conn() as conn:
-        # Validate event exists upfront so we return a clear error rather
-        # than a FK violation.
-        event_row = conn.execute(
-            "SELECT 1 FROM events WHERE event_key = ?", (event_key,)
-        ).fetchone()
-        if event_row is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="event not found"
-            )
-
-        rows = [(event_key, n) for n in payload.team_numbers]
-        conn.executemany(
-            "INSERT OR IGNORE INTO event_teams (event_key, team_number) VALUES (?, ?)",
-            rows,
-        )
-        count_row = conn.execute(
-            "SELECT COUNT(*) AS n FROM event_teams WHERE event_key = ?",
-            (event_key,),
-        ).fetchone()
-
-    return {
-        "event_key": event_key,
-        "registered": payload.team_numbers,
-        "attendance_count": count_row["n"],
-    }
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="TODO(student): see docstring",
+    )
 
 
 @router.delete(
@@ -215,18 +220,21 @@ def unregister_event_team(event_key: str, team_number: int) -> Response:
     """Remove one team from an event's attendance roster.
 
     Doesn't touch the global `teams` row — just the join.
+
+    TODO(student): implement.
+
+    Approach:
+      1. `DELETE FROM event_teams WHERE event_key = ? AND team_number = ?`
+      2. Check `cursor.rowcount`. If 0, raise 404 — nothing was attending.
+      3. On success, return `Response(status_code=status.HTTP_204_NO_CONTENT)`.
+
+    Reference: `delete_event` directly above does the same dance for
+    the parent events table.
     """
-    with get_conn() as conn:
-        cursor = conn.execute(
-            "DELETE FROM event_teams WHERE event_key = ? AND team_number = ?",
-            (event_key, team_number),
-        )
-        if cursor.rowcount == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="team not registered to event",
-            )
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="TODO(student): see docstring",
+    )
 
 
 # ---------------------------------------------------------------------------
