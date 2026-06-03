@@ -46,3 +46,21 @@ CREATE TABLE IF NOT EXISTS events (
   data        TEXT    NOT NULL DEFAULT '{}',
   updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ---------------------------------------------------------------------------
+-- Event ↔ Teams (attendance)
+--
+-- Which teams are at which event. This is what AddRobotDialog and the
+-- RobotData search actually want — the ~40 teams at the current regional,
+-- not all 3000 teams in FRC.
+--
+-- Foreign keys cascade so deleting an event scrubs its attendance rows;
+-- deleting a team (rare) scrubs that team from every event they were at.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS event_teams (
+  event_key   TEXT    NOT NULL REFERENCES events(event_key) ON DELETE CASCADE,
+  team_number INTEGER NOT NULL REFERENCES teams(team_number) ON DELETE CASCADE,
+  PRIMARY KEY (event_key, team_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_event_teams_team ON event_teams(team_number);

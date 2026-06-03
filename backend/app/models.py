@@ -85,3 +85,10 @@ class EventUpsert(EventBase):
 
 class EventRecord(EventBase):
     updated_at: datetime
+
+
+class EventTeamRegister(BaseModel):
+    """Body for POST /api/events/{key}/teams — register one or more teams
+    as attending. Accept a list so the seed script / TBA sync can do it in
+    one round-trip."""
+    team_numbers: list[int] = Field(min_length=1)
