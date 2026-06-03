@@ -92,3 +92,53 @@ class EventTeamRegister(BaseModel):
     as attending. Accept a list so the seed script / TBA sync can do it in
     one round-trip."""
     team_numbers: list[int] = Field(min_length=1)
+
+
+# ---------------------------------------------------------------------------
+# Picklists
+#
+# Mirrors the in-memory document the frontend already builds in
+# `picklists-store.jsx`. Anything specific to a picklist's body (slots[],
+# rankings order, columns, collaborators, updatedLabel string) goes into
+# `data` until the shape settles. Top-level fields are limited to what we
+# filter/sort by (`kind`, `event_key`, `archived`, `starred`).
+# ---------------------------------------------------------------------------
+PicklistKind = Literal["shared", "my"]
+
+
+class PicklistBase(BaseModel):
+    title: str = Field(min_length=1)
+    event_key: Optional[str] = None
+    kind: PicklistKind = "my"
+    owner: Optional[str] = None  # placeholder until we have real auth
+    starred: bool = False
+    archived: bool = False
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
+class PicklistCreate(PicklistBase):
+    # Optional client-supplied id (lets the UI keep the same id it generated
+    # offline). When omitted the server mints one. Keep this simple — no
+    # `client_uuid` style idempotency yet; picklist creates are user actions.
+    id: Optional[str] = None
+
+
+class PicklistUpdate(BaseModel):
+    """Partial update. Every field is optional; omitted fields stay as-is.
+
+    `data` is replaced wholesale when provided — no deep merge. The frontend
+    sends the whole document on save, so this keeps the server dumb.
+    """
+    title: Optional[str] = Field(default=None, min_length=1)
+    event_key: Optional[str] = None
+    kind: Optional[PicklistKind] = None
+    owner: Optional[str] = None
+    starred: Optional[bool] = None
+    archived: Optional[bool] = None
+    data: Optional[dict[str, Any]] = None
+
+
+class PicklistRecord(PicklistBase):
+    id: str
+    created_at: datetime
+    updated_at: datetime

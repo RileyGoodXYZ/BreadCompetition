@@ -64,3 +64,30 @@ CREATE TABLE IF NOT EXISTS event_teams (
 );
 
 CREATE INDEX IF NOT EXISTS idx_event_teams_team ON event_teams(team_number);
+
+-- ---------------------------------------------------------------------------
+-- Picklists
+--
+-- One row per picklist. We stash the entire UI-shaped document in `data`
+-- (slots, rankings order, column config, collaborators, etc.) until the
+-- shape stabilizes — mirrors how `submissions` is modeled. Top-level columns
+-- are limited to fields we actually filter or sort by (kind/event/owner).
+--
+-- `kind` is 'shared' or 'my' to mirror the two Library sections; eventually
+-- this should be derived from an ACL/owner_id join, not stored.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS picklists (
+  id          TEXT    PRIMARY KEY,
+  title       TEXT    NOT NULL,
+  event_key   TEXT,
+  kind        TEXT    NOT NULL CHECK (kind IN ('shared','my')) DEFAULT 'my',
+  owner       TEXT,
+  starred     INTEGER NOT NULL DEFAULT 0,
+  archived    INTEGER NOT NULL DEFAULT 0,
+  data        TEXT    NOT NULL DEFAULT '{}',
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_picklists_kind  ON picklists(kind, archived);
+CREATE INDEX IF NOT EXISTS idx_picklists_event ON picklists(event_key);
