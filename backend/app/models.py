@@ -43,3 +43,24 @@ class SubmissionRecord(BaseModel):
     data: dict[str, Any]
     client_uuid: Optional[str]
     created_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Teams (global catalog)
+#
+# Properties of a team that don't depend on which event they're at — name,
+# drivetrain, image, nickname. Attendance is modeled separately via
+# `event_teams` (see EventTeamRegister below).
+# ---------------------------------------------------------------------------
+class TeamBase(BaseModel):
+    team_number: int = Field(ge=0)
+    name: str = Field(min_length=1)
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
+class TeamUpsert(TeamBase):
+    pass
+
+
+class TeamRecord(TeamBase):
+    updated_at: datetime
