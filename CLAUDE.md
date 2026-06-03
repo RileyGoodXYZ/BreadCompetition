@@ -11,6 +11,41 @@ After every code change, you MUST:
 
 Fix any errors before reporting the task as complete.
 
+## Git workflow
+
+**YOU MUST never commit directly to `main` or `backend/foundation`.** Every change goes on a feature branch and ships through a PR you open with `gh pr create` before reporting the task complete. No exceptions for "small" changes — if it's worth doing, it's worth a branch.
+
+Branch naming: `<area>/<short-kebab-description>` — e.g. `backend/picklists-crud`, `frontend/manager-realtime`, `docs/claude-md-workflow-rules`. Branch from `main` for independent work, or from the parent feature branch when continuing a thread.
+
+### Commit in an atomic stack
+
+Build the work as an ordered sequence of small, self-contained commits. Each commit MUST:
+
+- **Group by concern, not by file.** A new resource that touches schema + models + router + main.py wiring is ONE commit, not four. A schema change plus an unrelated frontend tweak is TWO commits, not one.
+- **Leave the tree green.** The repo must build, import, and pass relevant checks at every commit in the stack — never "WIP" or "fix typo in last commit" commits. If a check breaks mid-stack, squash before pushing.
+- **Be independently revertible.** A reviewer should be able to drop any single commit without taking unrelated work down with it.
+- **Have a message that explains the *why*.** Subject in imperative mood, scoped with a prefix (`backend:`, `frontend:`, `docs:`). Body explains motivation and trade-offs, not a diff restatement.
+
+Single-commit changes are fine when the work is genuinely one concern (typo, single-file refactor, one-line bugfix). Don't pad a small change into a fake stack.
+
+### Opening the PR
+
+After pushing the branch, open a PR with `gh pr create --base <base-branch>`. The body MUST include:
+
+1. **Summary** — one short paragraph: what this is, what it isn't.
+2. **Commit stack** — the ordered list of commits in this PR with a one-line description of each. This is how reviewers understand the intended logical breakdown.
+3. **Test plan** — a checklist of verifications a reviewer can run.
+
+Target the right base: usually `main`, but if this branch builds on another open PR's branch, target that branch so the diff stays scoped.
+
+### Things you must NEVER do
+
+- `git add .` or `git add -A` — always stage explicit files. The repo has `backend/data/` (db files) and `.venv/` that should never be committed.
+- `--no-verify`, `--no-gpg-sign`, or any flag that bypasses hooks or signing. If a hook fails, fix the underlying issue.
+- `git commit --amend` on a pushed commit — create a new commit instead.
+- `git push --force` to `main` or any shared branch. Force-push only to your own feature branch, only if you understand the consequences, and prefer `--force-with-lease` over `--force`.
+- Add a `Co-Authored-By: Claude` trailer (or any Claude co-author line) to commit messages.
+
 ## What This Is
 
 BreadCompetition is FRC scouting software for team 5940. It collects match / pit / subjective / break scouting forms, organizes them by team and event, and surfaces them through picklist, robot-data, and match-strategy views used during competitions.
@@ -122,11 +157,11 @@ Every router file in `app/routers/` follows the same shape:
 
 ## Anti-patterns
 
+(Git-workflow anti-patterns live in the Git workflow section above.)
+
 - **Don't put route logic in `main.py`** — only registration.
 - **Don't create a new router per submission type** — extend `scouting.py`; the table is polymorphic.
 - **Don't add a column for every new UI field** — use the JSON `data` blob.
 - **Don't f-string user input into SQL** — always parameterize.
 - **Don't open SQLite connections outside `get_conn()`.**
 - **Don't deep-merge on PATCH** — replace `data` wholesale.
-- **Don't use `git add .` or `git add -A`** — backend `data/` (db files) and the Python venv should never be committed. Stage explicit files.
-- **Don't add `Co-Authored-By: Claude` trailers** to commits.
