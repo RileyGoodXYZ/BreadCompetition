@@ -91,3 +91,24 @@ CREATE TABLE IF NOT EXISTS picklists (
 
 CREATE INDEX IF NOT EXISTS idx_picklists_kind  ON picklists(kind, archived);
 CREATE INDEX IF NOT EXISTS idx_picklists_event ON picklists(event_key);
+
+-- ---------------------------------------------------------------------------
+-- Match strategies
+--
+-- Same modeling story as picklists: the document (alliances, scenarios,
+-- columns, cells) lives in `data` as JSON; only fields we'd filter by get
+-- hoisted into columns.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS strategies (
+  id           TEXT    PRIMARY KEY,
+  title        TEXT    NOT NULL,
+  event_key    TEXT,
+  match_number INTEGER,
+  favored      TEXT    CHECK (favored IN ('us','even','them')),
+  data         TEXT    NOT NULL DEFAULT '{}',
+  created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_strategies_event ON strategies(event_key);
+CREATE INDEX IF NOT EXISTS idx_strategies_match ON strategies(event_key, match_number);

@@ -142,3 +142,39 @@ class PicklistRecord(PicklistBase):
     id: str
     created_at: datetime
     updated_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Match strategies
+#
+# Same story as picklists: the body (alliances, scenarios, columns, cells) is
+# JSON in `data`. We hoist title/event/match_number/favored because Library
+# cards render them and we may want to filter by event.
+# ---------------------------------------------------------------------------
+Favored = Literal["us", "even", "them"]
+
+
+class StrategyBase(BaseModel):
+    title: str = Field(min_length=1)
+    event_key: Optional[str] = None
+    match_number: Optional[int] = Field(default=None, ge=0)
+    favored: Optional[Favored] = None
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
+class StrategyCreate(StrategyBase):
+    id: Optional[str] = None
+
+
+class StrategyUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1)
+    event_key: Optional[str] = None
+    match_number: Optional[int] = Field(default=None, ge=0)
+    favored: Optional[Favored] = None
+    data: Optional[dict[str, Any]] = None
+
+
+class StrategyRecord(StrategyBase):
+    id: str
+    created_at: datetime
+    updated_at: datetime

@@ -2,7 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import events, health, picklists, scouting, submissions, teams
+from .routers import (
+    events,
+    health,
+    picklists,
+    scouting,
+    strategies,
+    submissions,
+    teams,
+)
 
 app = FastAPI(title="BreadCompetition API", version="0.1.0")
 
@@ -20,6 +28,7 @@ app.include_router(submissions.router)
 app.include_router(teams.router)
 app.include_router(events.router)
 app.include_router(picklists.router)
+app.include_router(strategies.router)
 
 
 @app.get("/")
