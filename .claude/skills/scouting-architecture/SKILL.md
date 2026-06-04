@@ -46,13 +46,30 @@ backend/
       health.py        GET /api/health
       scouting.py      POST /api/scouting/{match|subjective|pit|break}
       submissions.py   GET /api/submissions, /api/submissions/{id}
-      teams.py         Global team catalog + per-team submissions view
-      events.py        Event metadata + attendance + matches stub
-      picklists.py     CRUD for picklist documents
-      strategies.py    CRUD for match-strategy documents
+      teams.py         Global team catalog + per-team submissions view  [reference]
+      events.py        Event metadata + attendance CRUD (501 stubs) + matches stub
+      picklists.py     Picklist-document CRUD — student-exercise stub (501s)
+      strategies.py    Match-strategy CRUD — student-exercise stub (501s)
   data/                SQLite db lives here (gitignored)
   scripts/             Seed scripts go here
 ```
+
+### Student-exercise stubs vs. reference implementations
+
+`picklists.py`, `strategies.py`, and `events.py` are **intentionally stubbed
+for the robotics team's students to implement.** Every handler keeps its route
+decorator, signature, helpers, and Pydantic models, but the body is
+`raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="TODO(student): see docstring")`
+and the docstring is a step-by-step build guide. (The exception: `events.py`'s
+`GET /matches` is a *planning* stub returning `[]` — the design isn't chosen
+yet, so it's not an exercise.)
+
+`teams.py`, `submissions.py`, and `scouting.py` are the **complete, working
+reference implementations** students study — the stub docstrings point at them
+by name. Keep them implemented and idiomatic; they're the worked examples.
+
+When you implement (or grade) a stub, follow the conventions below and the
+guidance in each docstring — don't invent a different shape.
 
 ## Database — six tables, two relationships
 
