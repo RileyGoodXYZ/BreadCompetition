@@ -8,6 +8,7 @@ After every code change, you MUST:
 1. If backend Python files changed, run `cd backend && .venv/bin/python -c "from app.main import app; print('ok')"` to verify the app still imports
 2. If frontend files changed, run `cd frontend && npm run build` to verify the build
 3. If `backend/app/schema.sql` changed, delete `backend/data/app.db` so the new schema gets re-applied on next startup
+4. If the change affects the backend architecture (routers added/removed/stubbed, tables, the resource/data model, or router conventions), evaluate it against the `scouting-architecture` skill (`.claude/skills/scouting-architecture/SKILL.md`) and update the skill so it stays accurate. The skill is the source of truth for new contributors — don't let it drift.
 
 Fix any errors before reporting the task as complete.
 
