@@ -97,9 +97,21 @@ function Submit() {
       "endgame_buddy_climb",
       // Submit page state
       "submit_review",
+      "submit_client_uuid",
     ];
 
     keysToClear.forEach((key) => localStorage.removeItem(key));
+  };
+
+  const getOrCreateClientUuid = () => {
+    const existing = localStorage.getItem("submit_client_uuid");
+    if (existing) return existing;
+    const fresh =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem("submit_client_uuid", fresh);
+    return fresh;
   };
 
   const buildPayload = () => {
@@ -147,46 +159,44 @@ function Submit() {
     const endgameTowerPosition =
       storedClimbType === "Center"
         ? "Center of Tower"
-        : storedClimbType === "Side"
-          ? "Side of Tower"
-          : "";
-    const reviewText = selectedReview;
-    const basePayload = {
-      scout_name: localStorage.getItem("profile_scout_name") ?? "",
-      session_type: localStorage.getItem("profile_session_type") ?? "",
-      is_signed_in: localStorage.getItem("profile_is_signed_in") === "true",
-      match_num: localStorage.getItem("prematch_match_num") ?? "",
-      team_num: localStorage.getItem("prematch_team_num") ?? "",
+        : storedClimbType === "Side" ? "Side of Tower" : "";
+
+    const teamNumber = localStorage.getItem("prematch_team_num") || null;
+    const matchNumber = localStorage.getItem("prematch_match_num") || null;
+    const eventKey = localStorage.getItem("profile_event_key") || null;
+    const sessionType = localStorage.getItem("profile_session_type") || null;
+
+    const data = {
       alliance: localStorage.getItem("prematch_alliance") ?? "red",
-      orientation: localStorage.getItem("prematch_orient") ?? "",
       position: localStorage.getItem("prematch_position") ?? "",
       prematch_no_show: localStorage.getItem("prematch_no_show") === "true",
-      review: reviewText,
+      review: selectedReview,
       auto_climb_selection: localStorage.getItem("auto_climb_selection") ?? "",
       auto_pass_count: Number(localStorage.getItem("auto_pass_count") ?? "0"),
       auto_score_count: Number(localStorage.getItem("auto_score_count") ?? "0"),
-      auto_pass_seconds: Number(
-        localStorage.getItem("auto_pass_seconds") ?? "0",
-      ),
-      auto_score_seconds: Number(
-        localStorage.getItem("auto_score_seconds") ?? "0",
-      ),
+      auto_pass_seconds: Number(localStorage.getItem("auto_pass_seconds") ?? "0"),
+      auto_score_seconds: Number(localStorage.getItem("auto_score_seconds") ?? "0"),
       auto_button_times: autoButtonTimesText,
       climb: localStorage.getItem("endgame_climb") ?? "None",
       endgame_result: endgameResult,
       endgame_level: endgameLevel,
       endgame_tower_position: endgameTowerPosition,
-      shoot_while_climb:
-        localStorage.getItem("endgame_shoot_while_climb") === "true",
+      shoot_while_climb: localStorage.getItem("endgame_shoot_while_climb") === "true",
       buddy_climb: localStorage.getItem("endgame_buddy_climb") === "true",
+      score: v2Score,
+      pass: v2Pass,
+      defense: v2Defense,
+      herd: v2Herd,
     };
 
     return {
-      ...basePayload,
-      v2_score: v2Score,
-      v2_pass: v2Pass,
-      v2_defense: v2Defense,
-      v2_herd: v2Herd,
+      scout_name: localStorage.getItem("profile_scout_name") ?? "Maxwell Li",
+      team_number: teamNumber ?? 0,
+      event_key: eventKey,
+      match_number: matchNumber,
+      session_type: sessionType,
+      client_uuid: getOrCreateClientUuid(),
+      data,
     };
   };
 
@@ -223,30 +233,27 @@ function Submit() {
   };
 
   const handleSubmit = async () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const tableName =
-      import.meta.env.VITE_SUPABASE_TABLE ?? "scouting_submissions";
+    const payload = buildPayload();
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-      setSubmitMessage("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
+    if (!payload.scout_name) {
+      setSubmitMessage("Submit failed: missing scout name (visit Profile).");
+      return;
+    }
+    if (payload.team_number <= 0) {
+      setSubmitMessage("Submit failed: missing or invalid team number.");
       return;
     }
 
-    const payload = buildPayload();
-
     setSubmitMessage("Submitting...");
     try {
-      const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
-        method: "POST",
-        headers: {
-          apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
-          "Content-Type": "application/json",
-          Prefer: "return=representation",
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/scouting/match`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -258,7 +265,7 @@ function Submit() {
       const nextDefault = getDefaultReview();
       setSelectedReview(nextDefault);
       localStorage.setItem("submit_review", JSON.stringify(nextDefault));
-      setSubmitMessage("Submitted to Supabase.");
+      setSubmitMessage("Submitted! Next match...");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       setSubmitMessage(`Submit failed: ${message}`);
