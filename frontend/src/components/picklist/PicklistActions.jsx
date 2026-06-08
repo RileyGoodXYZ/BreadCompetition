@@ -6,6 +6,10 @@ import {
   Archive,
   ArchiveRestore,
   Trash2,
+  Lock,
+  LockOpen,
+  Users,
+  User,
 } from "lucide-react";
 import {
   Dialog,
@@ -36,7 +40,14 @@ export function PicklistActions({
   menuAlign = "end",
   icon: Icon = MoreVertical,
 }) {
-  const { findPicklist, toggleStar, setArchived, remove } = usePicklists();
+  const {
+    findPicklist,
+    toggleStar,
+    setArchived,
+    remove,
+    setLocked,
+    setKind,
+  } = usePicklists();
   const picklist =
     picklistProp ?? (picklistId ? findPicklist(picklistId) : null);
 
@@ -44,6 +55,8 @@ export function PicklistActions({
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (!picklist) return null;
+  const locked = picklist.data?.locked === true;
+  const isShared = picklist.kind === "shared";
 
   return (
     <>
@@ -76,6 +89,28 @@ export function PicklistActions({
             <Pencil className="w-4 h-4" />
             Rename
           </DropdownMenuItem>
+          {locked ? (
+            <DropdownMenuItem onSelect={() => setLocked(picklist.id, false)}>
+              <LockOpen className="w-4 h-4" />
+              Unlock
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onSelect={() => setLocked(picklist.id, true)}>
+              <Lock className="w-4 h-4" />
+              Lock
+            </DropdownMenuItem>
+          )}
+          {isShared ? (
+            <DropdownMenuItem onSelect={() => setKind(picklist.id, "my")}>
+              <User className="w-4 h-4" />
+              Make Private
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onSelect={() => setKind(picklist.id, "shared")}>
+              <Users className="w-4 h-4" />
+              Make Public
+            </DropdownMenuItem>
+          )}
           {picklist.archived ? (
             <DropdownMenuItem
               onSelect={() => setArchived(picklist.id, false)}
