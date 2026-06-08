@@ -7,6 +7,7 @@ import {
   Archive,
   ChevronDown,
   ChevronUp,
+  Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Shell } from "@/components/Shell";
@@ -16,6 +17,7 @@ import { NewPicklistDialog } from "@/components/picklist/NewPicklistDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePicklists } from "@/lib/picklists-store";
+import { relativeTime } from "@/lib/time";
 
 const byStarred = (a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0);
 
@@ -23,21 +25,29 @@ export default function Library() {
   const navigate = useNavigate();
   const openPicklist = (id) => navigate(`/picklists/${id}`);
 
-  const { sharedLists, myLists, createPicklist } = usePicklists();
+  const { sharedLists, myLists, createPicklist, loading, error } =
+    usePicklists();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const handleCreate = (payload) => {
-    const id = createPicklist(payload);
-    setDialogOpen(false);
-    navigate(`/picklists/${id}`);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleCreate = async (payload) => {
+    setSubmitting(true);
+    try {
+      const id = await createPicklist(payload);
+      setDialogOpen(false);
+      navigate(`/picklists/${id}`);
+    } catch (e) {
+      console.error("createPicklist failed", e);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const activeShared = sharedLists.filter((p) => !p.archived).sort(byStarred);
   const activeMy = myLists.filter((p) => !p.archived).sort(byStarred);
   const archived = [
-    ...sharedLists
-      .filter((p) => p.archived)
-      .map((p) => ({ ...p, _kind: "shared" })),
-    ...myLists.filter((p) => p.archived).map((p) => ({ ...p, _kind: "my" })),
+    ...sharedLists.filter((p) => p.archived),
+    ...myLists.filter((p) => p.archived),
   ];
 
   return (
@@ -67,49 +77,59 @@ export default function Library() {
             </Button>
           </div>
 
-          {/* Shared section */}
-          <section className="mb-6 sm:mb-16">
-            <SectionHeader icon={Users} title="Shared Picklists" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
-              {activeShared.map((p) => (
-                <PicklistCard
-                  key={p.id}
-                  picklist={p}
-                  variant="shared"
-                  onOpen={() => openPicklist(p.id)}
-                />
-              ))}
+          {error && (
+            <div className="mb-6 p-3 rounded-md border border-error/40 bg-error/5 text-sm text-error">
+              Failed to load picklists: {String(error.message ?? error)}
             </div>
-          </section>
+          )}
 
-          {/* My section */}
-          <section className="mb-6 sm:mb-16">
-            <SectionHeader icon={User} title="My Picklists" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
-              {activeMy.map((p) => (
-                <PicklistCard
-                  key={p.id}
-                  picklist={p}
-                  variant="my"
-                  onOpen={() => openPicklist(p.id)}
-                />
-              ))}
-              <button
-                type="button"
-                onClick={() => setDialogOpen(true)}
-                className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
-              >
-                <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
-                  <Plus className="w-8 h-8" strokeWidth={2} />
-                </span>
-                <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary-container transition-colors">
-                  Create New
-                </span>
-              </button>
-            </div>
-          </section>
+          {loading && picklistsEmpty(activeShared, activeMy, archived) ? (
+            <p className="text-on-surface-variant text-sm">Loading…</p>
+          ) : (
+            <>
+              {/* Shared section */}
+              <section className="mb-6 sm:mb-16">
+                <SectionHeader icon={Users} title="Shared Picklists" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
+                  {activeShared.map((p) => (
+                    <PicklistCard
+                      key={p.id}
+                      picklist={p}
+                      onOpen={() => openPicklist(p.id)}
+                    />
+                  ))}
+                </div>
+              </section>
 
-          {archived.length > 0 && <ArchivedSection items={archived} />}
+              {/* My section */}
+              <section className="mb-6 sm:mb-16">
+                <SectionHeader icon={User} title="My Picklists" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
+                  {activeMy.map((p) => (
+                    <PicklistCard
+                      key={p.id}
+                      picklist={p}
+                      onOpen={() => openPicklist(p.id)}
+                    />
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setDialogOpen(true)}
+                    className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
+                  >
+                    <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
+                      <Plus className="w-8 h-8" strokeWidth={2} />
+                    </span>
+                    <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary-container transition-colors">
+                      Create New
+                    </span>
+                  </button>
+                </div>
+              </section>
+
+              {archived.length > 0 && <ArchivedSection items={archived} />}
+            </>
+          )}
         </div>
       </div>
 
@@ -127,9 +147,14 @@ export default function Library() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onCreate={handleCreate}
+        submitting={submitting}
       />
     </Shell>
   );
+}
+
+function picklistsEmpty(...lists) {
+  return lists.every((l) => l.length === 0);
 }
 
 function SectionHeader({ icon: Icon, title }) {
@@ -146,11 +171,11 @@ function SectionHeader({ icon: Icon, title }) {
   );
 }
 
-function PicklistCard({ picklist, variant, onOpen }) {
-  const { title, event, collaborators = [], updatedLabel, starred } = picklist;
-  const isShared = variant === "shared";
-  const visibleCollabs = collaborators.slice(0, 4);
-  const overflow = collaborators.length - visibleCollabs.length;
+function PicklistCard({ picklist, onOpen }) {
+  const { title, event_key: eventKey, starred, updated_at: updatedAt, data } =
+    picklist;
+  const locked = data?.locked === true;
+  const updatedLabel = relativeTime(updatedAt);
 
   return (
     <article
@@ -162,6 +187,12 @@ function PicklistCard({ picklist, variant, onOpen }) {
           {starred && (
             <Star className="w-4 h-4 fill-current text-amber-500 shrink-0 mt-1" />
           )}
+          {locked && (
+            <Lock
+              className="w-4 h-4 text-on-surface-variant shrink-0 mt-1"
+              aria-label="Locked"
+            />
+          )}
           <h4 className="text-base sm:text-lg font-semibold text-primary-container leading-tight">
             {title}
           </h4>
@@ -169,47 +200,17 @@ function PicklistCard({ picklist, variant, onOpen }) {
         <PicklistActions picklist={picklist} />
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 sm:gap-3 pt-2 border-t border-outline-variant/30">
-        {isShared ? (
-          collaborators.length > 0 ? (
-            <div className="flex -space-x-2">
-              {visibleCollabs.map((p, i) => (
-                <div
-                  key={i}
-                  className="w-7 h-7 rounded-full bg-secondary-container flex items-center justify-center border-2 border-surface-container-lowest text-[10px] font-bold text-on-secondary-container"
-                  title={p}
-                >
-                  {p}
-                </div>
-              ))}
-              {overflow > 0 && (
-                <div className="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center border-2 border-surface-container-lowest text-[10px] font-bold">
-                  +{overflow}
-                </div>
-              )}
-            </div>
-          ) : (
-            <span className="text-[11px] text-on-surface-variant italic">
-              No collaborators
-            </span>
-          )
-        ) : (
-          <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-            Private
+      <div className="mt-auto flex items-center justify-end gap-2 sm:gap-3 pt-2 border-t border-outline-variant/30">
+        {eventKey && (
+          <Badge variant="event" className="truncate max-w-40">
+            {eventKey}
+          </Badge>
+        )}
+        {updatedLabel && (
+          <span className="text-on-surface-variant font-mono text-[11px] whitespace-nowrap">
+            {updatedLabel}
           </span>
         )}
-        <div className="flex items-center gap-2 min-w-0">
-          {event && (
-            <Badge variant="event" className="truncate max-w-40">
-              {event}
-            </Badge>
-          )}
-          {updatedLabel && (
-            <span className="text-on-surface-variant font-mono text-[11px] whitespace-nowrap">
-              {updatedLabel}
-            </span>
-          )}
-        </div>
       </div>
     </article>
   );
@@ -243,7 +244,7 @@ function ArchivedSection({ items }) {
         <ul className="space-y-2">
           {items.map((p) => (
             <li
-              key={`${p._kind}-${p.id}`}
+              key={p.id}
               className="flex items-center justify-between gap-3 p-3 bg-surface-container-low border border-outline-variant/40 rounded-md"
             >
               <div className="min-w-0">
@@ -251,8 +252,8 @@ function ArchivedSection({ items }) {
                   {p.title}
                 </div>
                 <div className="text-[11px] font-mono uppercase tracking-wider text-on-surface-variant">
-                  {p._kind === "shared" ? "Shared" : "Personal"} ·{" "}
-                  {p.updatedLabel}
+                  {p.kind === "shared" ? "Shared" : "Personal"}
+                  {p.updated_at ? ` · ${relativeTime(p.updated_at)}` : ""}
                 </div>
               </div>
               <PicklistActions picklist={p} />

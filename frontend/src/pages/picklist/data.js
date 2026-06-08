@@ -1,67 +1,8 @@
-// Fake data for picklist UI
-
-import {
-  Activity,
-  Cpu,
-  TrendingUp,
-} from "lucide-react";
-
-export const SHARED_PICKLISTS = [
-  {
-    id: "champs-2024",
-    title: "Chezy Champs 2024 Final",
-    event: "Chezy Champs 2024",
-    collaborators: ["JD", "AK", "MN", "PL", "SR", "TY"],
-    updatedLabel: "Updated 2h ago",
-  },
-  {
-    id: "svr-defensive",
-    title: "SVR Regional - Defensive Tier",
-    event: "SVR Regional",
-    collaborators: ["SM", "KL", "RT"],
-    updatedLabel: "Updated 5h ago",
-  },
-  {
-    id: "hou-auto",
-    title: "HOU Champs: Auto Reliability",
-    event: "Houston Champs",
-    collaborators: ["TR"],
-    updatedLabel: "Updated 1d ago",
-  },
-];
-
-export const MY_PICKLISTS = [
-  {
-    id: "rapid-eval-intake",
-    title: "Rapid Eval: Intake Speed",
-    event: "SVR Regional",
-    icon: TrendingUp,
-    bars: [0.75, 0.5, 0.66],
-    teamCount: 12,
-    collaborators: ["JD"],
-    updatedLabel: "15m ago",
-  },
-  {
-    id: "climber-stats-w4",
-    title: "Climber Stats - Week 4",
-    event: "Week 4 Scrimmage",
-    icon: Cpu,
-    bars: [0.66, 0.33, 0.5],
-    teamCount: 8,
-    collaborators: ["JD", "MN"],
-    updatedLabel: "2d ago",
-  },
-  {
-    id: "reliability-index",
-    title: "Overall Reliability Index",
-    event: "Multi-Event",
-    icon: Activity,
-    bars: [1, 0.75, 0.8],
-    teamCount: 24,
-    collaborators: ["JD", "AK", "TR"],
-    updatedLabel: "3d ago",
-  },
-];
+// Mock analytics + team data for the Picklist Manager / RobotData pages.
+// Picklist *documents* (the list of saved picklists) come from the API via
+// `picklists-store.jsx`. These mocks back the team-analytics surfaces that
+// don't have a backend endpoint yet — Robot Comparison cards, the Rankings
+// table, Robot Analytics, and Scout Notes.
 
 export const ROBOT_CARDS = [
   {

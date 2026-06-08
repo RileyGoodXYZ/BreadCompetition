@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Search, Plus, X, Trash2 } from "lucide-react";
 import { Shell } from "@/components/Shell";
@@ -19,8 +19,34 @@ import { STRATEGY_TEAM_STATS } from "./data";
 // Match strategy detail page
 export default function MatchStrategyDetail() {
   const { id } = useParams();
-  const { findStrategy } = useMatchStrategy();
-  const strategy = findStrategy(id);
+  const { findStrategy, loadStrategy } = useMatchStrategy();
+  const [strategy, setStrategy] = useState(() => findStrategy(id));
+  const [resolved, setResolved] = useState(strategy !== null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const cached = findStrategy(id);
+    if (cached) {
+      setStrategy(cached);
+      setResolved(true);
+      return;
+    }
+    setResolved(false);
+    loadStrategy(id).then((s) => {
+      if (cancelled) return;
+      setStrategy(s);
+      setResolved(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, findStrategy, loadStrategy]);
+
+  // Keep local reference in sync as the store updates this strategy.
+  const storeRecord = findStrategy(id);
+  useEffect(() => {
+    if (storeRecord && storeRecord !== strategy) setStrategy(storeRecord);
+  }, [storeRecord, strategy]);
 
   return (
     <Shell>
@@ -34,9 +60,9 @@ export default function MatchStrategyDetail() {
                 <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-on-surface">
                   {strategy.title}
                 </h1>
-                {strategy.event && (
+                {strategy.event_key && (
                   <p className="text-on-surface-variant text-xs sm:text-base mt-0.5 sm:mt-1">
-                    {strategy.event}
+                    {strategy.event_key}
                   </p>
                 )}
               </header>
@@ -45,20 +71,24 @@ export default function MatchStrategyDetail() {
                 <AllianceColumn
                   title="Our Alliance"
                   color="blue"
-                  teamNumbers={strategy.ourAlliance}
+                  teamNumbers={strategy.data?.ourAlliance ?? []}
                 />
                 <AllianceColumn
                   title="Opponent Alliance"
                   color="red"
-                  teamNumbers={strategy.opponentAlliance}
+                  teamNumbers={strategy.data?.opponentAlliance ?? []}
                 />
               </div>
 
               <StrategyTimelineTable strategy={strategy} />
             </>
-          ) : (
+          ) : resolved ? (
             <p className="text-on-surface-variant text-center py-20">
               Strategy <span className="font-mono">{id}</span> not found.
+            </p>
+          ) : (
+            <p className="text-on-surface-variant text-center py-20">
+              Loading strategy…
             </p>
           )}
         </div>
@@ -212,7 +242,8 @@ function StrategyTimelineTable({ strategy }) {
   const [pendingDeleteCol, setPendingDeleteCol] = useState(null);
   const [pendingDeleteScen, setPendingDeleteScen] = useState(null);
 
-  const columns = strategy.columns;
+  const columns = strategy.data?.columns ?? [];
+  const scenarios = strategy.data?.scenarios ?? [];
 
   return (
     <div className="space-y-4">
@@ -257,7 +288,7 @@ function StrategyTimelineTable({ strategy }) {
               </tr>
             </thead>
             <tbody>
-              {strategy.scenarios.map((scenario) => (
+              {scenarios.map((scenario) => (
                 <ScenarioBlock
                   key={scenario.id}
                   scenario={scenario}
@@ -350,7 +381,7 @@ function ScenarioBlock({ scenario, columns, onSetCell, onRemove }) {
             {teamNum}
           </td>
           {columns.map((col) => {
-            const text = scenario.cells[teamNum]?.[col.id] ?? "";
+            const text = scenario.cells?.[teamNum]?.[col.id] ?? "";
             return (
               <td
                 key={col.id}

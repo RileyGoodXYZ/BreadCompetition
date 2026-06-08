@@ -6,19 +6,28 @@ import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/ui/button";
 import { NewStrategyDialog } from "@/components/match-strategy/NewStrategyDialog";
 import { useMatchStrategy } from "@/lib/match-strategy-store";
+import { relativeTime } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 // Match strategy home page
 export default function MatchStrategyLibrary() {
   const navigate = useNavigate();
-  const { strategies, createStrategy } = useMatchStrategy();
+  const { strategies, createStrategy, loading, error } = useMatchStrategy();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const open = (id) => navigate(`/match-strategy/${id}`);
-  const handleCreate = (payload) => {
-    const id = createStrategy(payload);
-    setDialogOpen(false);
-    navigate(`/match-strategy/${id}`);
+  const handleCreate = async (payload) => {
+    setSubmitting(true);
+    try {
+      const id = await createStrategy(payload);
+      setDialogOpen(false);
+      navigate(`/match-strategy/${id}`);
+    } catch (e) {
+      console.error("createStrategy failed", e);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -48,6 +57,12 @@ export default function MatchStrategyLibrary() {
             </Button>
           </div>
 
+          {error && (
+            <div className="mb-6 p-3 rounded-md border border-error/40 bg-error/5 text-sm text-error">
+              Failed to load strategies: {String(error.message ?? error)}
+            </div>
+          )}
+
           {/* Section header */}
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-7">
             <div className="p-1.5 sm:p-2 bg-secondary-container rounded-md">
@@ -59,16 +74,20 @@ export default function MatchStrategyLibrary() {
             <div className="h-px flex-1 bg-outline-variant/50 ml-1 sm:ml-4" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
-            {strategies.map((s) => (
-              <StrategyCard
-                key={s.id}
-                strategy={s}
-                onOpen={() => open(s.id)}
-              />
-            ))}
-            <CreateStrategyCard onClick={() => setDialogOpen(true)} />
-          </div>
+          {loading && strategies.length === 0 ? (
+            <p className="text-on-surface-variant text-sm">Loading…</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
+              {strategies.map((s) => (
+                <StrategyCard
+                  key={s.id}
+                  strategy={s}
+                  onOpen={() => open(s.id)}
+                />
+              ))}
+              <CreateStrategyCard onClick={() => setDialogOpen(true)} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -76,6 +95,7 @@ export default function MatchStrategyLibrary() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onCreate={handleCreate}
+        submitting={submitting}
       />
     </Shell>
   );
@@ -88,14 +108,12 @@ const FAVOR_LABELS = {
 };
 
 function StrategyCard({ strategy, onOpen }) {
-  const {
-    title,
-    event,
-    updatedLabel,
-    favored,
-    ourAlliance,
-    opponentAlliance,
-  } = strategy;
+  const { title, event_key: eventKey, favored, updated_at: updatedAt, data } =
+    strategy;
+  const ourAlliance = data?.ourAlliance ?? [];
+  const opponentAlliance = data?.opponentAlliance ?? [];
+  const updatedLabel = relativeTime(updatedAt);
+
   return (
     <article
       onClick={onOpen}
@@ -112,7 +130,7 @@ function StrategyCard({ strategy, onOpen }) {
         )}
       </div>
       <p className="text-[11px] uppercase tracking-wider text-on-surface-variant font-mono">
-        {event} · {updatedLabel}
+        {[eventKey, updatedLabel].filter(Boolean).join(" · ")}
       </p>
 
       <div className="mt-3 sm:mt-5 space-y-1.5 sm:space-y-2">
@@ -140,8 +158,6 @@ function AllianceRow({ label, color, teams }) {
           <span key={t}>
             <Link
               to={`/robot-data?team=${t}`}
-              // The whole card is also clickable — keep the click on the
-              // number from also opening the strategy detail.
               onClick={(e) => e.stopPropagation()}
               className="hover:underline underline-offset-4 decoration-2 decoration-on-surface/30"
             >
