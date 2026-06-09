@@ -1,5 +1,5 @@
 # BreadCompetition
-
+ 
 A monorepo containing a React/Tailwind/Vite frontend and a Python FastAPI backend for scouting and strategy.
 
 ## Directory Structure
