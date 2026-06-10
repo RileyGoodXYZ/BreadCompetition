@@ -1,25 +1,22 @@
-"""Events router — competitions and their attendance roster — STUDENT EXERCISE.
+"""Events router — competitions and their attendance roster.
 
 An "event" is one competition (regional, district, championship, off-season).
 The `event_key` follows TBA's convention (`2026casj` = 2026 Silicon Valley
 Regional) so we can sync from upstream without an id translation layer.
 
-The CRUD here is intentionally stubbed. Every endpoint keeps its route
-decorator, signature, and a detailed TODO docstring — the implementation is
-yours. Use `teams.py` (full roster CRUD, same upsert/delete dance) and
-`submissions.py` (filtered list reads) as reference patterns; the helpers and
-conventions there port directly here.
-
 Three concerns live here:
 
   1. Event metadata CRUD (name, plus dates / status in `data`). Read by the
-     Home shell to render the "current event" banner. STUDENT EXERCISE.
+     Home shell to render the "current event" banner.
   2. Event attendance — which teams are at this event, via the `event_teams`
      join table. This is the read AddRobotDialog and the RobotData search
-     actually want. STUDENT EXERCISE.
+     actually want.
   3. Match schedule — `GET /api/events/{key}/matches`. A *planning* stub
-     (returns []), NOT a student exercise: the design (TBA proxy vs. a
-     `matches` table) isn't chosen yet. Its docstring lays out the options.
+     (returns []): the design (TBA proxy vs. a `matches` table) isn't chosen
+     yet. Its docstring lays out the options.
+
+The metadata and attendance handlers mirror `teams.py` (the same
+upsert/delete dance) and `submissions.py` (filtered list reads).
 """
 import json
 from typing import Any, Optional
@@ -47,10 +44,8 @@ def _team_row_to_dict(row) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Event metadata
 #
-# STUDENT EXERCISE — these four endpoints are intentionally stubbed. The route
-# signatures and docstrings spell out exactly what to build; the bodies raise
-# 501 until implemented. `teams.py` does the same list / get / upsert / delete
-# dance over the global roster — it's the closest reference.
+# list / get / upsert / delete over the `events` table. `teams.py` does the
+# same dance over the global roster — it's the closest reference.
 # ---------------------------------------------------------------------------
 
 @router.get("")
@@ -73,10 +68,12 @@ def list_events(
     Later: add `?upcoming=true` / `?active=true` filters once `data` carries
     structured `start_date` / `end_date` fields. Today the client filters.
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="TODO(student): see docstring",
-    )
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM events ORDER BY event_key DESC LIMIT ? OFFSET ?",
+            (limit, offset),
+        ).fetchall()
+    return [_event_row_to_dict(r) for r in rows]
 
 
 @router.get("/{event_key}")
@@ -93,10 +90,13 @@ def get_event(event_key: str) -> dict[str, Any]:
 
     Reference: `teams.py::get_team`.
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="TODO(student): see docstring",
-    )
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT * FROM events WHERE event_key = ?", (event_key,)
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="event not found")
+    return _event_row_to_dict(row)
 
 
 @router.put("/{event_key}", status_code=status.HTTP_200_OK)
@@ -128,10 +128,27 @@ def upsert_event(event_key: str, payload: EventUpsert) -> dict[str, Any]:
       - When TBA sync exists, prefer pulling from TBA over hand-PUTs so dates
         / status don't drift.
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="TODO(student): see docstring",
-    )
+    if payload.event_key != event_key:
+        payload = payload.model_copy(update={"event_key": event_key})
+
+    serialized = json.dumps(payload.data, sort_keys=True, separators=(",", ":"))
+
+    with get_conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO events (event_key, name, data, updated_at)
+            VALUES (?, ?, ?, datetime('now'))
+            ON CONFLICT(event_key) DO UPDATE SET
+              name       = excluded.name,
+              data       = excluded.data,
+              updated_at = datetime('now')
+            """,
+            (event_key, payload.name, serialized),
+        )
+        row = conn.execute(
+            "SELECT * FROM events WHERE event_key = ?", (event_key,)
+        ).fetchone()
+    return _event_row_to_dict(row)
 
 
 @router.delete("/{event_key}", status_code=status.HTTP_204_NO_CONTENT)
@@ -150,19 +167,18 @@ def delete_event(event_key: str) -> Response:
     still reference this `event_key`. There's no FK from those, so today a
     delete just leaves them orphaned — fine for dev, sketchy for real data.
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="TODO(student): see docstring",
-    )
+    with get_conn() as conn:
+        cursor = conn.execute("DELETE FROM events WHERE event_key = ?", (event_key,))
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="event not found")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------
 # Event attendance (teams at this event)
 #
-# STUDENT EXERCISE — these three endpoints are intentionally stubbed.
-# The route signatures and docstrings spell out exactly what to build;
-# the bodies raise 501 until implemented. Use `teams.py` and the event
-# metadata endpoints above as reference patterns.
+# list / register / unregister over the `event_teams` join table. Mirrors
+# `teams.py` and the event metadata endpoints above.
 # ---------------------------------------------------------------------------
 
 @router.get("/{event_key}/teams")
@@ -202,10 +218,23 @@ def list_event_teams(
       - Don't bother paginating; Champs has ~600 teams per division at
         most.
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="TODO(student): see docstring",
+    clauses = ["et.event_key = ?"]
+    params: list[Any] = [event_key]
+    if q:
+        clauses.append("(CAST(t.team_number AS TEXT) LIKE ? OR LOWER(t.name) LIKE ?)")
+        needle = f"%{q.lower()}%"
+        params.extend([needle, needle])
+
+    sql = (
+        "SELECT t.* FROM event_teams et "
+        "JOIN teams t ON t.team_number = et.team_number "
+        "WHERE " + " AND ".join(clauses) + " "
+        "ORDER BY t.team_number ASC"
     )
+
+    with get_conn() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    return [_team_row_to_dict(r) for r in rows]
 
 
 @router.post("/{event_key}/teams", status_code=status.HTTP_201_CREATED)
@@ -240,10 +269,47 @@ def register_event_teams(event_key: str, payload: EventTeamRegister) -> dict[str
       - If `payload.team_numbers` is empty, the Pydantic model
         (`Field(min_length=1)`) already rejects it with 422.
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="TODO(student): see docstring",
-    )
+    with get_conn() as conn:
+        exists = conn.execute(
+            "SELECT 1 FROM events WHERE event_key = ?", (event_key,)
+        ).fetchone()
+        if exists is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="event not found")
+
+        # event_teams has an FK to teams, so every team must already be in the
+        # global catalog. Check up front and 400 with the offenders, rather than
+        # letting the FK violation surface as an opaque 500.
+        placeholders = ",".join("?" for _ in payload.team_numbers)
+        present = {
+            row["team_number"]
+            for row in conn.execute(
+                f"SELECT team_number FROM teams WHERE team_number IN ({placeholders})",
+                payload.team_numbers,
+            ).fetchall()
+        }
+        missing = [n for n in payload.team_numbers if n not in present]
+        if missing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"these teams are not in the catalog yet — create them first "
+                    f"via PUT /api/teams/{{team_number}}: {missing}"
+                ),
+            )
+
+        conn.executemany(
+            "INSERT OR IGNORE INTO event_teams (event_key, team_number) VALUES (?, ?)",
+            [(event_key, team_number) for team_number in payload.team_numbers],
+        )
+        attendance_count = conn.execute(
+            "SELECT COUNT(*) FROM event_teams WHERE event_key = ?", (event_key,)
+        ).fetchone()[0]
+
+    return {
+        "event_key": event_key,
+        "registered": payload.team_numbers,
+        "attendance_count": attendance_count,
+    }
 
 
 @router.delete(
@@ -265,10 +331,17 @@ def unregister_event_team(event_key: str, team_number: int) -> Response:
     Reference: `delete_event` directly above does the same dance for
     the parent events table.
     """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="TODO(student): see docstring",
-    )
+    with get_conn() as conn:
+        cursor = conn.execute(
+            "DELETE FROM event_teams WHERE event_key = ? AND team_number = ?",
+            (event_key, team_number),
+        )
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="team not registered for this event",
+            )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------
