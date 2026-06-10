@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:5173"
     ENV: str = "dev"
 
+    # The Blue Alliance read API (manual sync). TBA_API_KEY is sent as the
+    # X-TBA-Auth-Key header; get a free one at thebluealliance.com/account.
+    TBA_API_KEY: str = ""
+    TBA_BASE_URL: str = "https://www.thebluealliance.com/api/v3"
+
     @property
     def db_path(self) -> Path:
         p = Path(self.DB_PATH)

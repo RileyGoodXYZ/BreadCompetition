@@ -9,6 +9,7 @@ from .routers import (
     scouting,
     strategies,
     submissions,
+    tba,
     teams,
 )
 
@@ -29,6 +30,7 @@ app.include_router(teams.router)
 app.include_router(events.router)
 app.include_router(picklists.router)
 app.include_router(strategies.router)
+app.include_router(tba.router)
 
 
 @app.get("/")

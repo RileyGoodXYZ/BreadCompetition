@@ -11,9 +11,9 @@ Three concerns live here:
   2. Event attendance — which teams are at this event, via the `event_teams`
      join table. This is the read AddRobotDialog and the RobotData search
      actually want.
-  3. Match schedule — `GET /api/events/{key}/matches`. A *planning* stub
-     (returns []): the design (TBA proxy vs. a `matches` table) isn't chosen
-     yet. Its docstring lays out the options.
+  3. Match schedule — `GET /api/events/{key}/matches`. Reads the `matches`
+     table, populated from The Blue Alliance by the manual sync in
+     `app/services/tba.py`.
 
 The metadata and attendance handlers mirror `teams.py` (the same
 upsert/delete dance) and `submissions.py` (filtered list reads).
@@ -39,6 +39,29 @@ def _team_row_to_dict(row) -> dict[str, Any]:
     d = dict(row)
     d["data"] = json.loads(d["data"]) if d.get("data") else {}
     return d
+
+
+def _match_row_to_dict(row) -> dict[str, Any]:
+    """Flatten a `matches` row into the UI-friendly shape: the hoisted columns
+    plus the alliances/scores lifted out of the `data` blob."""
+    d = dict(row)
+    data = json.loads(d.get("data")) if d.get("data") else {}
+    return {
+        "match_key": d["match_key"],
+        "event_key": d["event_key"],
+        "comp_level": d["comp_level"],
+        "set_number": d["set_number"],
+        "match_number": d["match_number"],
+        "scheduled_time": d["scheduled_time"],
+        "predicted_time": d["predicted_time"],
+        "actual_time": d["actual_time"],
+        "winning_alliance": d["winning_alliance"],
+        "red": data.get("red", []),
+        "blue": data.get("blue", []),
+        "red_score": data.get("red_score"),
+        "blue_score": data.get("blue_score"),
+        "updated_at": d["updated_at"],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -350,26 +373,23 @@ def unregister_event_team(event_key: str, team_number: int) -> Response:
 
 @router.get("/{event_key}/matches")
 def list_event_matches(event_key: str) -> list[dict[str, Any]]:
-    """Match schedule for an event.
+    """Match schedule + results for an event, in play order.
 
-    NOT IMPLEMENTED — stub. Returns an empty list so the UI can wire to
-    it without 404ing.
+    Reads the `matches` table, populated from The Blue Alliance by the manual
+    sync in `app/services/tba.py`. Returns `[]` for an event that hasn't been
+    synced yet, so the UI never 404s.
 
-    TODO(impl):
-      - This is the read that powers `lib/schedule.js::UPCOMING_MATCHES`.
-        Shape expected by the UI:
-          {id, number, type, scheduledAt, startsInLabel, field, red[3], blue[3]}
-      - Two reasonable approaches:
-          a) Add a `matches` table and a sync job that pulls from TBA
-             (`/event/{key}/matches/simple`) on a schedule. Pros: works
-             offline, single source of truth, can attach our own metadata
-             (notes, photos). Cons: cache invalidation + a sync job.
-          b) Proxy TBA on each request with a short in-process cache
-             (60s). Pros: no schema, always fresh. Cons: needs TBA API
-             key in env, brittle without internet, can't extend.
-        Pick (a) when we need offline support, (b) until then.
-      - Match-strategy Library currently sorts by `updated_at`. Once
-        this exists, the Library should sort upcoming strategies by
-        match `scheduledAt` to read like a real schedule.
+    Ordering is canonical match order: qualifications first, then the playoff
+    bracket (ef → qf → sf → f), then by set and match number. This powers
+    `lib/schedule.js::UPCOMING_MATCHES`.
     """
-    return []
+    sql = (
+        "SELECT * FROM matches WHERE event_key = ? "
+        "ORDER BY CASE comp_level "
+        "  WHEN 'qm' THEN 0 WHEN 'ef' THEN 1 WHEN 'qf' THEN 2 "
+        "  WHEN 'sf' THEN 3 WHEN 'f' THEN 4 ELSE 5 END, "
+        "set_number, match_number"
+    )
+    with get_conn() as conn:
+        rows = conn.execute(sql, (event_key,)).fetchall()
+    return [_match_row_to_dict(r) for r in rows]

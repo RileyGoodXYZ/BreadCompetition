@@ -66,6 +66,33 @@ CREATE TABLE IF NOT EXISTS event_teams (
 CREATE INDEX IF NOT EXISTS idx_event_teams_team ON event_teams(team_number);
 
 -- ---------------------------------------------------------------------------
+-- Matches (TBA-synced schedule + results)
+--
+-- One row per match at an event, pulled from The Blue Alliance
+-- (`/event/{key}/matches`). Filterable / sortable fields (comp_level,
+-- match_number, the three TBA timestamps, winner) are hoisted to columns; the
+-- alliances (team lists + scores) and any raw extras live in `data`.
+--
+-- Written by the manual TBA sync — see app/services/tba.py. FK cascades from
+-- events so deleting an event scrubs its matches alongside its attendance.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS matches (
+  match_key        TEXT    PRIMARY KEY,            -- TBA key, e.g. 2026casj_qm1
+  event_key        TEXT    NOT NULL REFERENCES events(event_key) ON DELETE CASCADE,
+  comp_level       TEXT    NOT NULL DEFAULT 'qm',  -- qm, ef, qf, sf, f
+  set_number       INTEGER NOT NULL DEFAULT 1,
+  match_number     INTEGER NOT NULL DEFAULT 0,
+  scheduled_time   INTEGER,                         -- unix utc; nullable
+  predicted_time   INTEGER,
+  actual_time      INTEGER,
+  winning_alliance TEXT,                            -- 'red' | 'blue' | '' | NULL
+  data             TEXT    NOT NULL DEFAULT '{}',   -- red[], blue[], scores, raw
+  updated_at       TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_matches_event ON matches(event_key);
+
+-- ---------------------------------------------------------------------------
 -- Picklists
 --
 -- One row per picklist. We stash the entire UI-shaped document in `data`
