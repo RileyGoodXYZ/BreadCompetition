@@ -123,6 +123,11 @@ export default function TeleopV1() {
       stopTimer(buttonId);
       return;
     }
+    Object.keys(startTimesRef.current).forEach((id) => {
+      if (id != buttonId) {
+        stopTimer(id);
+      }
+    })
     startTimer(buttonId);
   };
 
@@ -140,6 +145,7 @@ export default function TeleopV1() {
     stopAnyRunningTimer();
     navigate('/data-scout/endgame');
   };
+
 
   return (
     <div style={{margin: '2rem auto 0', padding: '0', boxSizing: 'border-box', maxWidth: 'none', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflowX: 'hidden', overflowY: 'auto'}}>
@@ -199,7 +205,7 @@ export default function TeleopV1() {
             style={getTimedButtonStyle('defense', {
               width: '100%',
               minWidth: 0,
-              height: '70px',
+              height: '130px',
               fontSize: '1rem',
               background: '#e08fb9',
               color: 'black',
@@ -214,7 +220,7 @@ export default function TeleopV1() {
             style={getTimedButtonStyle('herd', {
               width: '100%',
               minWidth: 0,
-              height: '70px',
+              height: '130px',
               fontSize: '1rem',
               background: '#e08fb9',
               color: 'black',
