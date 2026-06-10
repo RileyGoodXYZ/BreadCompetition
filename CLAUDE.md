@@ -94,14 +94,12 @@ The `scouting-architecture` skill (`.claude/skills/scouting-architecture/SKILL.m
 2. **Resource CRUD** — `teams`, `events`, `event_teams`, `picklists`, `strategies` tables, each with a thin router that exposes list/get/create/update/delete. UI-owned document shapes live in JSON `data` columns; only filterable fields are real columns.
 3. **Aggregation (not built)** — analytics, rankings, EPA, BPS. These will read from `submissions` and probably live in `app/services/` to keep routers thin. The picklist/robot-data/strategy pages currently render mock data and will switch over once these endpoints exist.
 
-### Database — six tables
+### Database — seven tables
 ```
-events ──┐
-         ▼
-event_teams ──► teams ◄── submissions  (team_number, no FK)
-                              ▲
-                              │ aggregation queries (future)
-                              │
+events ──┬──► event_teams ──► teams ◄── submissions  (team_number, no FK)
+         │                       ▲
+         └──► matches            │ aggregation queries (future)
+        (TBA-synced)            │
 picklists, strategies (free-standing JSON documents, reference event_key/team
 numbers by convention)
 ```
@@ -110,8 +108,9 @@ numbers by convention)
 |---|---|
 | `submissions` | Raw scouting forms (4 types, JSON body) |
 | `teams` | Global team catalog (name, drivetrain, image) |
-| `events` | Competition metadata (`event_key` mirrors TBA) |
+| `events` | Competition metadata (`event_key` mirrors TBA); TBA-synced |
 | `event_teams` | Attendance join (which teams at which event) |
+| `matches` | Match schedule + results, synced from The Blue Alliance |
 | `picklists` | Picklist documents (Library + Manager pages) |
 | `strategies` | Match-strategy documents (Library + Detail pages) |
 
@@ -143,9 +142,11 @@ Every router file in `app/routers/` follows the same shape:
 | `backend/app/routers/scouting.py` | `POST /api/scouting/{match,subjective,pit,break}` (polymorphic, idempotent) |
 | `backend/app/routers/submissions.py` | Raw submission reads with filters |
 | `backend/app/routers/teams.py` | Global team catalog + per-team submissions view |
-| `backend/app/routers/events.py` | Event metadata + attendance roster + matches stub |
+| `backend/app/routers/events.py` | Event metadata + attendance roster + matches read |
 | `backend/app/routers/picklists.py` | Picklist CRUD (Library + Manager pages) |
 | `backend/app/routers/strategies.py` | Strategy CRUD (Library + Detail pages) |
+| `backend/app/routers/tba.py` | The Blue Alliance manual sync endpoint |
+| `backend/app/services/tba.py` | TBA read client + `sync_event()` (events, teams, matches) |
 | `backend/scripts/init_db.py` | Re-apply `schema.sql` to `data/app.db` |
 | `frontend/src/pages/data-scout/` | Scouting form pages (Auto, Teleop, Endgame, Prematch, Profile, Submit) |
 | `frontend/src/pages/picklist/` | Library, Manager, RobotData |

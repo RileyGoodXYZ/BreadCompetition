@@ -37,7 +37,7 @@ major piece of work and is the bridge between `submissions` and the picklist
 ```
 backend/
   app/
-    config.py          Settings (DB_PATH, CORS_ORIGINS) via pydantic-settings
+    config.py          Settings (DB_PATH, CORS_ORIGINS, TBA_API_KEY) via pydantic-settings
     db.py              sqlite3 + WAL + foreign_keys=ON; get_conn() context mgr
     schema.sql         Every CREATE TABLE / CREATE INDEX (idempotent IF NOT EXISTS)
     models.py          All Pydantic models, one section per resource
@@ -47,9 +47,12 @@ backend/
       scouting.py      POST /api/scouting/{match|subjective|pit|break}
       submissions.py   GET /api/submissions, /api/submissions/{id}
       teams.py         Global team catalog + per-team submissions view  [reference]
-      events.py        Event metadata + attendance CRUD (501 stubs) + matches stub
+      events.py        Event metadata + attendance CRUD + matches read (TBA-backed)
       picklists.py     Picklist-document CRUD — student-exercise stub (501s)
       strategies.py    Match-strategy CRUD — student-exercise stub (501s)
+      tba.py           The Blue Alliance manual sync endpoint
+    services/
+      tba.py           TBA read client + sync_event() (events, teams, matches)
   data/                SQLite db lives here (gitignored)
   scripts/             Seed scripts go here
 ```
@@ -71,13 +74,13 @@ by name. Keep them implemented and idiomatic; they're the worked examples.
 When you implement (or grade) a stub, follow the conventions below and the
 guidance in each docstring — don't invent a different shape.
 
-## Database — six tables, two relationships
+## Database — seven tables, three relationships
 
 ```
             ┌──────────────┐
             │   events     │ (event_key PK)
             └─────┬────────┘
-                  │ FK cascade
+            FK    │ cascade  └────FK cascade────► matches (match_key PK)
                   ▼
         ┌────────────────────┐         ┌──────────────┐
         │   event_teams      │ ──FK──► │    teams     │ (team_number PK)
@@ -104,8 +107,9 @@ guidance in each docstring — don't invent a different shape.
 |---|---|---|
 | `submissions` | Raw scouting forms | Polymorphic via `type` discriminator; body in JSON `data` |
 | `teams` | Global team catalog | Name/drivetrain/image; nothing event-specific |
-| `events` | Competition metadata | `event_key` mirrors TBA (`2026casj`) for future sync |
+| `events` | Competition metadata | `event_key` mirrors TBA (`2026casj`); synced from TBA |
 | `event_teams` | Attendance join | Cascade-delete from both sides; PK is composite |
+| `matches` | Match schedule + results | TBA-synced; FK-cascades from events; alliances/scores in `data` |
 | `picklists` | Picklist documents | UI-shaped body in `data`; only filterable fields hoisted |
 | `strategies` | Match-strategy docs | Same modeling story as picklists |
 
@@ -264,6 +268,33 @@ In rough priority order:
 5. **Optimistic concurrency on PATCH.** Picklist and strategy updates
    are last-write-wins. Add `If-Match: <updated_at>` once multiple
    strategists edit the same match concurrently.
+
+## The Blue Alliance sync
+
+The event, its roster, and its match schedule are pulled from
+[The Blue Alliance](https://www.thebluealliance.com/apidocs/v3) into local
+SQLite by one endpoint:
+
+  `POST /api/tba/sync/{event_key}` → upserts events / teams / event_teams / matches
+
+**Manual, on-demand only** — no webhook, no background poller: the scouting
+server runs on a laptop in the stands with no inbound internet, so a push would
+never arrive. You sync when you have a connection (ahead of the event, or on a
+hotspot) and serve from SQLite the rest of the time. The design is
+sync-into-SQLite (not a live proxy) so the schedule survives venue wifi
+outages.
+
+Conventions when touching the sync (`services/tba.py`):
+
+- **Reads use `X-TBA-Auth-Key`** (`settings.TBA_API_KEY`). The client lives in
+  `_client()`; raise `TBAError` / `TBANotFound`, which the router maps to
+  502 / 404. `GET /api/tba/status` reports config without leaking the key.
+- **Idempotent upserts.** `INSERT ... ON CONFLICT DO UPDATE` everywhere;
+  catalog `data` blobs are **shallow-merged** (`_merge_data`, nulls dropped) so
+  a re-sync never destroys UI-added fields.
+- **Still no background worker.** Manual-only keeps the threading model simple.
+  Per-event analytics (OPR/rankings, EPA) are intentionally *out* of the first
+  cut — add them later, behind their own endpoint, when needed.
 
 ## Anti-patterns — don't do these
 
