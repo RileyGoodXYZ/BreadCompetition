@@ -138,7 +138,7 @@ function Prematch() {
             flexDirection: 'column',
             translate: alliance === "Blue" ? '400px -350px' : '10px -350px',
             transition: 'translate 150ms ease',
-            gap: '20px',
+            gap: '8px',
             left: 'auto'
           }}
         >
@@ -217,6 +217,25 @@ function Prematch() {
             }}
           >
             4
+          </button>
+          <button
+            style={{
+              backgroundColor: 'rgb(243, 124, 185)',
+              borderRadius: '9px',
+              borderWidth: '4px',
+              width: '14vw',
+              height: '55px',
+              margin: '5px',
+              color: 'rgb(241, 243, 245)',
+              fontWeight: 'bold',
+              opacity: position === "5" ? 0.6 : 1
+            }}
+            onClick={() => {
+              setPosition("5");
+              localStorage.setItem('prematch_position', "5");
+            }}
+          >
+            5
           </button>
         </div>
         <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: '-305px', flexWrap: 'wrap', gap: '0.5rem', width: '100%' }}>
