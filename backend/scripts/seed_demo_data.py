@@ -348,8 +348,10 @@ def seed_event(conn) -> None:
 
 def seed_teams(conn, rng: random.Random) -> None:
     for number, name, rank, shooter in TEAMS:
+        drivetrain = rng.choices(["swerve", "tank"], weights=[5, 1])[0]
         data = {
-            "drivetrain": rng.choices(["swerve", "tank"], weights=[5, 1])[0],
+            # 5940 runs swerve; don't let the RNG say otherwise.
+            "drivetrain": "swerve" if number == 5940 else drivetrain,
             "shooter": shooter,
             "rank": rank,
             "image_url": None,
