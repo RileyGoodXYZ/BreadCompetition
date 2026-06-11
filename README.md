@@ -31,7 +31,7 @@ BreadCompetition/
 **Frontend**:
 - Install dependencies 
    ```bash
-   cd frontend && npm run install
+   cd frontend && npm install
    ```
 - Preview 
    ```bash
