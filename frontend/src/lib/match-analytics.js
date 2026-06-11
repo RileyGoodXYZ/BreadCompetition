@@ -31,7 +31,8 @@ export function buildSubmissionRows(submissions) {
 
 
 export function aggregateEventStats(submissions) {
-  const sums = {}; 
+  const sums = {};
+  const allKeys = new Set();
 
   for (const s of submissions) {
     const team = s.team_number;
