@@ -1,20 +1,11 @@
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical, StickyNote } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical, Plus, StickyNote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { formatCell } from "@/lib/match-analytics";
 
 const ABOVE = "above";
 const BELOW = "below";
-
-const TIER_NUM = { HIGH: 3, MEDIUM: 2, MED: 2, LOW: 1 };
-
-function parseValue(v) {
-  if (v == null) return null;
-  const s = String(v).trim().toUpperCase();
-  if (s in TIER_NUM) return TIER_NUM[s];
-  const n = parseFloat(s.replace("%", ""));
-  return Number.isFinite(n) ? n : null;
-}
 
 const COLOR_TIERS = [
   "bg-rose-500/15 text-rose-700",
@@ -34,20 +25,11 @@ function tierFor(value, min, max) {
   return 0;
 }
 
-const METRIC_COLUMNS = {
-  auto: { header: "Auto" },
-  teleop: { header: "Teleop" },
-  climb: { header: "Climb" },
-  speaker: { header: "Speaker" },
-  amp: { header: "Amp" },
-  defense: { header: "Defense", categorical: true },
-  consistency: { header: "Consist." },
-};
-
 const BASE_SORTABLE = {
   rank: { getter: (t) => t.rank },
   name: { getter: (t) => (t.name ?? "").toLowerCase() },
 };
+
 
 export function RankingsTable({
   teams,
@@ -55,36 +37,37 @@ export function RankingsTable({
   onReorder,
   notes = {},
   onOpenNote,
+  blackedOut = new Set(),
+  onToggleBlackout,
+  onAddToComparison,
+  comparisonTeams = new Set(),
 }) {
-  const activeMetricCols = columns
-    .filter((c) => c.checked && METRIC_COLUMNS[c.id])
-    .map((c) => c.id);
-
-  const minWidth = 460 + activeMetricCols.length * 56;
+  const minWidth = 520 + columns.length * 80;
 
   // { col, dir: "asc" | "desc" } — single sort key (null when unsorted).
   const [sort, setSort] = useState(null);
   const isSorted = sort != null;
 
+  // Cache min/max per metric column to drive the heat-map cell tinting.
   const metricStats = useMemo(() => {
     const stats = {};
-    for (const id of activeMetricCols) {
-      const vals = teams.map((t) => parseValue(t[id])).filter((v) => v != null);
-      stats[id] = vals.length
+    for (const c of columns) {
+      const vals = teams
+        .map((t) => (typeof t[c.id] === "number" ? t[c.id] : null))
+        .filter((v) => v != null);
+      stats[c.id] = vals.length
         ? { min: Math.min(...vals), max: Math.max(...vals) }
         : { min: 0, max: 0 };
     }
     return stats;
-  }, [teams, activeMetricCols]);
+  }, [teams, columns]);
 
   const orderedTeams = useMemo(() => {
     if (!sort) return teams;
     const { col, dir } = sort;
     const getter = BASE_SORTABLE[col]
       ? BASE_SORTABLE[col].getter
-      : METRIC_COLUMNS[col]
-      ? (t) => parseValue(t[col])
-      : () => null;
+      : (t) => (typeof t[col] === "number" ? t[col] : null);
     const indexed = teams.map((t, i) => ({ t, i }));
     indexed.sort((a, b) => {
       const av = getter(a.t);
@@ -151,14 +134,22 @@ export function RankingsTable({
     setHover(null);
   };
 
+  if (teams.length === 0) {
+    return (
+      <div className="border border-primary-container/10 rounded-md bg-surface-container-lowest shadow-warm-sm py-10 text-center text-sm text-on-surface-variant">
+        -
+      </div>
+    );
+  }
+  
   return (
     <div className="border border-primary-container/10 rounded-md overflow-hidden bg-surface-container-lowest shadow-warm-sm">
-      <div className="overflow-x-auto scrollbar-warm">
+      <div className="overflow-auto scrollbar-warm max-h-[calc(100vh-16rem)]">
         <table
           className="w-full border-collapse text-left"
           style={{ minWidth: `${minWidth}px` }}
         >
-          <thead className="bg-surface-container border-b border-outline-variant/30">
+          <thead className="bg-surface-container border-b border-outline-variant/30 sticky top-0 z-10">
             <tr>
               <Th className="w-6 px-1" />
               <SortableTh
@@ -174,16 +165,16 @@ export function RankingsTable({
               >
                 Robot
               </SortableTh>
-              {activeMetricCols.map((id) => (
+              <Th className="px-1 w-20 text-center">Actions</Th>
+              {columns.map((c) => (
                 <SortableDataTh
-                  key={id}
-                  onSort={() => cycleSort(id)}
-                  info={sortInfo(id)}
+                  key={c.id}
+                  onSort={() => cycleSort(c.id)}
+                  info={sortInfo(c.id)}
                 >
-                  {METRIC_COLUMNS[id].header}
+                  {c.label}
                 </SortableDataTh>
               ))}
-              <Th className="px-2 w-14 text-center">Notes</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20">
@@ -194,6 +185,7 @@ export function RankingsTable({
               const isHoverBelow =
                 hover?.idx === i && hover.position === BELOW && dragIdx !== i;
               const note = notes[t.number] ?? "";
+              const isBlackedOut = blackedOut.has?.(t.number) ?? false;
               return (
                 <tr
                   key={t.number}
@@ -203,9 +195,25 @@ export function RankingsTable({
                   onDragLeave={draggable ? onDragLeaveRow(i) : undefined}
                   onDrop={draggable ? onDrop(i) : undefined}
                   onDragEnd={draggable ? onDragEnd : undefined}
+                  onContextMenu={
+                    onToggleBlackout
+                      ? (e) => {
+                          e.preventDefault();
+                          onToggleBlackout(t.number);
+                        }
+                      : undefined
+                  }
+                  title={
+                    onToggleBlackout
+                      ? isBlackedOut
+                        ? "Right-click to un-black out"
+                        : "Right-click to black out"
+                      : undefined
+                  }
                   className={cn(
                     "group transition-colors hover:bg-primary-container/3",
                     isDragging && "opacity-40",
+                    isBlackedOut && "opacity-50",
                     isHoverAbove &&
                       "shadow-[inset_0_2px_0_0_var(--color-primary-container)]",
                     isHoverBelow &&
@@ -231,7 +239,12 @@ export function RankingsTable({
                       <GripVertical className="w-4 h-4" />
                     </span>
                   </Td>
-                  <Td className="font-mono text-sm text-on-surface px-1.5">
+                  <Td
+                    className={cn(
+                      "font-mono text-sm text-on-surface px-1.5",
+                      isBlackedOut && "line-through"
+                    )}
+                  >
                     {String(t.rank).padStart(2, "0")}
                   </Td>
                   <Td>
@@ -241,29 +254,47 @@ export function RankingsTable({
                       draggable={false}
                       className="flex items-center gap-2 group/link"
                     >
-                      <div className="w-7 h-7 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[11px] text-primary-container shrink-0">
+                      <div
+                        className={cn(
+                          "w-7 h-7 rounded-md bg-surface-container-high border border-primary-container/10 flex items-center justify-center font-bold text-[11px] text-primary-container shrink-0",
+                          isBlackedOut && "line-through"
+                        )}
+                      >
                         {t.number}
                       </div>
-                      <span className="font-semibold text-sm text-on-surface whitespace-nowrap group-hover/link:underline underline-offset-4 decoration-2 decoration-primary-container/40">
+                      <span
+                        className={cn(
+                          "font-semibold text-sm text-on-surface whitespace-nowrap group-hover/link:underline underline-offset-4 decoration-2 decoration-primary-container/40",
+                          isBlackedOut && "line-through"
+                        )}
+                      >
                         {t.name}
                       </span>
                     </Link>
                   </Td>
-                  {activeMetricCols.map((id) => (
-                    <DataTd key={id}>
+                  <Td className="px-1 text-center">
+                    <div className="inline-flex items-center gap-1">
+                      <NoteCell
+                        hasNote={Boolean(note)}
+                        onOpen={() => onOpenNote?.(t)}
+                      />
+                      {onAddToComparison && (
+                        <AddCell
+                          alreadyAdded={comparisonTeams.has?.(t.number) ?? false}
+                          onAdd={() => onAddToComparison(t.number)}
+                        />
+                      )}
+                    </div>
+                  </Td>
+                  {columns.map((c) => (
+                    <DataTd key={c.id}>
                       <MetricCell
-                        value={t[id]}
-                        stats={metricStats[id]}
-                        categorical={METRIC_COLUMNS[id].categorical}
+                        value={t[c.id]}
+                        stats={metricStats[c.id]}
+                        blackedOut={isBlackedOut}
                       />
                     </DataTd>
                   ))}
-                  <Td className="px-2 text-center">
-                    <NoteCell
-                      hasNote={Boolean(note)}
-                      onOpen={() => onOpenNote?.(t)}
-                    />
-                  </Td>
                 </tr>
               );
             })}
@@ -274,44 +305,41 @@ export function RankingsTable({
   );
 }
 
-function MetricCell({ value, stats, categorical }) {
-  const num = parseValue(value);
-  const tier =
-    stats == null
-      ? 2
-      : categorical
-      ? // HIGH (3) → tier 4, MEDIUM (2) → 2, LOW (1) → 0.
-        num === 3
-        ? 4
-        : num === 2
-        ? 2
-        : num === 1
-        ? 0
-        : 2
-      : tierFor(num, stats.min, stats.max);
-  const colorClass = COLOR_TIERS[tier];
+function MetricCell({ value, stats, blackedOut }) {
+  const num = typeof value === "number" ? value : null;
+  const tier = stats == null ? 2 : tierFor(num, stats.min, stats.max);
+  const colorClass = !blackedOut && num != null ? COLOR_TIERS[tier] : "";
 
-  if (categorical) {
-    return (
-      <span
-        className={cn(
-          "inline-flex items-center px-1.5 py-0.5 rounded-sm border border-outline-variant/40 text-[10px] font-semibold uppercase tracking-wider",
-          colorClass || "bg-surface-container text-on-surface-variant"
-        )}
-      >
-        {value}
-      </span>
-    );
-  }
   return (
     <span
       className={cn(
         "inline-flex items-center justify-center min-w-10 px-1.5 py-0.5 rounded font-mono text-sm",
-        colorClass || "text-on-surface-variant"
+        colorClass || "text-on-surface-variant",
+        blackedOut && "line-through opacity-60"
       )}
     >
-      {value}
+      {formatCell(value)}
     </span>
+  );
+}
+
+function AddCell({ alreadyAdded, onAdd }) {
+  return (
+    <button
+      type="button"
+      onClick={onAdd}
+      disabled={alreadyAdded}
+      aria-label={alreadyAdded ? "Already in comparison" : "Add to comparison"}
+      title={alreadyAdded ? "Already in comparison" : "Add to Robot Comparison"}
+      className={cn(
+        "inline-flex items-center justify-center w-7 h-7 rounded-full transition-colors",
+        alreadyAdded
+          ? "text-on-surface-variant/40 cursor-not-allowed"
+          : "text-on-surface-variant/70 hover:text-primary-container hover:bg-primary-container/10"
+      )}
+    >
+      <Plus className="w-3.5 h-3.5" strokeWidth={2.4} />
+    </button>
   );
 }
 
@@ -391,7 +419,7 @@ function SortableDataTh({ className = "", onSort, info, children }) {
   return (
     <th
       className={cn(
-        "px-0 py-2.5 text-center text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
+        "px-2 py-2.5 text-center text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
         className
       )}
     >
