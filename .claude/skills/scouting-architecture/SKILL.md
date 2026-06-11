@@ -51,7 +51,13 @@ backend/
       picklists.py     Picklist-document CRUD — student-exercise stub (501s)
       strategies.py    Match-strategy CRUD — student-exercise stub (501s)
   data/                SQLite db lives here (gitignored)
-  scripts/             Seed scripts go here
+  scripts/
+    init_db.py         Apply schema.sql to data/app.db
+    seed_demo_data.py  Fill all six tables with realistic 2026arc demo data
+                       (real roster/schedule, generated stats; idempotent —
+                       deterministic client_uuids + ON CONFLICT upserts;
+                       --reset drops seed-owned rows; match `data` blobs
+                       mirror Submit.jsx::buildPayload key-for-key)
 ```
 
 ### Student-exercise stubs vs. reference implementations
@@ -253,15 +259,11 @@ In rough priority order:
    options: TBA proxy with short cache, or a `matches` table populated
    by a sync job. See the docstring in `events.py` for the trade-off.
 
-3. **Seed script.** `backend/scripts/seed_teams.py` should populate
-   `teams` and `event_teams` from a JSON file (or TBA). Today everything
-   is hand-PUT.
-
-4. **Auth.** Every endpoint is open. `owner` and `collaborators` fields
+3. **Auth.** Every endpoint is open. `owner` and `collaborators` fields
    on picklists exist but are unused. When auth lands, picklist `kind=my`
    should be scoped to the session user.
 
-5. **Optimistic concurrency on PATCH.** Picklist and strategy updates
+4. **Optimistic concurrency on PATCH.** Picklist and strategy updates
    are last-write-wins. Add `If-Match: <updated_at>` once multiple
    strategists edit the same match concurrently.
 
