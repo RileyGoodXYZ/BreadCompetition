@@ -470,7 +470,6 @@ export default function Manager() {
                 robot ? (
                   <RobotCard
                     key={`slot-${idx}-${robot.team}`}
-                    robot={robot}
                     chartMatches={slotData[robot.team]?.matches}
                     loading={slotData[robot.team]?.loading !== false}
                     robot={{ ...robot, image: teamImages[robot.team] ?? robot.image }}
