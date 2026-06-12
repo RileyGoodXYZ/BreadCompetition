@@ -18,6 +18,7 @@ import { AddRobotDialog } from "@/components/picklist/AddRobotDialog";
 import { ScoutNotesDialog } from "@/components/picklist/ScoutNotesDialog";
 import { PicklistActions } from "@/components/picklist/PicklistActions";
 import { usePicklists } from "@/lib/picklists-store";
+import { useTeamImages } from "@/lib/use-team-images";
 import { cn } from "@/lib/utils";
 import { TEAM_POOL, RANKINGS, DEFAULT_COLUMNS } from "./data";
 
@@ -55,6 +56,7 @@ export default function Manager() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { findPicklist, loadPicklist, saveData } = usePicklists();
+  const teamImages = useTeamImages();
 
   const [picklist, setPicklist] = useState(() => findPicklist(id));
   const picklistRef = useRef(picklist);
@@ -274,7 +276,7 @@ export default function Manager() {
                 robot ? (
                   <RobotCard
                     key={`slot-${idx}-${robot.team}`}
-                    robot={robot}
+                    robot={{ ...robot, image: teamImages[robot.team] ?? robot.image }}
                     onViewNotes={() => setNotesRobot(robot)}
                     onRemove={locked ? undefined : () => clearSlot(idx)}
                     scrollRef={(el) => {
