@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Plus,
   Users,
@@ -29,6 +29,16 @@ export default function Library() {
     usePicklists();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+  const matchesQuery = (p) => {
+    if (!normalizedQuery) return true;
+    const title = (p.title ?? "").toLowerCase();
+    const eventKey = (p.event_key ?? "").toLowerCase();
+    return (
+      title.includes(normalizedQuery) || eventKey.includes(normalizedQuery)
+    );
+  };
 
   const handleCreate = async (payload) => {
     setSubmitting(true);
@@ -43,16 +53,39 @@ export default function Library() {
     }
   };
 
-  const activeShared = sharedLists.filter((p) => !p.archived).sort(byStarred);
-  const activeMy = myLists.filter((p) => !p.archived).sort(byStarred);
+  const activeShared = sharedLists
+    .filter((p) => !p.archived && matchesQuery(p))
+    .sort(byStarred);
+  const activeMy = myLists
+    .filter((p) => !p.archived && matchesQuery(p))
+    .sort(byStarred);
   const archived = [
-    ...sharedLists.filter((p) => p.archived),
-    ...myLists.filter((p) => p.archived),
+    ...sharedLists.filter((p) => p.archived && matchesQuery(p)),
+    ...myLists.filter((p) => p.archived && matchesQuery(p)),
   ];
+
+  const sharedByEvent = useMemo(
+    () => groupByEvent(activeShared),
+    [activeShared]
+  );
+  const myByEvent = useMemo(() => groupByEvent(activeMy), [activeMy]);
+  const isSearching = normalizedQuery.length > 0;
+  const noResults =
+    isSearching &&
+    activeShared.length === 0 &&
+    activeMy.length === 0 &&
+    archived.length === 0;
 
   return (
     <Shell>
-      <TopBar variant="library" />
+      <TopBar
+        variant="library"
+        search={{
+          value: query,
+          onChange: setQuery,
+          placeholder: "Search picklists by title or event…",
+        }}
+      />
 
       <div className="flex-1 overflow-y-auto scrollbar-warm">
         <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 py-4 sm:py-10">
@@ -85,46 +118,53 @@ export default function Library() {
 
           {loading && picklistsEmpty(activeShared, activeMy, archived) ? (
             <p className="text-on-surface-variant text-sm">Loading…</p>
+          ) : noResults ? (
+            <p className="text-on-surface-variant text-sm">
+              No picklists match{" "}
+              <span className="font-semibold text-on-surface">
+                “{query.trim()}”
+              </span>
+              .
+            </p>
           ) : (
             <>
               {/* Shared section */}
-              <section className="mb-6 sm:mb-16">
-                <SectionHeader icon={Users} title="Shared Picklists" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
-                  {activeShared.map((p) => (
-                    <PicklistCard
-                      key={p.id}
-                      picklist={p}
-                      onOpen={() => openPicklist(p.id)}
+              {(activeShared.length > 0 || !isSearching) && (
+                <section className="mb-6 sm:mb-16">
+                  <SectionHeader icon={Users} title="Shared Picklists" />
+                  {activeShared.length === 0 ? (
+                    <p className="text-on-surface-variant text-sm">
+                      No shared picklists yet.
+                    </p>
+                  ) : (
+                    <GroupedPicklistGrid
+                      groups={sharedByEvent}
+                      onOpen={openPicklist}
                     />
-                  ))}
-                </div>
-              </section>
+                  )}
+                </section>
+              )}
 
               {/* My section */}
               <section className="mb-6 sm:mb-16">
                 <SectionHeader icon={User} title="My Picklists" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
-                  {activeMy.map((p) => (
-                    <PicklistCard
-                      key={p.id}
-                      picklist={p}
-                      onOpen={() => openPicklist(p.id)}
-                    />
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setDialogOpen(true)}
-                    className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
-                  >
-                    <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
-                      <Plus className="w-8 h-8" strokeWidth={2} />
-                    </span>
-                    <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary-container transition-colors">
-                      Create New
-                    </span>
-                  </button>
-                </div>
+                {activeMy.length === 0 ? (
+                  !isSearching && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
+                      <CreateNewCard onClick={() => setDialogOpen(true)} />
+                    </div>
+                  )
+                ) : (
+                  <GroupedPicklistGrid
+                    groups={myByEvent}
+                    onOpen={openPicklist}
+                    trailingCard={
+                      !isSearching ? (
+                        <CreateNewCard onClick={() => setDialogOpen(true)} />
+                      ) : null
+                    }
+                  />
+                )}
               </section>
 
               {archived.length > 0 && <ArchivedSection items={archived} />}
@@ -155,6 +195,86 @@ export default function Library() {
 
 function picklistsEmpty(...lists) {
   return lists.every((l) => l.length === 0);
+}
+
+const NO_EVENT_KEY = "__no_event__";
+
+function groupByEvent(picklists) {
+  const groups = new Map();
+  for (const p of picklists) {
+    const key = p.event_key || NO_EVENT_KEY;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  return Array.from(groups.entries())
+    .map(([eventKey, items]) => ({ eventKey, items }))
+    .sort((a, b) => {
+      if (a.eventKey === NO_EVENT_KEY) return 1;
+      if (b.eventKey === NO_EVENT_KEY) return -1;
+      return a.eventKey.localeCompare(b.eventKey);
+    });
+}
+
+function GroupedPicklistGrid({ groups, onOpen, trailingCard = null }) {
+  return (
+    <div className="space-y-4 sm:space-y-8">
+      {groups.map((group, gi) => {
+        const isLast = gi === groups.length - 1;
+        return (
+          <div key={group.eventKey}>
+            <EventGroupHeader eventKey={group.eventKey} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
+              {group.items.map((p) => (
+                <PicklistCard
+                  key={p.id}
+                  picklist={p}
+                  onOpen={() => onOpen(p.id)}
+                />
+              ))}
+              {isLast && trailingCard}
+            </div>
+          </div>
+        );
+      })}
+      {groups.length === 0 && trailingCard && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-6">
+          {trailingCard}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EventGroupHeader({ eventKey }) {
+  const label = eventKey === NO_EVENT_KEY ? "No Event" : eventKey;
+  return (
+    <div className="flex items-center gap-2 mb-2 sm:mb-3">
+      <Badge
+        variant={eventKey === NO_EVENT_KEY ? "soft" : "event"}
+        className="text-[10px] sm:text-xs"
+      >
+        {label}
+      </Badge>
+      <div className="h-px flex-1 bg-outline-variant/30" />
+    </div>
+  );
+}
+
+function CreateNewCard({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group border-2 border-dashed border-outline-variant/60 rounded sm:rounded-md flex flex-col items-center justify-center min-h-24 sm:min-h-35 w-full transition-all hover:border-primary-container hover:bg-primary-container/5"
+    >
+      <span className="w-10 h-10 mb-2 rounded-full flex items-center justify-center text-outline-variant group-hover:text-primary-container group-hover:scale-110 transition-all">
+        <Plus className="w-8 h-8" strokeWidth={2} />
+      </span>
+      <span className="text-sm font-bold text-on-surface-variant group-hover:text-primary-container transition-colors">
+        Create New
+      </span>
+    </button>
+  );
 }
 
 function SectionHeader({ icon: Icon, title }) {

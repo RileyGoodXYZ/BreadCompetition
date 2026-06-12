@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Search, Plus, X, Trash2 } from "lucide-react";
 import { Shell } from "@/components/Shell";
@@ -13,15 +13,38 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { useMatchStrategy } from "@/lib/match-strategy-store";
+import { OUR_TEAM } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
 import { STRATEGY_TEAM_STATS } from "./data";
+
+const FAVOR_LABELS = {
+  us: "Favored",
+  even: "Even",
+  them: "Underdog",
+};
+
+function strategyIncludesTeam(strategy, team) {
+  const ours = strategy.data?.ourAlliance ?? [];
+  const opp = strategy.data?.opponentAlliance ?? [];
+  return ours.includes(team) || opp.includes(team);
+}
 
 // Match strategy detail page
 export default function MatchStrategyDetail() {
   const { id } = useParams();
-  const { findStrategy, loadStrategy } = useMatchStrategy();
+  const { strategies, findStrategy, loadStrategy } = useMatchStrategy();
   const [strategy, setStrategy] = useState(() => findStrategy(id));
   const [resolved, setResolved] = useState(strategy !== null);
+
+  const ourEventStrategies = useMemo(() => {
+    if (!strategy?.event_key) return [];
+    return strategies.filter(
+      (s) =>
+        s.id !== strategy.id &&
+        s.event_key === strategy.event_key &&
+        strategyIncludesTeam(s, OUR_TEAM)
+    );
+  }, [strategies, strategy]);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,6 +104,11 @@ export default function MatchStrategyDetail() {
               </div>
 
               <StrategyTimelineTable strategy={strategy} />
+
+              <OurEventStrategies
+                strategies={ourEventStrategies}
+                eventKey={strategy.event_key}
+              />
             </>
           ) : resolved ? (
             <p className="text-on-surface-variant text-center py-20">
@@ -603,6 +631,73 @@ function ConfirmDeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function OurEventStrategies({ strategies, eventKey }) {
+  if (!eventKey) return null;
+  return (
+    <section className="mt-6 sm:mt-10">
+      <h2 className="text-base sm:text-xl font-semibold text-on-surface pb-2 sm:pb-3 mb-2 sm:mb-4 border-b border-outline-variant/40">
+        Our strategies at {eventKey}
+      </h2>
+      {strategies.length === 0 ? (
+        <p className="text-sm text-on-surface-variant">
+          No other strategies for team {OUR_TEAM} at this event yet.
+        </p>
+      ) : (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+          {strategies.map((s) => (
+            <li key={s.id}>
+              <Link
+                to={`/match-strategy/${s.id}`}
+                className="block bg-surface-container-lowest border border-outline-variant/50 rounded sm:rounded-md px-3 sm:px-4 py-2 sm:py-3 hover:border-primary-container/60 hover:shadow-warm-sm transition-all"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-sm sm:text-base font-semibold text-primary-container leading-tight">
+                    {s.title}
+                  </h3>
+                  {s.favored && (
+                    <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-wider">
+                      {FAVOR_LABELS[s.favored] ?? s.favored}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 space-y-1 text-xs sm:text-sm text-on-surface-variant">
+                  <AllianceLine
+                    label="Ours"
+                    color="blue"
+                    teams={s.data?.ourAlliance ?? []}
+                  />
+                  <AllianceLine
+                    label="Opp"
+                    color="red"
+                    teams={s.data?.opponentAlliance ?? []}
+                  />
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function AllianceLine({ label, color, teams }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={cn(
+          "w-1.5 h-1.5 rounded-full shrink-0",
+          color === "blue" ? "bg-blue-600" : "bg-red-600"
+        )}
+      />
+      <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant w-9">
+        {label}
+      </span>
+      <span className="font-mono text-on-surface">{teams.join(" · ")}</span>
+    </div>
   );
 }
 

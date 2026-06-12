@@ -153,10 +153,11 @@ export function MatchStrategyProvider({ children }) {
   }, []);
 
   const createStrategy = useCallback(
-    async ({ title, event, ourAlliance, opponentAlliance }) => {
+    async ({ title, event, matchNumber, ourAlliance, opponentAlliance }) => {
       const record = await api.createStrategy({
         title,
         event_key: event || null,
+        match_number: matchNumber ?? null,
         favored: "even",
         data: {
           ourAlliance,

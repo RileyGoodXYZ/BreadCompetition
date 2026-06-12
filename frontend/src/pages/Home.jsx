@@ -1,12 +1,8 @@
 import { Link } from "react-router-dom";
 import {
-  ListChecks,
   Swords,
   Cpu,
-  BarChart3,
   ArrowRight,
-  Sparkles,
-  Wrench,
   Clock,
   MapPin,
   CalendarDays,
@@ -16,8 +12,7 @@ import { Shell } from "@/components/Shell";
 import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { usePicklists } from "@/lib/picklists-store";
-import { useMatchStrategy } from "@/lib/match-strategy-store";
+
 import {
   CURRENT_EVENT,
   OUR_TEAM,
@@ -25,18 +20,20 @@ import {
   getAllianceColor,
   getTeamNextMatch,
 } from "@/lib/schedule";
+import {
+  RobotAnalyticsCard,
+  useTeamAnalytics,
+} from "@/pages/picklist/RobotData";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
 
 export default function Home() {
-  const { sharedLists, myLists } = usePicklists();
-  const { strategies } = useMatchStrategy();
-
-  const activePicklists = [...sharedLists, ...myLists].filter(
-    (p) => !p.archived
-  );
-  const recentPicklists = activePicklists.slice(0, 3);
-  const recentStrategies = strategies.slice(0, 3);
+  const {
+    robot: ourRobot,
+    matches: ourMatches,
+    strategies: ourStrategies,
+    loaded: ourRobotLoaded,
+  } = useTeamAnalytics(OUR_TEAM);
 
   const nextMatch = getTeamNextMatch(OUR_TEAM);
   const otherUpcoming = UPCOMING_MATCHES.filter(
@@ -99,61 +96,28 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Recent picklists */}
+          {/* Our robot — embedded analytics for team 5940 */}
           <section className="mb-8 sm:mb-16">
             <SectionHeader
-              icon={ListChecks}
-              title="Recent Picklists"
-              actionLabel="View all"
-              actionHref="/picklists"
+              icon={Cpu}
+              title="Our Robot"
+              actionLabel="Open analytics"
+              actionHref={`/robot-data?team=${OUR_TEAM}`}
             />
-            {recentPicklists.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-                {recentPicklists.map((p) => (
-                  <RecentCard
-                    key={p.id}
-                    title={p.title}
-                    event={p.event}
-                    updatedLabel={p.updatedLabel}
-                    href={`/picklists/${p.id}`}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyHint
-                label="No picklists yet"
-                actionLabel="Create one"
-                href="/picklists"
+            {ourRobot ? (
+              <RobotAnalyticsCard
+                robot={ourRobot}
+                matches={ourMatches}
+                strategies={ourStrategies}
               />
-            )}
-          </section>
-
-          {/* Recent strategies */}
-          <section className="mb-6 sm:mb-16">
-            <SectionHeader
-              icon={Swords}
-              title="Recent Strategies"
-              actionLabel="View all"
-              actionHref="/match-strategy"
-            />
-            {recentStrategies.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-                {recentStrategies.map((s) => (
-                  <RecentCard
-                    key={s.id}
-                    title={s.title}
-                    event={s.event}
-                    updatedLabel={s.updatedLabel}
-                    href={`/match-strategy/${s.id}`}
-                  />
-                ))}
-              </div>
-            ) : (
+            ) : ourRobotLoaded ? (
               <EmptyHint
-                label="No strategies yet"
-                actionLabel="Plan a match"
-                href="/match-strategy"
+                label={`No data for team ${OUR_TEAM} yet`}
+                actionLabel="Open analytics"
+                href={`/robot-data?team=${OUR_TEAM}`}
               />
+            ) : (
+              <p className="text-on-surface-variant text-sm">Loading…</p>
             )}
           </section>
         </div>

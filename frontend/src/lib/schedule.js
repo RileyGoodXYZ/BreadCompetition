@@ -3,6 +3,11 @@
 
 export const OUR_TEAM = "5940";
 
+// Event we're currently scouting. Hardcoded until a "set current event" flow
+// exists — matches the seed script's EVENT_KEY ("2026arc") so the dev server
+// hits real data.
+export const CURRENT_EVENT_KEY = "2026arc";
+
 export const CURRENT_EVENT = {
   code: "SVR",
   name: "Silicon Valley Regional",

@@ -1,5 +1,6 @@
+import { useEffect, useRef, useState } from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
-import { RefreshCw, Search } from "lucide-react";
+import { RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileMenuButton } from "./Sidebar";
 import { cn } from "@/lib/utils";
@@ -11,8 +12,11 @@ export function TopBar({
   titleAdornment,
   onSync,
   onSave,
+  saveLabel = "Save",
+  saveDisabled = false,
   extras,
   user,
+  search,
   className,
 }) {
   if (variant === "manager") {
@@ -49,8 +53,13 @@ export function TopBar({
           >
             <RefreshCw className="w-4 h-4" />
           </button>
-          <Button variant="primary" size="sm" onClick={onSave}>
-            Save
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onSave}
+            disabled={saveDisabled}
+          >
+            {saveLabel}
           </Button>
           {extras}
         </div>
@@ -69,14 +78,62 @@ export function TopBar({
         <MobileMenuButton />
       </div>
       <div className="flex items-center gap-2 sm:gap-3">
-        <button
-          type="button"
-          className="hidden md:flex h-9 w-9 items-center justify-center rounded-full text-on-surface-variant hover:text-primary-container hover:bg-primary-container/5 transition-colors"
-          aria-label="Search"
-        >
-          <Search className="w-4 h-4" />
-        </button>
+        {search ? <TopBarSearch {...search} /> : null}
       </div>
     </header>
+  );
+}
+
+function TopBarSearch({ value, onChange, placeholder = "Search…" }) {
+  const [expanded, setExpanded] = useState(false);
+  const inputRef = useRef(null);
+  const isActive = expanded || (value ?? "").length > 0;
+
+  useEffect(() => {
+    if (expanded) inputRef.current?.focus();
+  }, [expanded]);
+
+  if (!isActive) {
+    return (
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        aria-label="Search"
+        className="h-9 w-9 inline-flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary-container hover:bg-primary-container/5 transition-colors"
+      >
+        <Search className="w-4 h-4" />
+      </button>
+    );
+  }
+
+  return (
+    <div className="relative flex items-center w-56 sm:w-72">
+      <Search className="absolute left-3 w-4 h-4 text-on-surface-variant pointer-events-none" />
+      <input
+        ref={inputRef}
+        type="search"
+        value={value ?? ""}
+        onChange={(e) => onChange?.(e.target.value)}
+        onBlur={() => {
+          if (!(value ?? "")) setExpanded(false);
+        }}
+        placeholder={placeholder}
+        className="w-full h-9 pl-9 pr-9 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
+      />
+      {(value ?? "").length > 0 && (
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            onChange?.("");
+            inputRef.current?.focus();
+          }}
+          aria-label="Clear search"
+          className="absolute right-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full text-on-surface-variant hover:text-primary-container hover:bg-primary-container/10 transition-colors"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
+    </div>
   );
 }

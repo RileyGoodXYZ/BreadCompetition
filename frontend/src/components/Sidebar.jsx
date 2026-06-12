@@ -179,7 +179,7 @@ export function Sidebar({ defaultCollapsed = false }) {
                 alt="Team 5940 Bread Robotics"
                 className="w-10 h-10 shrink-0 object-contain"
               />
-              <h1 className="text-4xl font-black text-primary-container tracking-tight leading-none min-w-0">
+              <h1 className="text-3xl font-black text-primary-container tracking-tight leading-none min-w-0">
                 BREAD
               </h1>
               <button

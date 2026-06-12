@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // Modal picker for choosing one (or many) teams from the scouted pool.
 export function AddRobotDialog({
@@ -34,17 +35,26 @@ export function AddRobotDialog({
     }
   }, [open]);
 
+  const q = query.trim().toLowerCase();
+
   const candidates = useMemo(() => {
-    const q = query.trim().toLowerCase();
     return pool
-      .filter((t) => !inUse.has(t.team))
       .filter((t) =>
         !q
           ? true
           : t.team.toLowerCase().includes(q) ||
             t.name.toLowerCase().includes(q)
-      );
-  }, [pool, inUse, query]);
+      )
+      .map((t) => ({ ...t, _alreadyAdded: inUse.has(t.team) }))
+      .sort((a, b) => {
+        if (a._alreadyAdded !== b._alreadyAdded) {
+          return a._alreadyAdded ? 1 : -1;
+        }
+        return 0;
+      });
+  }, [pool, inUse, q]);
+
+  const looksLikeTeamNumber = q.length > 0 && /^\d+$/.test(q);
 
   const toggle = (team) =>
     setSelected((prev) => {
@@ -55,13 +65,16 @@ export function AddRobotDialog({
     });
 
   const confirmMulti = () => {
-    const picked = candidates.filter((t) => selected.has(t.team));
+    const picked = candidates.filter(
+      (t) => selected.has(t.team) && !t._alreadyAdded
+    );
     if (picked.length === 0) return;
     onPickMany?.(picked);
     onOpenChange(false);
   };
 
   const pickSingle = (team) => {
+    if (team._alreadyAdded) return;
     onPick?.(team);
     onOpenChange(false);
   };
@@ -98,19 +111,52 @@ export function AddRobotDialog({
         <div className="flex-1 overflow-y-auto scrollbar-warm px-2 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3 min-h-0">
           {candidates.length === 0 ? (
             <p className="text-sm text-on-surface-variant py-8 text-center">
-              No matching teams.
+              {q ? (
+                <>
+                  {looksLikeTeamNumber ? (
+                    <>
+                      Team{" "}
+                      <span className="font-semibold text-on-surface">
+                        {query.trim()}
+                      </span>{" "}
+                      doesn't exist in the scouting pool.
+                    </>
+                  ) : (
+                    <>
+                      No teams match{" "}
+                      <span className="font-semibold text-on-surface">
+                        "{query.trim()}"
+                      </span>
+                      .
+                    </>
+                  )}
+                </>
+              ) : (
+                "No matching teams."
+              )}
             </p>
           ) : (
             <ul className="space-y-1.5">
               {candidates.map((t) =>
                 multi ? (
                   <li key={t.team}>
-                    <label className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md cursor-pointer bg-surface-container-low hover:bg-primary-container/5 border border-outline-variant/40 hover:border-primary-container/40 transition-colors">
+                    <label
+                      className={cn(
+                        "flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md border border-outline-variant/40 transition-colors",
+                        t._alreadyAdded
+                          ? "bg-surface-container-low/60 opacity-60 cursor-not-allowed"
+                          : "cursor-pointer bg-surface-container-low hover:bg-primary-container/5 hover:border-primary-container/40"
+                      )}
+                    >
                       <Checkbox
-                        checked={selected.has(t.team)}
-                        onCheckedChange={() => toggle(t.team)}
+                        checked={t._alreadyAdded || selected.has(t.team)}
+                        disabled={t._alreadyAdded}
+                        onCheckedChange={() =>
+                          !t._alreadyAdded && toggle(t.team)
+                        }
                       />
                       <TeamRowBody team={t} />
+                      {t._alreadyAdded && <AddedBadge />}
                     </label>
                   </li>
                 ) : (
@@ -118,9 +164,16 @@ export function AddRobotDialog({
                     <button
                       type="button"
                       onClick={() => pickSingle(t)}
-                      className="w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md text-left bg-surface-container-low hover:bg-primary-container/5 border border-outline-variant/40 hover:border-primary-container/40 transition-colors"
+                      disabled={t._alreadyAdded}
+                      className={cn(
+                        "w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md text-left border border-outline-variant/40 transition-colors",
+                        t._alreadyAdded
+                          ? "bg-surface-container-low/60 opacity-60 cursor-not-allowed"
+                          : "bg-surface-container-low hover:bg-primary-container/5 hover:border-primary-container/40"
+                      )}
                     >
                       <TeamRowBody team={t} />
+                      {t._alreadyAdded && <AddedBadge />}
                     </button>
                   </li>
                 )
@@ -153,6 +206,14 @@ export function AddRobotDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function AddedBadge() {
+  return (
+    <span className="ml-auto shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary-container/15 text-primary-container">
+      Added
+    </span>
   );
 }
 

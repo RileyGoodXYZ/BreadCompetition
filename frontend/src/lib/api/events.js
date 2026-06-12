@@ -13,3 +13,9 @@ export function listEventTeams(eventKey, params = {}) {
     `/api/events/${encodeURIComponent(eventKey)}/teams${buildQuery(params)}`
   );
 }
+
+export function listEventMatches(eventKey, params = {}) {
+  return request(
+    `/api/events/${encodeURIComponent(eventKey)}/matches${buildQuery(params)}`
+  );
+}
