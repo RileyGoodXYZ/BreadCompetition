@@ -20,36 +20,37 @@ import { PicklistActions } from "@/components/picklist/PicklistActions";
 import { usePicklists } from "@/lib/picklists-store";
 import { useTeamImages } from "@/lib/use-team-images";
 import { cn } from "@/lib/utils";
-import { TEAM_POOL, RANKINGS, DEFAULT_COLUMNS } from "./data";
+import { listEventTeams } from "@/lib/api/events";
+import { listSubmissions } from "@/lib/api/submissions";
+import { listTeamSubmissions } from "@/lib/api/teams";
+import { aggregateEventStats, buildChartMatches } from "@/lib/match-analytics";
 
 const SLOT_COUNT = 3;
 const SAVE_DEBOUNCE_MS = 500;
 
-const TEAMS_BY_NUMBER = Object.fromEntries(TEAM_POOL.map((r) => [r.team, r]));
-const RANKING_BY_NUMBER = Object.fromEntries(RANKINGS.map((r) => [r.number, r]));
+function teamRecordToPoolEntry(t) {
+  const data = t.data ?? {};
+  const drivetrain = data.drivetrain
+    ? `${String(data.drivetrain).toUpperCase()} DRIVE`
+    : null;
+  return {
+    team: String(t.team_number),
+    name: t.name,
+    drivetrain,
+    image: data.image_url ?? null,
+  };
+}
 
-function hydrateSlots(savedSlots) {
+function hydrateSlots(savedSlots, byNumber) {
   const out = Array.from({ length: SLOT_COUNT }, () => null);
   if (Array.isArray(savedSlots)) {
     savedSlots.slice(0, SLOT_COUNT).forEach((teamNum, i) => {
-      if (teamNum && TEAMS_BY_NUMBER[teamNum]) {
-        out[i] = TEAMS_BY_NUMBER[teamNum];
+      if (teamNum && byNumber[teamNum]) {
+        out[i] = byNumber[teamNum];
       }
     });
   }
   return out;
-}
-
-function hydrateRankings(savedOrder) {
-  if (!Array.isArray(savedOrder) || savedOrder.length === 0) {
-    return RANKINGS.map((r, i) => ({ ...r, rank: i + 1 }));
-  }
-  const seen = new Set(savedOrder);
-  const ordered = savedOrder
-    .map((n) => RANKING_BY_NUMBER[n])
-    .filter(Boolean);
-  const missing = RANKINGS.filter((r) => !seen.has(r.number));
-  return [...ordered, ...missing].map((row, i) => ({ ...row, rank: i + 1 }));
 }
 
 export default function Manager() {
@@ -85,70 +86,250 @@ export default function Manager() {
     if (storeRecord && storeRecord !== picklist) setPicklist(storeRecord);
   }, [storeRecord, picklist]);
 
+  const eventKey = picklist?.event_key ?? null;
+
+  // Event roster + per-event submission aggregation
+  const [eventTeams, setEventTeams] = useState([]); // pool entries
+  const [eventTeamsLoaded, setEventTeamsLoaded] = useState(false);
+  const [eventSubmissions, setEventSubmissions] = useState([]);
+  const [eventSubmissionsLoaded, setEventSubmissionsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!eventKey) {
+      setEventTeams([]);
+      setEventTeamsLoaded(true);
+      return;
+    }
+    let cancelled = false;
+    setEventTeamsLoaded(false);
+    listEventTeams(eventKey)
+      .then((rows) => {
+        if (cancelled) return;
+        setEventTeams(rows.map(teamRecordToPoolEntry));
+        setEventTeamsLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEventTeams([]);
+        setEventTeamsLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [eventKey]);
+
+  useEffect(() => {
+    if (!eventKey) {
+      setEventSubmissions([]);
+      setEventSubmissionsLoaded(true);
+      return;
+    }
+    let cancelled = false;
+    setEventSubmissionsLoaded(false);
+    listSubmissions({ event: eventKey, type: "match", limit: 1000 })
+      .then((rows) => {
+        if (cancelled) return;
+        setEventSubmissions(rows);
+        setEventSubmissionsLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEventSubmissions([]);
+        setEventSubmissionsLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [eventKey]);
+
+  const poolByNumber = useMemo(
+    () => Object.fromEntries(eventTeams.map((t) => [t.team, t])),
+    [eventTeams]
+  );
+
+  // Persisted picklist state
   const data = picklist?.data ?? {};
 
-  const [slots, setSlots] = useState(() => hydrateSlots(data.slots));
-  const [columns, setColumns] = useState(() => data.columns ?? DEFAULT_COLUMNS);
+  const [slots, setSlots] = useState(() =>
+    hydrateSlots(data.slots, poolByNumber)
+  );
   const [rowNotes, setRowNotes] = useState(() => data.rowNotes ?? {});
-  const [rankings, setRankings] = useState(() => hydrateRankings(data.rankings));
+  const [rankOrder, setRankOrder] = useState(() => data.rankings ?? []);
+  const [blackedOut, setBlackedOut] = useState(
+    () => new Set(data.blackedOut ?? [])
+  );
+  const [columnPrefs, setColumnPrefs] = useState(() => data.columnPrefs ?? []);
 
-  // Re-hydrate when the loaded picklist changes (e.g. async fetch resolves).
+  // Re-hydrate when the loaded picklist OR event roster changes.
   const hydratedFor = useRef(null);
   useEffect(() => {
     if (!picklist) return;
-    if (hydratedFor.current === picklist.id) return;
-    hydratedFor.current = picklist.id;
+    const key = `${picklist.id}:${eventTeamsLoaded ? "1" : "0"}`;
+    if (hydratedFor.current === key) return;
+    hydratedFor.current = key;
     const d = picklist.data ?? {};
-    setSlots(hydrateSlots(d.slots));
-    setColumns(d.columns ?? DEFAULT_COLUMNS);
+    setSlots(hydrateSlots(d.slots, poolByNumber));
     setRowNotes(d.rowNotes ?? {});
-    setRankings(hydrateRankings(d.rankings));
-  }, [picklist]);
+    setRankOrder(d.rankings ?? []);
+    setBlackedOut(new Set(d.blackedOut ?? []));
+    setColumnPrefs(d.columnPrefs ?? []);
+  }, [picklist, eventTeamsLoaded, poolByNumber]);
 
-  // Debounced autosave whenever persistable state changes. Depend on
-  // picklist?.id (not the full record) so the effect doesn't re-fire on
-  // every successful save — otherwise the record refresh would queue
-  // another no-op save forever. Spread the latest known data via the ref
-  // so we preserve unknown keys (e.g. `locked`) across writes.
+  // Debounced autosave whenever persistable state changes.
   useEffect(() => {
     if (!picklist) return;
-    if (hydratedFor.current !== picklist.id) return;
+    if (!hydratedFor.current?.startsWith(`${picklist.id}:`)) return;
     if (picklist.data?.locked === true) return;
     const t = setTimeout(() => {
       const latest = picklistRef.current;
       saveData(picklist.id, {
         ...(latest?.data ?? {}),
         slots: slots.map((r) => r?.team ?? null),
-        columns,
         rowNotes,
-        rankings: rankings.map((r) => r.number),
+        rankings: rankOrder,
+        blackedOut: [...blackedOut],
+        columnPrefs,
       });
     }, SAVE_DEBOUNCE_MS);
     return () => clearTimeout(t);
-  }, [picklist?.id, picklist?.data?.locked, slots, columns, rowNotes, rankings, saveData]);
+  }, [
+    picklist?.id,
+    picklist?.data?.locked,
+    slots,
+    rowNotes,
+    rankOrder,
+    blackedOut,
+    columnPrefs,
+    saveData,
+  ]);
 
-  const title = picklist?.title ?? "Loading…";
-  const locked = picklist?.data?.locked === true;
+  const { columns: statColumns, byTeam: statsByTeam } = useMemo(
+    () => aggregateEventStats(eventSubmissions),
+    [eventSubmissions]
+  );
 
-  const scrollers = useRef(Array.from({ length: SLOT_COUNT }, () => null));
-  const handleSync = (sourceIdx) => (e) => {
-    const top = e.currentTarget.scrollTop;
-    scrollers.current.forEach((el, i) => {
-      if (i !== sourceIdx && el && Math.abs(el.scrollTop - top) > 0.5) {
-        el.scrollTop = top;
-      }
+  const allColumns = useMemo(() => {
+    const labelById = new Map(statColumns.map((c) => [c.id, c.label]));
+    const ordered = [];
+    const seen = new Set();
+    for (const pref of columnPrefs) {
+      if (!labelById.has(pref.id)) continue;
+      ordered.push({ id: pref.id, label: labelById.get(pref.id), checked: pref.checked });
+      seen.add(pref.id);
+    }
+    for (const c of statColumns) {
+      if (seen.has(c.id)) continue;
+      ordered.push({ id: c.id, label: c.label, checked: true });
+    }
+    return ordered;
+  }, [statColumns, columnPrefs]);
+
+  const visibleColumns = useMemo(
+    () => allColumns.filter((c) => c.checked),
+    [allColumns]
+  );
+
+  const rankings = useMemo(() => {
+    if (eventTeams.length === 0) return [];
+    const byNumber = Object.fromEntries(
+      eventTeams.map((t) => [
+        t.team,
+        {
+          number: t.team,
+          name: t.name,
+          drivetrain: t.drivetrain,
+          ...(statsByTeam[t.team] ?? {}),
+        },
+      ])
+    );
+    const orderedKeys = (rankOrder ?? []).filter((k) => byNumber[k]);
+    const seen = new Set(orderedKeys);
+    const ordered = orderedKeys.map((k) => byNumber[k]);
+    const remaining = eventTeams
+      .map((t) => t.team)
+      .filter((k) => !seen.has(k))
+      .map((k) => byNumber[k]);
+    return [...ordered, ...remaining].map((row, i) => ({
+      ...row,
+      rank: i + 1,
+    }));
+  }, [eventTeams, statsByTeam, rankOrder]);
+
+  const reorderRankings = (from, to) => {
+    const currentKeys = rankings.map((r) => r.number);
+    const next = currentKeys.slice();
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setRankOrder(next);
+  };
+
+  const toggleBlackout = (teamNumber) => {
+    setBlackedOut((prev) => {
+      const next = new Set(prev);
+      if (next.has(teamNumber)) next.delete(teamNumber);
+      else next.add(teamNumber);
+      return next;
     });
   };
 
+  // Per-slot submissions for the Robot Comparison chart + notes dialog
+  const [slotData, setSlotData] = useState({});
+  const fetchedSlotsRef = useRef(new Set());
+
+  const filledTeamNumbers = useMemo(
+    () => slots.filter(Boolean).map((r) => r.team),
+    [slots]
+  );
+
+  useEffect(() => {
+    const need = filledTeamNumbers.filter(
+      (t) => !fetchedSlotsRef.current.has(t)
+    );
+    if (need.length === 0) return;
+    for (const t of need) fetchedSlotsRef.current.add(t);
+
+    setSlotData((prev) => {
+      const next = { ...prev };
+      for (const t of need) next[t] = { matches: [], subjective: [], loading: true };
+      return next;
+    });
+
+    need.forEach(async (teamNumber) => {
+      let entry;
+      try {
+        const [matches, subjective, pit, brk] = await Promise.all([
+          listTeamSubmissions(teamNumber, { type: "match", limit: 1000 }),
+          listTeamSubmissions(teamNumber, { type: "subjective", limit: 1000 }),
+          listTeamSubmissions(teamNumber, { type: "pit", limit: 1000 }),
+          listTeamSubmissions(teamNumber, { type: "break", limit: 1000 }),
+        ]);
+        entry = {
+          matches: buildChartMatches(matches),
+          notes: { subjective, pit, break: brk },
+          loading: false,
+        };
+      } catch {
+        entry = {
+          matches: [],
+          notes: { subjective: [], pit: [], break: [] },
+          loading: false,
+        };
+      }
+      setSlotData((prev) => ({ ...prev, [teamNumber]: entry }));
+    });
+  }, [filledTeamNumbers]);
+
   // Dialog state (not persisted)
-  const [configOpen, setConfigOpen] = useState(false);
   const [addSlotIdx, setAddSlotIdx] = useState(null);
   const [notesRobot, setNotesRobot] = useState(null);
+  const [configOpen, setConfigOpen] = useState(false);
 
-  // Row-note dialog (view/edit)
   const [noteDialogTeam, setNoteDialogTeam] = useState(null);
   const [noteEditing, setNoteEditing] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
+
+  const title = picklist?.title ?? "Loading…";
+  const locked = picklist?.data?.locked === true;
 
   useEffect(() => {
     if (noteDialogTeam) {
@@ -185,20 +366,6 @@ export default function Manager() {
     closeNote();
   };
 
-  const reorderRankings = (from, to) => {
-    setRankings((prev) => {
-      const next = prev.slice();
-      const [moved] = next.splice(from, 1);
-      next.splice(to, 0, moved);
-      return next.map((row, i) => ({ ...row, rank: i + 1 }));
-    });
-  };
-
-  const filledTeamNumbers = useMemo(
-    () => slots.filter(Boolean).map((r) => r.team),
-    [slots]
-  );
-
   const fillSlot = (idx, robot) =>
     setSlots((prev) => {
       const next = prev.slice();
@@ -213,6 +380,22 @@ export default function Manager() {
       return next;
     });
 
+  const addToComparison = (teamNumber) => {
+    if (locked) return;
+    const entry = poolByNumber[teamNumber];
+    if (!entry) return;
+    setSlots((prev) => {
+      if (prev.some((s) => s?.team === teamNumber)) return prev;
+      const emptyIdx = prev.findIndex((s) => s == null);
+      if (emptyIdx !== -1) {
+        const next = prev.slice();
+        next[emptyIdx] = entry;
+        return next;
+      }
+      return [...prev.slice(1), entry];
+    });
+  };
+
   if (!picklist) {
     return (
       <Shell>
@@ -223,6 +406,17 @@ export default function Manager() {
       </Shell>
     );
   }
+
+  const notesForDialog = notesRobot
+    ? slotData[notesRobot.team]?.notes ?? {
+        subjective: [],
+        pit: [],
+        break: [],
+      }
+    : { subjective: [], pit: [], break: [] };
+  const notesLoading = notesRobot
+    ? slotData[notesRobot.team]?.loading ?? true
+    : false;
 
   return (
     <Shell>
@@ -276,13 +470,12 @@ export default function Manager() {
                 robot ? (
                   <RobotCard
                     key={`slot-${idx}-${robot.team}`}
+                    robot={robot}
+                    chartMatches={slotData[robot.team]?.matches}
+                    loading={slotData[robot.team]?.loading !== false}
                     robot={{ ...robot, image: teamImages[robot.team] ?? robot.image }}
                     onViewNotes={() => setNotesRobot(robot)}
                     onRemove={locked ? undefined : () => clearSlot(idx)}
-                    scrollRef={(el) => {
-                      scrollers.current[idx] = el;
-                    }}
-                    onScroll={handleSync(idx)}
                   />
                 ) : locked ? (
                   <LockedSlotCard key={`slot-${idx}-locked`} />
@@ -302,41 +495,51 @@ export default function Manager() {
               <h3 className="text-base sm:text-2xl font-semibold tracking-tight text-on-surface border-l-4 border-primary-container pl-2 sm:pl-4">
                 Picklist Rankings
               </h3>
-              {!locked && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setConfigOpen(true)}
-                  className="shrink-0"
-                >
-                  <Sliders className="w-4 h-4" />
-                  <span className="hidden sm:inline">Configure Columns</span>
-                  <span className="sm:hidden">Columns</span>
-                </Button>
-              )}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <p className="text-xs text-on-surface-variant hidden sm:block">
+                  Right-click a row to toggle blackout.
+                </p>
+                {!locked && eventKey && allColumns.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setConfigOpen(true)}
+                    className="shrink-0"
+                  >
+                    <Sliders className="w-4 h-4" />
+                    <span className="hidden sm:inline">Configure Columns</span>
+                    <span className="sm:hidden">Columns</span>
+                  </Button>
+                )}
+              </div>
             </div>
-            <RankingsTable
-              teams={rankings}
-              columns={columns}
-              onReorder={locked ? undefined : reorderRankings}
-              notes={rowNotes}
-              onOpenNote={openNote}
-            />
+            {!eventKey ? (
+              <EventMissingState />
+            ) : !eventTeamsLoaded || !eventSubmissionsLoaded ? (
+              <div className="border border-primary-container/10 rounded-md bg-surface-container-lowest shadow-warm-sm py-10 text-center text-sm text-on-surface-variant">
+                Loading event roster…
+              </div>
+            ) : (
+              <RankingsTable
+                teams={rankings}
+                columns={visibleColumns}
+                onReorder={locked ? undefined : reorderRankings}
+                notes={rowNotes}
+                onOpenNote={openNote}
+                blackedOut={blackedOut}
+                onToggleBlackout={locked ? undefined : toggleBlackout}
+                onAddToComparison={locked ? undefined : addToComparison}
+                comparisonTeams={new Set(filledTeamNumbers)}
+              />
+            )}
           </section>
         </div>
       </div>
 
-      <ConfigureColumnsModal
-        open={configOpen}
-        onOpenChange={setConfigOpen}
-        columns={columns}
-        onSave={setColumns}
-      />
-
       <AddRobotDialog
         open={addSlotIdx !== null}
         onOpenChange={(open) => !open && setAddSlotIdx(null)}
-        pool={TEAM_POOL}
+        pool={eventTeams}
         alreadyInUse={filledTeamNumbers}
         onPick={(robot) => {
           if (addSlotIdx !== null) fillSlot(addSlotIdx, robot);
@@ -347,6 +550,17 @@ export default function Manager() {
         open={notesRobot !== null}
         onOpenChange={(open) => !open && setNotesRobot(null)}
         robot={notesRobot}
+        notes={notesForDialog}
+        loading={notesLoading}
+      />
+
+      <ConfigureColumnsModal
+        open={configOpen}
+        onOpenChange={setConfigOpen}
+        columns={allColumns}
+        onSave={(next) =>
+          setColumnPrefs(next.map((c) => ({ id: c.id, checked: c.checked })))
+        }
       />
 
       <Dialog
@@ -374,9 +588,7 @@ export default function Manager() {
             ) : (
               <p className="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">
                 {noteDraft || (
-                  <span className="text-on-surface-variant italic">
-                    No notes yet.
-                  </span>
+                  <span className="text-on-surface-variant italic">-</span>
                 )}
               </p>
             )}
@@ -431,6 +643,18 @@ export default function Manager() {
         </DialogContent>
       </Dialog>
     </Shell>
+  );
+}
+
+function EventMissingState() {
+  return (
+    <div className="border-2 border-dashed border-outline-variant/60 rounded-md py-10 px-4 text-center">
+      <p className="text-on-surface font-semibold">No event chosen.</p>
+      <p className="text-on-surface-variant text-sm mt-1 max-w-md mx-auto">
+        Pick an event for this picklist to populate rankings from the teams at
+        that event.
+      </p>
+    </div>
   );
 }
 

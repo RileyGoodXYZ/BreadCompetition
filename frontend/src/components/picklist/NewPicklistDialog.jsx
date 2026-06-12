@@ -10,29 +10,50 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { listEvents } from "@/lib/api/events";
 import { cn } from "@/lib/utils";
 
 export function NewPicklistDialog({ open, onOpenChange, onCreate }) {
   const [title, setTitle] = useState("");
   const [event, setEvent] = useState("");
   const [kind, setKind] = useState("my");
+  const [events, setEvents] = useState([]);
+  const [eventsLoaded, setEventsLoaded] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setTitle("");
-      setEvent("");
-      setKind("my");
-    }
+    if (!open) return;
+    setTitle("");
+    setEvent("");
+    setKind("my");
+    setEventsLoaded(false);
+    let cancelled = false;
+    listEvents({ limit: 500 })
+      .then((rows) => {
+        if (cancelled) return;
+        setEvents(rows);
+        setEventsLoaded(true);
+        const newest = [...rows].sort((a, b) =>
+          (b.updated_at ?? "").localeCompare(a.updated_at ?? "")
+        )[0];
+        if (newest) setEvent(newest.event_key);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEvents([]);
+        setEventsLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   const trimmedTitle = title.trim();
-  const trimmedEvent = event.trim();
-  const valid = trimmedTitle.length > 0 && trimmedEvent.length > 0;
+  const valid = trimmedTitle.length > 0 && event.length > 0;
 
   const submit = (e) => {
     e?.preventDefault?.();
     if (!valid) return;
-    onCreate({ title: trimmedTitle, event: trimmedEvent, kind });
+    onCreate({ title: trimmedTitle, event, kind });
   };
 
   return (
@@ -40,9 +61,7 @@ export function NewPicklistDialog({ open, onOpenChange, onCreate }) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>New Picklist</DialogTitle>
-          <DialogDescription>
-            Name the picklist, pick the event, and choose visibility.
-          </DialogDescription>
+          <DialogDescription></DialogDescription>
         </DialogHeader>
 
         <form
@@ -60,13 +79,33 @@ export function NewPicklistDialog({ open, onOpenChange, onCreate }) {
             />
           </Field>
           <Field label="Event" htmlFor="np-event">
-            <input
+            <select
               id="np-event"
               value={event}
               onChange={(e) => setEvent(e.target.value)}
-              placeholder="e.g. SVR Regional"
-              className="w-full h-9 sm:h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition"
-            />
+              disabled={!eventsLoaded || events.length === 0}
+              className="w-full h-9 sm:h-10 px-3 rounded-full bg-surface-container-low border border-outline-variant/60 text-sm text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition disabled:opacity-60"
+            >
+              {!eventsLoaded ? (
+                <option value="">Loading…</option>
+              ) : events.length === 0 ? (
+                <option value="">-</option>
+              ) : (
+                <>
+                  <option value="">Select event…</option>
+                  {events.map((ev) => (
+                    <option key={ev.event_key} value={ev.event_key}>
+                      {ev.name} ({ev.event_key})
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+            {eventsLoaded && events.length === 0 && (
+              <p className="text-[11px] text-on-surface-variant italic">
+                No events in the database yet.
+              </p>
+            )}
           </Field>
           <div className="space-y-1.5">
             <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">

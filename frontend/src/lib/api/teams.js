@@ -7,3 +7,9 @@ export function listTeams(params = {}) {
 export function getTeam(teamNumber) {
   return request(`/api/teams/${encodeURIComponent(teamNumber)}`);
 }
+
+export function listTeamSubmissions(teamNumber, params = {}) {
+  return request(
+    `/api/teams/${encodeURIComponent(teamNumber)}/submissions${buildQuery(params)}`
+  );
+}

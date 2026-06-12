@@ -1,15 +1,15 @@
 import { StickyNote, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { PointBreakdownChart } from "@/components/picklist/PointBreakdownChart";
 import { cn } from "@/lib/utils";
 
-// Robot card
 export function RobotCard({
   robot,
+  chartMatches,
+  loading = false,
   onViewNotes,
   onRemove,
-  scrollRef,
-  onScroll,
   className,
 }) {
   return (
@@ -43,52 +43,25 @@ export function RobotCard({
           </h4>
         </div>
 
-        {/* Robot image */}
-        <div className="h-32 sm:h-48 relative bg-surface-container-highest rounded-md overflow-hidden mb-3 sm:mb-4 border border-primary-container/10 shadow-inner group">
-          {robot.image && (
-            <img
-              src={robot.image}
-              alt={`Robot ${robot.team}`}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-          )}
-          <div className="absolute bottom-0 inset-x-0 h-16 bg-linear-to-t from-black/40 to-transparent flex items-end p-3">
-            <StarBar count={robot.stars ?? 0} />
+        {/* Placeholder for images*/}
+        <div className="h-32 sm:h-40 relative bg-surface-container-highest rounded-md overflow-hidden mb-3 sm:mb-4 border border-primary-container/10 shadow-inner flex items-center justify-center">
+          <div className="text-center px-3">
+            <div className="font-mono text-3xl sm:text-4xl font-bold text-primary-container">
+              {robot.team}
+            </div>
           </div>
         </div>
 
-        {/* Trend — taller, with header + peak label */}
-        {robot.trend && (
-          <div className="mb-3 sm:mb-4 space-y-2">
-            <div className="flex justify-between items-center px-1">
-              <span className=" font-bold  text-on-surface-variant tracking-tighter">
-                Data graph 
-              </span>
+        {/* Graph */}
+        <div className="mb-3 sm:mb-4 bg-surface-container/50 p-2 sm:p-3 rounded-md">
+          {loading ? (
+            <div className="h-24 flex items-center justify-center text-xs text-on-surface-variant">
+              Loading match data…
             </div>
-            <div className="flex items-end gap-1 sm:gap-1.5 h-16 sm:h-24 bg-surface-container/50 p-2 sm:p-3 rounded-md">
-              {robot.trend.bars.map((b, i) => {
-                const tone = b.tone ?? "primary";
-                const h = Math.max(0.06, Math.min(1, b.height));
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "flex-1 rounded-t-sm",
-                      tone === "error" ? "bg-error/60" : "bg-primary-container",
-                      tone === "primary" &&
-                        b.opacity != null &&
-                        "opacity-(--o)"
-                    )}
-                    style={{
-                      height: `${h * 100}%`,
-                      ...(b.opacity != null && { "--o": b.opacity }),
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
+          ) : (
+            <PointBreakdownChart matches={chartMatches ?? []} compact />
+          )}
+        </div>
       </div>
 
       <div className="flex-none">
@@ -103,21 +76,5 @@ export function RobotCard({
         </Button>
       </div>
     </article>
-  );
-}
-
-function StarBar({ count }) {
-  return (
-    <div className="flex gap-1 w-full opacity-80">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className={cn(
-            "flex-1 h-1 rounded-full",
-            i < count ? "bg-white" : "bg-white/40"
-          )}
-        />
-      ))}
-    </div>
   );
 }

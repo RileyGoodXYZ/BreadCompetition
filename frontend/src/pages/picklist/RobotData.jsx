@@ -1,57 +1,170 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
-import {
-  Plus,
-  Search,
-  RefreshCw,
-  Cloud,
-  X,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Plus, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { MobileMenuButton } from "@/components/Sidebar";
 import { AddRobotDialog } from "@/components/picklist/AddRobotDialog";
-import { MetricViewDialog } from "@/components/picklist/MetricViewDialog";
+import { PointBreakdownChart } from "@/components/picklist/PointBreakdownChart";
 import { cn } from "@/lib/utils";
+import { listTeams, listTeamSubmissions } from "@/lib/api/teams";
 import {
-  TEAM_POOL,
-  getAnalyticsForTeam,
-  INITIAL_ANALYTICS_TEAM,
-} from "./data";
+  MISSING,
+  buildChartMatches,
+  buildSubmissionRows,
+  humanizeKey,
+  formatCell,
+} from "@/lib/match-analytics";
+
+function teamRecordToCard(t) {
+  const data = t.data ?? {};
+  const drivetrain = data.drivetrain ? `${String(data.drivetrain).toUpperCase()} DRIVE` : null;
+  return {
+    team: String(t.team_number),
+    name: t.name,
+    drivetrain,
+    image: data.image_url ?? null,
+  };
+}
+
+function tagRows(submissions, kind) {
+  return buildSubmissionRows(submissions).map((r) => ({ ...r, _type: kind }));
+}
+
+function buildAnalytics(card, byType) {
+  const matchSubs = byType.match ?? [];
+  const matches = buildChartMatches(matchSubs);
+  const rows = [
+    ...tagRows(matchSubs, "match"),
+    ...tagRows(byType.subjective ?? [], "subjective"),
+    ...tagRows(byType.pit ?? [], "pit"),
+    ...tagRows(byType.break ?? [], "break"),
+  ];
+
+  const scored = matches.filter((m) => !m.noData);
+  const scoreAvg = scored.length
+    ? +(
+        scored.reduce((sum, m) => sum + m.scoring, 0) / scored.length
+      ).toFixed(2)
+    : MISSING;
+  const matchCount = scored.length || MISSING;
+
+  // Most data points in the stat grid rely on calculations to be performed on the backend that have yet to be implemented, so display them as "no data" for now
+  const stats = {
+    throughput: MISSING,
+    scoreAvg,
+    sotm: MISSING,
+    mechScore: MISSING,
+    elecScore: MISSING,
+    foulTotal: MISSING,
+    farAcc: MISSING,
+    closeAcc: MISSING,
+    matchCount,
+  };
+
+  return {
+    team: card.team,
+    name: card.name,
+    drivetrain: card.drivetrain,
+    image: card.image,
+    epaRank: MISSING,
+    epaTotal: MISSING,
+    stats,
+    matches,
+    rows,
+  };
+}
 
 export default function RobotData() {
   const [searchParams] = useSearchParams();
   const targetTeam = searchParams.get("team");
 
+  const [pool, setPool] = useState([]);
+  const [poolLoaded, setPoolLoaded] = useState(false);
+  const [analyticsByTeam, setAnalyticsByTeam] = useState({});
+
   const [displayedTeams, setDisplayedTeams] = useState(() =>
-    targetTeam ? [targetTeam] : [INITIAL_ANALYTICS_TEAM]
+    targetTeam ? [targetTeam] : []
   );
 
   useEffect(() => {
     if (targetTeam) setDisplayedTeams([targetTeam]);
   }, [targetTeam]);
 
+  useEffect(() => {
+    let cancelled = false;
+    listTeams({ limit: 5000 })
+      .then((rows) => {
+        if (cancelled) return;
+        setPool(rows.map(teamRecordToCard));
+        setPoolLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPoolLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const missing = displayedTeams.filter((t) => !(t in analyticsByTeam));
+    if (missing.length === 0) return;
+
+    Promise.all(
+      missing.map(async (teamNumber) => {
+        const card = pool.find((t) => t.team === teamNumber) ?? {
+          team: teamNumber,
+          name: `Team ${teamNumber}`,
+          drivetrain: null,
+          image: null,
+        };
+        try {
+          const [match, subjective, pit, brk] = await Promise.all([
+            listTeamSubmissions(teamNumber, { type: "match", limit: 1000 }),
+            listTeamSubmissions(teamNumber, { type: "subjective", limit: 1000 }),
+            listTeamSubmissions(teamNumber, { type: "pit", limit: 1000 }),
+            listTeamSubmissions(teamNumber, { type: "break", limit: 1000 }),
+          ]);
+          return [teamNumber, buildAnalytics(card, { match, subjective, pit, break: brk })];
+        } catch {
+          return [teamNumber, buildAnalytics(card, {})];
+        }
+      })
+    ).then((entries) => {
+      if (cancelled) return;
+      setAnalyticsByTeam((prev) => {
+        const next = { ...prev };
+        for (const [k, v] of entries) next[k] = v;
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [displayedTeams, pool, analyticsByTeam]);
+
   const [query, setQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
-  const [metricView, setMetricView] = useState(null);
 
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q.length === 0) return [];
     const displayed = new Set(displayedTeams);
-    return TEAM_POOL.filter(
+    return pool.filter(
       (t) =>
         !displayed.has(t.team) &&
         (t.team.toLowerCase().includes(q) ||
           t.name.toLowerCase().includes(q))
     );
-  }, [query, displayedTeams]);
+  }, [query, displayedTeams, pool]);
 
   const cards = useMemo(
-    () => displayedTeams.map(getAnalyticsForTeam).filter(Boolean),
-    [displayedTeams]
+    () => displayedTeams.map((t) => analyticsByTeam[t]).filter(Boolean),
+    [displayedTeams, analyticsByTeam]
   );
 
   const addRobot = (team) => {
@@ -62,9 +175,7 @@ export default function RobotData() {
   const addManyRobots = (teams) => {
     setDisplayedTeams((prev) => {
       const seen = new Set(prev);
-      const additions = teams
-        .map((t) => t.team)
-        .filter((t) => !seen.has(t));
+      const additions = teams.map((t) => t.team).filter((t) => !seen.has(t));
       return [...prev, ...additions];
     });
   };
@@ -95,7 +206,11 @@ export default function RobotData() {
           </header>
 
           {cards.length === 0 ? (
-            <EmptyState onAddRobot={() => setAddOpen(true)} />
+            poolLoaded ? (
+              <EmptyState onAddRobot={() => setAddOpen(true)} />
+            ) : (
+              <p className="text-on-surface-variant text-sm">Loading…</p>
+            )
           ) : (
             <div className="space-y-3 sm:space-y-6">
               {cards.map((robot) => (
@@ -103,7 +218,6 @@ export default function RobotData() {
                   key={robot.team}
                   robot={robot}
                   onRemove={() => removeRobot(robot.team)}
-                  onMetricClick={setMetricView}
                 />
               ))}
               <AddAnotherRobotCard onClick={() => setAddOpen(true)} />
@@ -115,16 +229,10 @@ export default function RobotData() {
       <AddRobotDialog
         open={addOpen}
         onOpenChange={setAddOpen}
-        pool={TEAM_POOL}
+        pool={pool}
         alreadyInUse={displayedTeams}
         multi
         onPickMany={addManyRobots}
-      />
-
-      <MetricViewDialog
-        open={metricView !== null}
-        onOpenChange={(o) => !o && setMetricView(null)}
-        metric={metricView}
       />
     </Shell>
   );
@@ -288,19 +396,7 @@ function SuggestionsPanel({ query, suggestions, onPick }) {
   );
 }
 
-function IconButton({ children, label }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary-container hover:bg-primary-container/5 transition-colors"
-    >
-      {children}
-    </button>
-  );
-}
-
-function RobotAnalyticsCard({ robot, onRemove, onMetricClick }) {
+function RobotAnalyticsCard({ robot, onRemove }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -314,15 +410,18 @@ function RobotAnalyticsCard({ robot, onRemove, onMetricClick }) {
 
       {open && (
         <>
-          <div className="grid grid-cols-12 gap-0 border-b border-outline-variant/40">
-            <div className="col-span-12 xl:col-span-8 p-3 sm:p-6 border-b xl:border-b-0 xl:border-r border-outline-variant/40">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-0 border-b border-outline-variant/40 xl:divide-x divide-outline-variant/40">
+            <div className="p-3 sm:p-6 border-b xl:border-b-0 border-outline-variant/40">
+              <RobotImage robot={robot} />
+            </div>
+            <div className="p-3 sm:p-6 border-b xl:border-b-0 border-outline-variant/40">
               <PointBreakdownChart matches={robot.matches} />
             </div>
-            <div className="col-span-12 xl:col-span-4">
+            <div>
               <StatGrid stats={robot.stats} />
             </div>
           </div>
-          <MatchDataTable rows={robot.rows} onMetricClick={onMetricClick} />
+          <MatchDataTable rows={robot.rows} />
         </>
       )}
     </article>
@@ -376,125 +475,41 @@ function CardHeader({ robot, onRemove, collapsed, onToggle }) {
   );
 }
 
-function PointBreakdownChart({ matches }) {
-  const max = Math.max(
-    1,
-    ...matches.map((m) => (m.noData ? 0 : m.scoring + m.passing + m.defense))
-  );
-  const scaleMax = max * 1.05;
-
+function RobotImage({ robot }) {
   return (
-    <div>
-      {/* Title + legend */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-on-surface">
-          <ChartIcon />
-          <span className="font-semibold">Point Breakdown per Match</span>
-        </div>
-        <div className="flex items-center gap-5 text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant">
-          <LegendDot color="bg-chart-defense" label="Defense" />
-          <LegendDot color="bg-chart-passing" label="Passing" />
-          <LegendDot color="bg-chart-scoring" label="Scoring" />
-        </div>
+    <div className="h-full flex flex-col">
+      <div className="flex items-center gap-2 text-on-surface mb-4">
+        <CameraIcon />
+        <span className="font-semibold">Robot</span>
       </div>
-
-      {/* Plot */}
-      <div className="relative h-72">
-        {/* Faint horizontal gridlines */}
-        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="border-t border-outline-variant/30 first:border-t-0"
-            />
-          ))}
-        </div>
-
-        {/* Bars */}
-        <div className="relative h-full flex items-end justify-around gap-6 px-4">
-          {matches.map((m) => (
-            <BarStack key={m.match} match={m} max={scaleMax} />
-          ))}
-        </div>
-      </div>
-
-      {/* X-axis labels */}
-      <div className="flex justify-around gap-6 px-4 mt-3">
-        {matches.map((m) => (
-          <span
-            key={m.match}
-            className={cn(
-              "flex-1 text-center text-base font-medium",
-              m.noData ? "text-on-surface-variant/40" : "text-on-surface"
+      <div className="flex-1 min-h-56 rounded-md bg-surface-container-high border border-outline-variant/40 overflow-hidden flex items-center justify-center">
+        {robot.image ? (
+          <img
+            src={robot.image}
+            alt={`${robot.team} ${robot.name}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="text-center px-4">
+            <div className="font-mono text-3xl sm:text-4xl font-bold text-primary-container">
+              {robot.team}
+            </div>
+            {robot.drivetrain && (
+              <div className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-on-surface-variant mt-2">
+                {robot.drivetrain}
+              </div>
             )}
-          >
-            {m.match}
-          </span>
-        ))}
+            <div className="text-xs text-on-surface-variant/70 mt-3">
+              No photo yet
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function BarStack({ match: m, max }) {
-  if (m.noData) {
-    return (
-      <div className="flex-1 h-full flex items-end">
-        <div className="w-full h-12 rounded-t-sm bg-surface-container-high/60" />
-      </div>
-    );
-  }
-
-  const score = (m.scoring / max) * 100;
-  const pass = (m.passing / max) * 100;
-  const def = (m.defense / max) * 100;
-
-  return (
-    <div className="flex-1 h-full flex flex-col-reverse">
-      {m.scoring > 0 && (
-        <Segment color="bg-chart-scoring" textColor="text-on-surface" height={score}>
-          {m.scoring}
-        </Segment>
-      )}
-      {m.passing > 0 && (
-        <Segment color="bg-chart-passing" textColor="text-on-surface" height={pass}>
-          {m.passing}
-        </Segment>
-      )}
-      {m.defense > 0 && (
-        <Segment color="bg-chart-defense" textColor="text-on-primary" height={def}>
-          {m.defense}
-        </Segment>
-      )}
-    </div>
-  );
-}
-
-function Segment({ color, textColor, height, children }) {
-  return (
-    <div
-      style={{ height: `${height}%` }}
-      className={cn(
-        "w-full flex items-center justify-center font-semibold text-sm",
-        color,
-        textColor
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-function LegendDot({ color, label }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className={cn("w-3 h-3 rounded-sm", color)} />
-      {label}
-    </span>
-  );
-}
-
-function ChartIcon() {
+function CameraIcon() {
   return (
     <svg
       width="18"
@@ -508,33 +523,36 @@ function ChartIcon() {
       className="text-on-surface-variant"
       aria-hidden="true"
     >
-      <path d="M3 3v18h18" />
-      <rect x="7" y="10" width="3" height="8" rx="0.5" />
-      <rect x="12" y="6" width="3" height="12" rx="0.5" />
-      <rect x="17" y="13" width="3" height="5" rx="0.5" />
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
     </svg>
   );
 }
 
+function formatStat(value) {
+  if (value === MISSING) return MISSING;
+  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
+  return String(value);
+}
+
 function StatGrid({ stats }) {
-  const farAcc = stats.farAcc ?? "no data";
-  const closeAcc = stats.closeAcc === "error" ? "error :(" : stats.closeAcc;
   return (
     <div className="grid grid-cols-3 h-full divide-x divide-y divide-outline-variant/40 border-l border-outline-variant/40">
-      <Stat label="Throughput" value={stats.throughput.toFixed(2)} className="border-t-0" />
-      <Stat label="Score Avg" value={stats.scoreAvg.toFixed(2)} className="border-t-0" />
+      <Stat label="Throughput" value={formatStat(stats.throughput)} className="border-t-0" />
+      <Stat label="Score Avg" value={formatStat(stats.scoreAvg)} className="border-t-0" />
       <Stat
         label="SOTM?"
-        value={stats.sotm ? "TRUE" : "FALSE"}
+        value={formatStat(stats.sotm)}
         variant="dark"
         className="border-t-0"
       />
-      <Stat label="Mech Score" value={stats.mechScore} />
-      <Stat label="Elec Score" value={stats.elecScore} />
-      <Stat label="Foul Total" value={stats.foulTotal} />
-      <Stat label="Far Acc %" value={farAcc} variant="coral" valueMuted />
-      <Stat label="Close Acc %" value={closeAcc} variant="coral" valueMuted />
-      <Stat label="Match Count" value={stats.matchCount} variant="coral" />
+      <Stat label="Mech Score" value={formatStat(stats.mechScore)} />
+      <Stat label="Elec Score" value={formatStat(stats.elecScore)} />
+      <Stat label="Foul Total" value={formatStat(stats.foulTotal)} />
+      <Stat label="Far Acc %" value={formatStat(stats.farAcc)} variant="coral" valueMuted />
+      <Stat label="Close Acc %" value={formatStat(stats.closeAcc)} variant="coral" valueMuted />
+      <Stat label="Match Count" value={formatStat(stats.matchCount)} variant="coral" />
     </div>
   );
 }
@@ -574,108 +592,168 @@ function Stat({ label, value, variant, valueMuted, className }) {
   );
 }
 
-const TABLE_COLUMNS = [
-  { id: "match", header: "Match" },
-  { id: "scoreBps", header: "Score BPS", clickable: true },
-  { id: "passBps", header: "Pass BPS", clickable: true },
-  { id: "defBps", header: "Def BPS", clickable: true },
-  { id: "drive", header: "Drive (1-6)", clickable: true },
-  { id: "pass", header: "Pass (1-4)", clickable: true },
-  { id: "defense", header: "Def (1-4)", clickable: true },
-  { id: "steal", header: "Steal (1-4)", clickable: true },
-  { id: "brokeDie", header: "Broke/Die?" },
-  { id: "driveNote", header: "Drive Note" },
-  { id: "defNote", header: "Def Note" },
+const COLUMN_PRIORITY = [
+  "match_number",
+  "scout_name",
+  "alliance",
 ];
 
-function MatchDataTable({ rows = [], onMetricClick }) {
+const HIDDEN_COLUMNS = new Set([
+  "id",
+  "type",
+  "team_number",
+  "event_key",
+  "client_uuid",
+  "session_type",
+]);
+
+const TABLE_FILTERS = [
+  { id: "all", label: "All" },
+  { id: "match", label: "Match Data" },
+  { id: "subjective", label: "Subjective" },
+  { id: "pit", label: "Pit Scout" },
+  { id: "break", label: "Break" },
+];
+
+const TYPE_BADGE_LABEL = {
+  match: "Data",
+  subjective: "Subj",
+  pit: "Pit",
+  break: "Break",
+};
+
+function deriveColumns(rows) {
+  const seen = new Set();
+  for (const row of rows) {
+    for (const k of Object.keys(row)) {
+      if (k === "_type") continue;
+      if (!HIDDEN_COLUMNS.has(k)) seen.add(k);
+    }
+  }
+  const priority = COLUMN_PRIORITY.filter((k) => seen.has(k));
+  const rest = [...seen]
+    .filter((k) => !COLUMN_PRIORITY.includes(k))
+    .sort((a, b) => a.localeCompare(b));
+  return [...priority, ...rest].map((k) => ({ id: k, header: humanizeKey(k) }));
+}
+
+function isNumeric(value) {
+  return typeof value === "number" || typeof value === "boolean";
+}
+
+function MatchDataTable({ rows = [] }) {
+  const [filter, setFilter] = useState("all");
+
+  const visibleRows = useMemo(() => {
+    const filtered = filter === "all" ? rows : rows.filter((r) => r._type === filter);
+    return [...filtered].sort(
+      (a, b) => (a.match_number ?? 0) - (b.match_number ?? 0)
+    );
+  }, [rows, filter]);
+
+  const columns = useMemo(() => deriveColumns(visibleRows), [visibleRows]);
+
   return (
-    <div className="overflow-x-auto scrollbar-warm">
-      <table className="w-full border-collapse text-xs sm:text-sm min-w-275">
-        <thead className="bg-surface-container-low border-b border-outline-variant/40">
-          <tr>
-            {TABLE_COLUMNS.map((c) =>
-              c.clickable && onMetricClick ? (
-                <th
-                  key={c.id}
-                  className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap"
-                >
-                  <button
-                    type="button"
-                    onClick={() => onMetricClick(c)}
-                    className="text-on-surface-variant hover:text-primary-container hover:underline underline-offset-4 decoration-2 decoration-primary-container/40 transition-colors"
+    <div>
+      <div className="flex flex-wrap gap-1.5 px-3 sm:px-6 py-3 border-b border-outline-variant/40 bg-surface-container-low/40">
+        {TABLE_FILTERS.map((f) => (
+          <FilterPill
+            key={f.id}
+            active={filter === f.id}
+            onClick={() => setFilter(f.id)}
+          >
+            {f.label}
+          </FilterPill>
+        ))}
+      </div>
+      {visibleRows.length === 0 ? (
+        <div className="px-6 py-10 text-center text-sm text-on-surface-variant">
+          -
+        </div>
+      ) : (
+        <div className="overflow-x-auto scrollbar-warm">
+          <table className="w-full border-collapse text-xs sm:text-sm">
+            <thead className="bg-surface-container-low border-b border-outline-variant/40">
+              <tr>
+                <th className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">
+                  Type
+                </th>
+                {columns.map((c) => (
+                  <th
+                    key={c.id}
+                    className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap"
                   >
                     {c.header}
-                  </button>
-                </th>
-              ) : (
-                <th
-                  key={c.id}
-                  className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap"
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/30">
+              {visibleRows.map((row, i) => (
+                <tr
+                  key={row.id ?? `${row._type}-${row.match_number ?? "?"}-${i}`}
+                  className="hover:bg-primary-container/3"
                 >
-                  {c.header}
-                </th>
-              )
-            )}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-outline-variant/30">
-          {rows.map((row) => (
-            <tr key={row.match} className="hover:bg-primary-container/3">
-              <td className="px-3 py-2 font-bold text-on-surface text-sm sm:text-base text-center">
-                {row.match}
-              </td>
-              <BpsCell value={row.scoreBps} bold={row.highlight} />
-              <BpsCell value={row.passBps} bold={row.highlight} />
-              <BpsCell
-                value={row.defBps}
-                bold={row.highlight}
-                highlight={row.defBpsHighlight}
-              />
-              <NumCell value={row.drive} />
-              <NumCell value={row.pass} />
-              <NumCell value={row.defense} />
-              <NumCell value={row.steal} />
-              <td className="px-3 py-2 text-center text-on-surface-variant">
-                {row.brokeDie ? "TRUE" : "FALSE"}
-              </td>
-              <td className="px-3 py-2 text-on-surface-variant max-w-65 truncate">
-                {row.driveNote}
-              </td>
-              <td className="px-3 py-2 text-on-surface-variant">
-                {row.defNote}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <TypeBadge kind={row._type} />
+                  </td>
+                  {columns.map((c) => {
+                    const raw = row[c.id];
+                    const numeric = isNumeric(raw);
+                    return (
+                      <td
+                        key={c.id}
+                        className={cn(
+                          "px-3 py-2 whitespace-nowrap",
+                          numeric ? "font-mono text-center" : "text-on-surface-variant",
+                          raw === undefined || raw === null || raw === ""
+                            ? "text-on-surface-variant"
+                            : "text-on-surface"
+                        )}
+                      >
+                        {formatCell(raw)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-function BpsCell({ value, bold, highlight }) {
+function TypeBadge({ kind }) {
   return (
-    <td
+    <span
       className={cn(
-        "px-3 py-2 font-mono",
-        highlight && "bg-chart-scoring/30",
-        bold ? "font-bold text-on-surface" : "text-on-surface"
+        "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+        kind === "match" && "bg-primary-container/15 text-primary-container",
+        kind === "subjective" && "bg-secondary-container text-on-secondary-container",
+        kind === "pit" && "bg-amber-500/15 text-amber-800",
+        kind === "break" && "bg-rose-500/15 text-rose-700"
       )}
     >
-      {value}
-    </td>
+      {TYPE_BADGE_LABEL[kind] ?? kind}
+    </span>
   );
 }
 
-function NumCell({ value }) {
+function FilterPill({ active, onClick, children }) {
   return (
-    <td
+    <button
+      type="button"
+      onClick={onClick}
       className={cn(
-        "px-3 py-2 text-center font-mono",
-        value === "-" ? "text-on-surface-variant" : "text-on-surface"
+        "px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors",
+        active
+          ? "bg-primary-container text-on-primary border-primary-container"
+          : "bg-surface-container-low text-on-surface-variant border-outline-variant/60 hover:border-primary-container/60"
       )}
     >
-      {value}
-    </td>
+      {children}
+    </button>
   );
 }
