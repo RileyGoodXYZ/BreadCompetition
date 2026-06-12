@@ -14,8 +14,10 @@ import {
   Swords,
   Menu,
   Flag,
-  Toolbox,
+  Drill,
   X,
+  Binoculars,
+  ChartNoAxesCombined,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileNav } from "./Shell";
@@ -23,15 +25,15 @@ import logo from "@/assets/logo.png";
 
 const NAV_ITEMS = [
   { label: "Home", icon: Home, href: "/" },
-  { label: "Picklists", icon: ListChecks, href: "/picklists" },
-  { label: "Robot Data", icon: BarChart3, href: "/robot-data" },
-  { label: "Match Strategy", icon: Swords, href: "/match-strategy" },
-  { label: "Data Scouting", icon: Cpu, href: "/data-scout/prematch" },
-  { label: "Subjective Scouting", icon: Wrench, href: "/subjective" },
-  { label: "Foul Scouting", icon: Flag, href: "/foul" },
-  { label: "Break Scouting", icon: Wrench, href: "/break" },
-  { label: "Pit Scouting", icon: Toolbox, href: "/pit" },
-  { label: "Settings", icon: Cog, href: "/settings" },
+  { label: "Picklists", icon: ListChecks, href: "/picklists", size: "sm" },
+  { label: "Robot Data", icon: BarChart3, href: "/robot-data", size: "sm" },
+  { label: "Match Strategy", icon: Swords, href: "/match-strategy", size: "sm" },
+  { label: "Data Scouting", icon: ChartNoAxesCombined, href: "/data-scout/prematch", size: "xs" },
+  { label: "Subjective Scouting", icon: Binoculars, href: "/subjective", size: "xs" },
+  { label: "Foul Scouting", icon: Flag, href: "/foul", size: "xs" },
+  { label: "Break Scouting", icon: Wrench, href: "/break", size: "xs" },
+  { label: "Pit Scouting", icon: Drill, href: "/pit", size: "xs" },
+  { label: "Settings", icon: Cog, href: "/settings", size: "sm" },
 ];
 
 const FOOTER_ITEMS = [
@@ -259,7 +261,7 @@ function NavList({ pathname, collapsed }) {
               strokeWidth={active ? 2.4 : 2}
             />
             {!collapsed && (
-              <span className="text-sm font-medium truncate">
+              <span className={`text-${item.size} font-medium truncate`}>
                 {item.label}
               </span>
             )}

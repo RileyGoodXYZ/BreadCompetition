@@ -93,23 +93,20 @@
     0 8px 10px -6px rgba(105, 44, 0, 0.08);
 }
 
-/* Data scout styles */
 @layer base {
   :root {
-    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     font-weight: 400;
 
-    color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: rgb(17, 30, 72);
+    color-scheme: light;
+    color: var(--color-on-surface);
+    background-color: var(--color-surface);
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: block;
     min-height: 100vh;
     margin: 0;
 
+    font-family: var(--font-sans);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -123,12 +120,13 @@
   }
 
   body {
-    text-align: center;
     margin: 0;
     height: 100vh;
     overflow: hidden;
-    font-family: system-ui, -apple-system, sans-serif;
-    @apply bg-background text-foreground;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    text-align: left;
+    font-family: var(--font-sans);
   }
 
   h1 {
@@ -145,7 +143,40 @@
     margin: 0.5rem 0;
   }
 
-  button {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  @media (max-width: 640px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px;
+    }
+  }
+}
+
+/* Dark mode data-scout theme */
+@layer base {
+  :root.data-scout-mode {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: rgb(17, 30, 72);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  body.data-scout-mode {
+    text-align: center;
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: rgb(17, 30, 72);
+    color: rgba(255, 255, 255, 0.87);
+  }
+
+  .data-scout-mode button {
     border-radius: 8px;
     padding: 0.6em 1.2em;
     font-size: 1em;
@@ -157,59 +188,17 @@
     transition: border-color 0.25s;
   }
 
-  .navBtns {
+  .data-scout-mode .navBtns {
     background-color: #b4ebb4;
     color: #2f1404;
   }
 
-  button:hover {
+  .data-scout-mode button:hover {
     border-color: #646cff;
   }
-  button:focus,
-  button:focus-visible {
+  .data-scout-mode button:focus,
+  .data-scout-mode button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
-  }
-  * {
-    @apply border-border outline-ring/50;
-  }
-}
-
-html.picklist-mode {
-  background-color: var(--color-surface);
-  display: block;
-  align-items: stretch;
-  justify-content: stretch;
-  color: var(--color-on-surface);
-}
-body.picklist-mode {
-  background-color: var(--color-surface);
-  color: var(--color-on-surface);
-  text-align: left;
-  font-family: var(--font-sans);
-}
-
-@layer base {
-  .picklist-app button {
-    background-color: transparent;
-    color: inherit;
-    border-radius: 0;
-    padding: 0;
-    font-size: inherit;
-    font-weight: inherit;
-    font-family: inherit;
-  }
-
-  /*
-   * iOS Safari auto-zooms the viewport when focusing an input whose computed
-   * font-size is below 16px. Force every form field on touch-sized viewports
-   * to at least 16px so focus never triggers an unwanted zoom-in.
-   */
-  @media (max-width: 640px) {
-    .picklist-app input,
-    .picklist-app textarea,
-    .picklist-app select {
-      font-size: 16px;
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import './index.css'
@@ -31,7 +31,18 @@ import { installViewportTracker } from './lib/viewport';
 installViewportTracker();
 
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+
+// Use dark mode theme for data scouting and default theme for all other pages
+function RouteThemeManager() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const isDataScout = pathname === '/data-scout' || pathname.startsWith('/data-scout/');
+    document.documentElement.classList.toggle('data-scout-mode', isDataScout);
+    document.body.classList.toggle('data-scout-mode', isDataScout);
+  }, [pathname]);
+  return null;
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -39,6 +50,7 @@ createRoot(document.getElementById('root')).render(
   <BrowserRouter>
       <PicklistsProvider>
       <MatchStrategyProvider>
+      <RouteThemeManager />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/data-scout" element={<Profile />} />
