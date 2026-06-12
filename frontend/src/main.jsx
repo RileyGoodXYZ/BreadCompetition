@@ -15,6 +15,15 @@ import RobotData from './pages/picklist/RobotData';
 import MatchStrategyLibrary from './pages/match-strategy/Library';
 import MatchStrategyDetail from './pages/match-strategy/Detail';
 import RequireAuth from './utils/RequireAuth';
+import BreakHome from './pages/break-scout/BreakHome';
+import BreakPage from './pages/break-scout/BreakPage';
+import FoulHome from './pages/foul-scout/FoulHome';
+import FoulPage from './pages/foul-scout/FoulPage';
+import PitHome from './pages/pit-scout/PitHome';
+import PitPage from './pages/pit-scout/PitPage';
+import AdvPitPage from './pages/pit-scout/AdvPitPage';
+import SubjectiveHome from './pages/subjective-scout/SubjectiveHome';
+import SubjectivePage from './pages/subjective-scout/SubjectivePage';
 import { PicklistsProvider } from './lib/picklists-store';
 import { MatchStrategyProvider } from './lib/match-strategy-store';
 import { installViewportTracker } from './lib/viewport';
@@ -67,6 +76,15 @@ createRoot(document.getElementById('root')).render(
           path="/match-strategy/:id"
           element={<MatchStrategyDetail />}
         />
+        <Route path="/break" element={<BreakHome />} />
+        <Route path="/break/scout" element={<BreakPage />} />
+        <Route path="/foul" element={<FoulHome />} />
+        <Route path="/foul/scout" element={<FoulPage />} />
+        <Route path="/pit" element={<PitHome />} />
+        <Route path="/pit/scout" element={<PitPage />} />
+        <Route path="/pit/advanced" element={<AdvPitPage />} />
+        <Route path="/subjective" element={<SubjectiveHome />} />
+        <Route path="/subjective/scout" element={<SubjectivePage />} />
       </Routes>
       </MatchStrategyProvider>
       </PicklistsProvider>

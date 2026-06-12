@@ -13,6 +13,8 @@ import {
   BarChart3,
   Swords,
   Menu,
+  Flag,
+  Toolbox,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,8 +26,11 @@ const NAV_ITEMS = [
   { label: "Picklists", icon: ListChecks, href: "/picklists" },
   { label: "Robot Data", icon: BarChart3, href: "/robot-data" },
   { label: "Match Strategy", icon: Swords, href: "/match-strategy" },
-  { label: "Match Scouting", icon: Cpu, href: "/data-scout/prematch" },
-  { label: "Pit Scouting", icon: Wrench, href: "/pit" },
+  { label: "Data Scouting", icon: Cpu, href: "/data-scout/prematch" },
+  { label: "Subjective Scouting", icon: Wrench, href: "/subjective" },
+  { label: "Foul Scouting", icon: Flag, href: "/foul" },
+  { label: "Break Scouting", icon: Wrench, href: "/break" },
+  { label: "Pit Scouting", icon: Toolbox, href: "/pit" },
   { label: "Settings", icon: Cog, href: "/settings" },
 ];
 
