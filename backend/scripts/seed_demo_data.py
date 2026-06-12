@@ -6,8 +6,11 @@ from Statbotics (no key needed). Per-robot scouting form values are
 synthesized to stay consistent with the real numbers: each alliance's real
 fuel counts are split across its three robots proportional to their
 Statbotics EPA components, and endgame climbs use TBA's real per-robot tower
-results. Fields with no real-world source (passes, herding, pit answers)
-are generated with per-entity seeded RNGs so reruns are byte-identical.
+results. Shooter types and pit build-quality scores come from the team's
+"Backend 2026" scouting sheet (committed as scripts/fixtures/
+sheet_2026arc.json). Fields with no real-world source (passes, herding,
+remaining pit answers) are generated with per-entity seeded RNGs so reruns
+are byte-identical.
 
 Match submission `data` blobs mirror what the frontend actually POSTs
 (frontend/src/pages/data-scout/Submit.jsx::buildPayload) key-for-key, so
@@ -45,6 +48,21 @@ YEAR = 2026
 TBA_BASE = "https://www.thebluealliance.com/api/v3"
 STATBOTICS_BASE = "https://api.statbotics.io/v3"
 CACHE_DIR = Path(__file__).resolve().parent.parent / "data" / "api_cache"
+
+# Real 2026arc data exported from the team's "Backend 2026" scouting sheet:
+# shooter type per team plus advanced-pit build-quality scores. Committed as
+# a fixture because the sheet itself isn't programmatically reachable here.
+FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "sheet_2026arc.json"
+
+
+def _load_sheet_fixture() -> dict[str, Any]:
+    if not FIXTURE_PATH.exists():
+        return {"shooters": {}, "pit_advanced": []}
+    return json.loads(FIXTURE_PATH.read_text())
+
+
+SHEET = _load_sheet_fixture()
+SHEET_PIT_BY_TEAM = {p["team"]: p for p in SHEET["pit_advanced"]}
 
 # Keep in sync with Submit.jsx::buildPayload — the seeder fails loudly if a
 # generated blob drifts from what the real frontend submits.
@@ -406,13 +424,15 @@ def seed_event(conn, event: dict[str, Any]) -> None:
 
 
 def _team_traits(number: int) -> dict[str, str]:
-    """Drivetrain/shooter have no real data source — stable per-team RNG."""
+    """Drivetrain has no real data source — stable per-team RNG. Shooter
+    comes from the scouting-sheet fixture when the team was pit-scouted."""
     rng = random.Random(f"{SEED}-team-{number}")
     drivetrain = rng.choices(["swerve", "tank"], weights=[5, 1])[0]
     return {
         # 5940 runs swerve; don't let the RNG say otherwise.
         "drivetrain": "swerve" if number == 5940 else drivetrain,
-        "shooter": rng.choice(["drum", "fixed", "turret"]),
+        "shooter": SHEET["shooters"].get(str(number))
+        or rng.choice(["drum", "fixed", "turret"]),
     }
 
 
@@ -474,6 +494,15 @@ def seed_pit_submissions(conn, real: dict[str, Any],
             "notes": rng.choice(SUBJECTIVE_NOTES),
             "robot_photo": real["photos"].get(number),
         }
+        # Overlay the real advanced-pit row from the scouting sheet: build
+        # quality scores always, prose notes when the scouts wrote any.
+        sheet_pit = SHEET_PIT_BY_TEAM.get(number)
+        if sheet_pit:
+            data["mech_score"] = sheet_pit["mech_score"]
+            data["electrical_score"] = sheet_pit["electrical_score"]
+            data["bumper_score"] = sheet_pit["bumper_score"]
+            if sheet_pit["notes"]:
+                data["notes"] = sheet_pit["notes"]
         _insert_submission(
             conn, type_="pit", scout=SCOUTS[number % len(SCOUTS)], team=number,
             data=data, match_number=None, client_uuid=f"seed-pit-{EVENT_KEY}-t{number}",
@@ -635,6 +664,8 @@ def main() -> None:
     photos = sum(1 for url in real["photos"].values() if url)
     print(f"quals: {len(real['quals'])}, teams: {len(real['teams'])}, "
           f"photos: {photos}/{len(real['teams'])}")
+    print(f"sheet fixture: {len(SHEET['shooters'])} shooters, "
+          f"{len(SHEET['pit_advanced'])} advanced-pit rows")
     print(f"seeded: {db_path}")
 
 
