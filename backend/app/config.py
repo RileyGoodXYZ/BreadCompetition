@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     DB_PATH: str = "./data/app.db"
     CORS_ORIGINS: str = "http://localhost:5173"
     ENV: str = "dev"
+    # The Blue Alliance read key (free: thebluealliance.com/account).
+    # Only scripts/seed_demo_data.py needs it; the app runs fine without.
+    TBA_API_KEY: str = ""
 
     @property
     def db_path(self) -> Path:
