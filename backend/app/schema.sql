@@ -112,3 +112,30 @@ CREATE TABLE IF NOT EXISTS strategies (
 
 CREATE INDEX IF NOT EXISTS idx_strategies_event ON strategies(event_key);
 CREATE INDEX IF NOT EXISTS idx_strategies_match ON strategies(event_key, match_number);
+
+-- ---------------------------------------------------------------------------
+-- Matches (schedule)
+--
+-- The qual / playoff schedule for an event. Read by Home (upcoming-match
+-- cards) and RobotData (per-team upcoming + all matches), and eventually
+-- by Match Strategy Library to sort by `scheduledAt`.
+--
+-- `comp_level` mirrors TBA (qm / qf / sf / f); together with `match_number`
+-- it uniquely identifies a match within an event. The alliance lineups
+-- live as JSON arrays of team_numbers — no FK to `teams` because schedules
+-- can land before the team catalog (TBA sometimes lists teams that won't
+-- end up attending). Display fields the UI shows verbatim (scheduledAt,
+-- field, startsInLabel) live in `data` until we have real timestamps.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS matches (
+  event_key     TEXT    NOT NULL REFERENCES events(event_key) ON DELETE CASCADE,
+  comp_level    TEXT    NOT NULL CHECK (comp_level IN ('qm','qf','sf','f')) DEFAULT 'qm',
+  match_number  INTEGER NOT NULL,
+  red_alliance  TEXT    NOT NULL,
+  blue_alliance TEXT    NOT NULL,
+  data          TEXT    NOT NULL DEFAULT '{}',
+  updated_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (event_key, comp_level, match_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_matches_event ON matches(event_key, match_number);

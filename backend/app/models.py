@@ -95,6 +95,35 @@ class EventTeamRegister(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Matches
+#
+# One row per scheduled match at an event. `comp_level` + `match_number`
+# uniquely identify a match (TBA's convention). Alliance lineups are JSON
+# arrays of team_numbers, not FK references — schedules sometimes arrive
+# before the teams catalog is populated. `data` holds display fields the
+# UI renders verbatim (scheduledAt, field, startsInLabel) until we have
+# real timestamps.
+# ---------------------------------------------------------------------------
+CompLevel = Literal["qm", "qf", "sf", "f"]
+
+
+class MatchSchedule(BaseModel):
+    """One match in the schedule. Used as the body element for the bulk
+    PUT seed/sync endpoint."""
+    comp_level: CompLevel = "qm"
+    match_number: int = Field(ge=0)
+    red_alliance: list[int] = Field(min_length=1)
+    blue_alliance: list[int] = Field(min_length=1)
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
+class MatchScheduleBulkUpsert(BaseModel):
+    """Body for PUT /api/events/{key}/matches — replaces the full schedule
+    for the event in one round-trip. Mirrors how a TBA sync job would push."""
+    matches: list[MatchSchedule] = Field(min_length=1)
+
+
+# ---------------------------------------------------------------------------
 # Picklists
 #
 # Mirrors the in-memory document the frontend already builds in

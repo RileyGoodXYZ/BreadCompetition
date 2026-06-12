@@ -18,7 +18,7 @@ import json
 import random
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -315,7 +315,7 @@ def _build_match_data(rng: random.Random, tier: float, alliance: str, position: 
 
 
 def _insert_submission(conn, *, type_: str, scout: str, team: int, data: dict[str, Any],
-                       match_number: int | None, client_uuid: str) -> None:
+                       match_number: Optional[int], client_uuid: str) -> None:
     conn.execute(
         """
         INSERT INTO submissions
@@ -368,6 +368,42 @@ def seed_teams(conn, rng: random.Random) -> None:
             "INSERT INTO event_teams (event_key, team_number) VALUES (?, ?) "
             "ON CONFLICT DO NOTHING",
             (EVENT_KEY, number),
+        )
+
+
+def seed_matches(conn) -> None:
+    """Seed the qual schedule into the `matches` table.
+
+    The UI renders scheduledAt / startsInLabel / field as opaque strings; we
+    don't have real timestamps yet, so synthesize plausible display text from
+    the match number (matches roughly 12 min apart, starting 9:00 AM).
+    """
+    for match_number, red, blue in _parse_schedule():
+        total_minutes = 9 * 60 + (match_number - 1) * 12
+        hour_24 = (total_minutes // 60) % 24
+        minute = total_minutes % 60
+        am_pm = "AM" if hour_24 < 12 else "PM"
+        hour_12 = ((hour_24 + 11) % 12) + 1
+        scheduled_at = f"{hour_12}:{minute:02d} {am_pm}"
+        starts_in = "live" if match_number == 1 else f"+{(match_number - 1) * 12} min"
+
+        data = {
+            "scheduledAt": scheduled_at,
+            "startsInLabel": starts_in,
+            "field": "Archimedes",
+        }
+        conn.execute(
+            """
+            INSERT INTO matches (event_key, comp_level, match_number,
+                                 red_alliance, blue_alliance, data)
+            VALUES (?, 'qm', ?, ?, ?, ?)
+            ON CONFLICT(event_key, comp_level, match_number) DO UPDATE SET
+              red_alliance  = excluded.red_alliance,
+              blue_alliance = excluded.blue_alliance,
+              data          = excluded.data,
+              updated_at    = datetime('now')
+            """,
+            (EVENT_KEY, match_number, _dumps(red), _dumps(blue), _dumps(data)),
         )
 
 
@@ -500,6 +536,7 @@ def reset(conn) -> None:
     conn.execute("DELETE FROM submissions WHERE client_uuid LIKE 'seed-%'")
     conn.execute("DELETE FROM picklists WHERE id LIKE 'seed-%'")
     conn.execute("DELETE FROM strategies WHERE id LIKE 'seed-%'")
+    conn.execute("DELETE FROM matches WHERE event_key = ?", (EVENT_KEY,))
     conn.execute("DELETE FROM event_teams WHERE event_key = ?", (EVENT_KEY,))
     conn.execute("DELETE FROM events WHERE event_key = ?", (EVENT_KEY,))
 
@@ -519,13 +556,14 @@ def main() -> None:
             reset(conn)
         seed_event(conn)
         seed_teams(conn, rng)
+        seed_matches(conn)
         seed_match_submissions(conn, rng, tiers)
         seed_pit_submissions(conn, rng, tiers)
         seed_subjective_and_break(conn, rng)
         seed_picklists(conn)
         seed_strategies(conn)
 
-        for table in ("events", "teams", "event_teams", "submissions", "picklists", "strategies"):
+        for table in ("events", "teams", "event_teams", "matches", "submissions", "picklists", "strategies"):
             count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
             print(f"{table}: {count}")
     print(f"seeded: {db_path}")
