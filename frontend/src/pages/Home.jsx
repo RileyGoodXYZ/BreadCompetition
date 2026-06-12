@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 
 import {
   CURRENT_EVENT,
+  CURRENT_EVENT_KEY,
   OUR_TEAM,
   UPCOMING_MATCHES,
   getAllianceColor,
@@ -24,6 +25,7 @@ import {
   RobotAnalyticsCard,
   useTeamAnalytics,
 } from "@/pages/picklist/RobotData";
+import { useMatchStrategy } from "@/lib/match-strategy-store";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/logo.png";
 
@@ -35,10 +37,23 @@ export default function Home() {
     loaded: ourRobotLoaded,
   } = useTeamAnalytics(OUR_TEAM);
 
+  const { strategies } = useMatchStrategy();
+
   const nextMatch = getTeamNextMatch(OUR_TEAM);
+  const ourUpcomingAfter = UPCOMING_MATCHES.filter(
+    (m) =>
+      m.id !== nextMatch?.id &&
+      (m.red.includes(OUR_TEAM) || m.blue.includes(OUR_TEAM))
+  ).slice(0, 3);
   const otherUpcoming = UPCOMING_MATCHES.filter(
     (m) => m.id !== nextMatch?.id
   ).slice(0, 3);
+
+  const strategyForMatch = (matchNumber) =>
+    strategies.find(
+      (s) =>
+        s.event_key === CURRENT_EVENT_KEY && s.match_number === matchNumber
+    ) ?? null;
 
   return (
     <Shell>
@@ -74,6 +89,18 @@ export default function Home() {
                 title={`Our Next Match`}
               />
               <NextMatchCard match={nextMatch} team={OUR_TEAM} />
+              {ourUpcomingAfter.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mt-2 sm:mt-3">
+                  {ourUpcomingAfter.map((m) => (
+                    <UpcomingTeamMatchCard
+                      key={m.id}
+                      match={m}
+                      ourTeam={OUR_TEAM}
+                      strategy={strategyForMatch(m.number)}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           )}
 
@@ -363,6 +390,43 @@ function UpcomingMatchCard({ match, ourTeam }) {
         </Badge>
       )}
     </article>
+  );
+}
+
+function UpcomingTeamMatchCard({ match, ourTeam, strategy }) {
+  const href = strategy ? `/match-strategy/${strategy.id}` : `/match-strategy`;
+  return (
+    <Link
+      to={href}
+      className="group scout-card-gradient bg-surface-container-lowest border border-primary-container/40 rounded sm:rounded-md p-2.5 sm:p-3 transition-all hover:border-primary-container hover:shadow-warm-md flex flex-col gap-2"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+            {match.type}
+          </p>
+          <h4 className="text-lg sm:text-xl font-bold text-primary-container leading-tight mt-0.5">
+            Match {match.number}
+          </h4>
+        </div>
+        <span className="inline-flex items-center gap-1.5 font-mono text-xs text-on-surface">
+          <Clock className="w-3.5 h-3.5 text-on-surface-variant" />
+          {match.scheduledAt}
+        </span>
+      </div>
+
+      <div className="space-y-1 sm:space-y-1.5 pt-2 border-t border-outline-variant/30">
+        <AllianceLine teams={match.red} color="red" ourTeam={ourTeam} />
+        <AllianceLine teams={match.blue} color="blue" ourTeam={ourTeam} />
+      </div>
+
+      <div className="flex items-center justify-end pt-1">
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant group-hover:text-primary-container transition-colors">
+          {strategy ? "Open strategy" : "Plan strategy"}
+          <ArrowRight className="w-3 h-3" />
+        </span>
+      </div>
+    </Link>
   );
 }
 
