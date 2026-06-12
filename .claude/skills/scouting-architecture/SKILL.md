@@ -37,7 +37,7 @@ major piece of work and is the bridge between `submissions` and the picklist
 ```
 backend/
   app/
-    config.py          Settings (DB_PATH, CORS_ORIGINS) via pydantic-settings
+    config.py          Settings (DB_PATH, CORS_ORIGINS, TBA_API_KEY) via pydantic-settings
     db.py              sqlite3 + WAL + foreign_keys=ON; get_conn() context mgr
     schema.sql         Every CREATE TABLE / CREATE INDEX (idempotent IF NOT EXISTS)
     models.py          All Pydantic models, one section per resource
@@ -53,11 +53,15 @@ backend/
   data/                SQLite db lives here (gitignored)
   scripts/
     init_db.py         Apply schema.sql to data/app.db
-    seed_demo_data.py  Fill all six tables with realistic 2026arc demo data
-                       (real roster/schedule, generated stats; idempotent —
-                       deterministic client_uuids + ON CONFLICT upserts;
-                       --reset drops seed-owned rows; match `data` blobs
-                       mirror Submit.jsx::buildPayload key-for-key)
+    seed_demo_data.py  Fill all six tables with real 2026arc data pulled from
+                       TBA (roster, schedule, scores, rankings, robot photos;
+                       needs TBA_API_KEY in .env) + Statbotics EPA; per-robot
+                       form values synthesized to match real alliance totals;
+                       API responses cached in data/api_cache/ (--refresh to
+                       re-fetch); idempotent — deterministic client_uuids +
+                       ON CONFLICT upserts; --reset drops seed-owned rows;
+                       match `data` blobs mirror Submit.jsx::buildPayload
+                       key-for-key
 ```
 
 ### Student-exercise stubs vs. reference implementations
