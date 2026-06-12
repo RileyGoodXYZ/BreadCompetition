@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/lib/utils";
 
@@ -12,15 +12,6 @@ export const useMobileNav = () => useContext(MobileNavContext);
 // Shell component
 export function Shell({ children, className }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.add("picklist-mode");
-    document.body.classList.add("picklist-mode");
-    return () => {
-      document.documentElement.classList.remove("picklist-mode");
-      document.body.classList.remove("picklist-mode");
-    };
-  }, []);
 
   return (
     <MobileNavContext.Provider

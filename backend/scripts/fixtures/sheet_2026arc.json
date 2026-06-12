@@ -1,0 +1,516 @@
+{
+ "shooters": {
+  "27": "drum",
+  "103": "fixed",
+  "131": "drum",
+  "167": "turret",
+  "548": "drum",
+  "587": "fixed",
+  "971": "turret",
+  "1114": "drum",
+  "1189": "fixed",
+  "1218": "turret",
+  "1241": "drum",
+  "1261": "fixed",
+  "1501": "turret",
+  "1511": "fixed",
+  "1619": "fixed",
+  "1646": "fixed",
+  "1648": "turret",
+  "1731": "turret",
+  "1868": "fixed",
+  "1912": "drum",
+  "2075": "turret",
+  "2106": "turret",
+  "2137": "turret",
+  "2539": "drum",
+  "2583": "drum",
+  "2767": "turret",
+  "2826": "turret",
+  "2847": "fixed",
+  "2851": "drum",
+  "2881": "turret",
+  "2960": "fixed",
+  "3006": "turret",
+  "3045": "drum",
+  "3284": "turret",
+  "3476": "drum",
+  "3494": "turret",
+  "3572": "turret",
+  "3604": "turret",
+  "4096": "fixed",
+  "4272": "fixed",
+  "4403": "drum",
+  "4593": "turret",
+  "4646": "turret",
+  "4728": "turret",
+  "5010": "turret",
+  "5066": "turret",
+  "5338": "fixed",
+  "5468": "turret",
+  "5665": "drum",
+  "5801": "turret",
+  "5829": "fixed",
+  "5940": "drum",
+  "6459": "turret",
+  "6907": "turret",
+  "7166": "drum",
+  "7407": "fixed",
+  "7525": "fixed",
+  "7598": "turret",
+  "8608": "turret",
+  "8817": "fixed",
+  "8884": "turret",
+  "9001": "fixed",
+  "9032": "turret",
+  "9084": "turret",
+  "9126": "turret",
+  "9401": "turret",
+  "9427": "turret",
+  "9470": "drum",
+  "9771": "turret",
+  "10015": "fixed",
+  "10021": "fixed",
+  "10162": "fixed",
+  "11019": "turret",
+  "11297": "fixed",
+  "11387": "fixed"
+ },
+ "pit_advanced": [
+  {
+   "team": 103,
+   "mech_score": 1,
+   "electrical_score": 2,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 131,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 167,
+   "mech_score": 2,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 548,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 587,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 1114,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 1189,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 1218,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 1241,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 1261,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 1501,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 1511,
+   "mech_score": 3,
+   "electrical_score": 4,
+   "bumper_score": 5,
+   "notes": ""
+  },
+  {
+   "team": 1619,
+   "mech_score": 4,
+   "electrical_score": 4,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 1646,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 1648,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 1731,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 1868,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 1912,
+   "mech_score": 4,
+   "electrical_score": 4,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 2075,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": "Brain pan Pla rack for lintake yike Solder everything"
+  },
+  {
+   "team": 2137,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 2539,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 2,
+   "notes": ""
+  },
+  {
+   "team": 2583,
+   "mech_score": 2,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 2826,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 2847,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 2851,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 2881,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 2,
+   "notes": ""
+  },
+  {
+   "team": 2960,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 3006,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 2,
+   "notes": "Don\u2019t like the 3d print pulleys directly interfacing with splinexs Turret wire not well managed"
+  },
+  {
+   "team": 3045,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 3284,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 3494,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 2,
+   "notes": ""
+  },
+  {
+   "team": 3572,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 2,
+   "notes": ""
+  },
+  {
+   "team": 3604,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 4096,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 4272,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 5,
+   "notes": ""
+  },
+  {
+   "team": 4403,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 1,
+   "notes": ""
+  },
+  {
+   "team": 4593,
+   "mech_score": 2,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 4646,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 5010,
+   "mech_score": 3,
+   "electrical_score": 4,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 5066,
+   "mech_score": 2,
+   "electrical_score": 1,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 5338,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 5468,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 5801,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 5829,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 2,
+   "notes": ""
+  },
+  {
+   "team": 6907,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 5,
+   "notes": ""
+  },
+  {
+   "team": 7407,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 7525,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 7598,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 8608,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 8884,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 9032,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 4,
+   "notes": ""
+  },
+  {
+   "team": 9084,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 9126,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 9401,
+   "mech_score": 4,
+   "electrical_score": 3,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 9427,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 9470,
+   "mech_score": 3,
+   "electrical_score": 3,
+   "bumper_score": 2,
+   "notes": ""
+  },
+  {
+   "team": 9771,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 10015,
+   "mech_score": 3,
+   "electrical_score": 2,
+   "bumper_score": 2,
+   "notes": "All solder Frequent trench hitter Four piece bumper"
+  },
+  {
+   "team": 10162,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 11019,
+   "mech_score": 3,
+   "electrical_score": 4,
+   "bumper_score": 5,
+   "notes": ""
+  },
+  {
+   "team": 11297,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 3,
+   "notes": ""
+  },
+  {
+   "team": 11387,
+   "mech_score": 2,
+   "electrical_score": 2,
+   "bumper_score": 2,
+   "notes": ""
+  }
+ ],
+ "_source": "Exported from the team's 'Backend 2026' Google Sheet (2026arc). match-scouting tab was excluded: its rows are leftovers from an earlier event and don't match Archimedes lineups."
+}

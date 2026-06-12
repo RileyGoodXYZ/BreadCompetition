@@ -147,7 +147,7 @@ Every router file in `app/routers/` follows the same shape:
 | `backend/app/routers/picklists.py` | Picklist CRUD (Library + Manager pages) |
 | `backend/app/routers/strategies.py` | Strategy CRUD (Library + Detail pages) |
 | `backend/scripts/init_db.py` | Re-apply `schema.sql` to `data/app.db` |
-| `backend/scripts/seed_demo_data.py` | Fill the db with 2026arc demo data for testing (idempotent, `--reset` to reseed) |
+| `backend/scripts/seed_demo_data.py` | Fill the db with real 2026arc data from TBA + Statbotics (needs `TBA_API_KEY` in `.env`; idempotent, `--reset` to reseed, `--refresh` to bypass the API cache) |
 | `frontend/src/pages/data-scout/` | Scouting form pages (Auto, Teleop, Endgame, Prematch, Profile, Submit) |
 | `frontend/src/pages/picklist/` | Library, Manager, RobotData |
 | `frontend/src/pages/match-strategy/` | Library, Detail |
