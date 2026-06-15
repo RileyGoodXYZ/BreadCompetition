@@ -1,8 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Checkbox } from "radix-ui";
+import { Checkbox, DropdownMenu } from "radix-ui";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { useNavigate } from 'react-router-dom';
 import { currentScoutCanUseAuto, isPracticeSession, isTeleopV2Session } from '../../utils/autoAccess';
+import * as React from "react"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 
 function Endgame() {
   const savedClimb = localStorage.getItem('endgame_climb') ?? 'None';
@@ -43,15 +60,12 @@ function Endgame() {
 
   const handleStatusSelect = (status) => {
     setClimbStatus(status);
-    if (status !== 'Success') {
-      setClimbLevel(null);
-    }
     persistClimb(status, status === 'Success' ? climbLevel : null, climbType);
   };
 
   const handleLevelSelect = (level) => {
     setClimbLevel(level);
-    setClimbStatus('Success');
+    setClimbStatus("Success");
     persistClimb('Success', level, climbType);
   };
 
@@ -60,36 +74,44 @@ function Endgame() {
     persistClimb(climbStatus, climbLevel, type);
   };
 
+
   return (
-    <div className="mainContainer" style={{padding: '20px'}}>
+    <div className="mainContainer" style={{padding: '40px 60px', margin: '0 auto'}}>
       {/* Top header */}
       <div style={{marginBottom: '20px'}}>
         <div>
           <h1>Endgame</h1>
         </div>
       </div>
-      <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
-        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 3" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 3')}>Level 3</button>
-        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 2" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 2')}>Level 2</button>
-        <button style={{ background:'#b2c2f6', opacity: climbLevel === "Level 1" && climbStatus === 'Success' ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleLevelSelect('Level 1')}>Level 1</button>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+      <FieldGroup className="w-full max-w-xs">
+          <Field>
+          <Select value={climbLevel || ""} onValueChange={setClimbLevel}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Climb Level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="Level 1" onClick={() => handleLevelSelect("Level 1")}>Level 1</SelectItem>
+                <SelectItem value="Level 2" onClick={() => handleLevelSelect("Level 2")}>Level 2</SelectItem>
+                <SelectItem value="Level 3" onClick={() => handleLevelSelect("Level 3")}>Level 3</SelectItem>
+                <SelectItem value="Not Attempted">Not Attempted</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          </Field>
+        </FieldGroup>
       </div>
 
-
-      <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
-        <button style={{ background:'#d7b3fb', opacity: climbStatus === "None" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleStatusSelect('None')}>Not Attempted</button>
-        <button style={{ background:'#d7b3fb', opacity: climbStatus === "Failed" ? 0.6 : 1, color: '#2f1404' }} onClick={() => handleStatusSelect('Failed')}>Failed</button>
-      </div>
 
       {/* Climb type selection (only on success) */}
-      {climbStatus === 'Success' && climbLevel && (
-        <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '1rem', width: '100%' }}>
-          <button style={{ background: climbType === 'Center' ? '#f6e7b2' : '#e0e0e0', color: '#2f1404', opacity: climbType === 'Center' ? 0.7 : 1 }} onClick={() => handleClimbTypeSelect('Center')}> Center of Tower</button>
-          <button style={{ background: climbType === 'Side' ? '#f6e7b2' : '#e0e0e0', color: '#2f1404', opacity: climbType === 'Side' ? 0.7 : 1 }} onClick={() => handleClimbTypeSelect('Side')}>Side of Tower</button>
-        </div>
-      )}
+      <div style={{ marginTop: '0.5rem',marginBottom: '1rem', display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '1rem', width: '100%',visibility: climbLevel && climbLevel != "Not Attempted" ? 'visible' : 'hidden', height: climbLevel && climbLevel != "Not Attempted" ? 'auto' : '0'  }}>
+        <button style={{ background: climbType === 'Center' ? '#f6e7b2' : '#e0e0e0', color: '#2f1404', opacity: climbType === 'Center' ? 0.7 : 1 }} onClick={() => handleClimbTypeSelect('Center')}>Center of Tower</button>
+        <button style={{ background: climbType === 'Side' ? '#f6e7b2' : '#e0e0e0', color: '#2f1404', opacity: climbType === 'Side' ? 0.7 : 1 }} onClick={() => handleClimbTypeSelect('Side')}>Side of Tower</button>
+      </div>
 
-      {/* Checkbox */}
-      <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: "1rem", flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Checkbox - only on success*/}
+      <div style={{ display: 'flex', flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: "1rem", flexWrap: 'wrap', gap: '1rem',visibility:  climbLevel && climbLevel != "Not Attempted" ? 'visible' : 'hidden', height: climbLevel && climbLevel != "Not Attempted" ? 'auto' : '0'  }}>
         <div style={{ display: "flex", alignItems: "center", gap: '0.5rem', marginRight: '4.4rem' }}>
           <Checkbox.Root className="CheckboxRoot" id="c1" onClick={() => {
             const next = !shootWhileClimb;
@@ -100,12 +122,12 @@ function Endgame() {
               <CheckIcon />
             </Checkbox.Indicator>
           </Checkbox.Root>
-          <label className="Label">
+        <label className="Label">
             Shooting while climbing?
           </label>
         </div>
         <center>
-        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem', marginRight: '0.5rem' }}>
+        <div style={{ display: "flex", alignItems: "center", gap: '0.5rem', marginRight: '0.1rem' }}>
           <Checkbox.Root className="CheckboxRoot" id="c2" onClick={() => {
             const next = !buddyClimb;
             setBuddyClimb(next);
@@ -121,7 +143,12 @@ function Endgame() {
         </div>
         </center>
       </div>
-      
+
+      {climbLevel && climbLevel != "Not Attempted" &&(
+        <div style={{ marginTop: '1rem', marginBottom: '0.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
+          <button style={{ background: climbStatus === "Failed" ? '#d7b3fb' : '#e0e0e0', color: '#2f1404', opacity: climbStatus === "Failed" ? 0.7 : 1}} onClick={() => handleStatusSelect(climbStatus === 'Failed' ? 'Success' : 'Failed')}>Failed</button>
+        </div>
+      )}
 
       {/* Navigation buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: "1rem", flexWrap: 'wrap', width: '100%' }}>
