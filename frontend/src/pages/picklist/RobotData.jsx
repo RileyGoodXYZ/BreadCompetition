@@ -1,13 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
-import { Plus, Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Plus,
+  Search,
+  X,
+  ChevronDown,
+  ChevronUp,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+} from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { MobileMenuButton } from "@/components/Sidebar";
 import { AddRobotDialog } from "@/components/picklist/AddRobotDialog";
 import { PointBreakdownChart } from "@/components/picklist/PointBreakdownChart";
 import { cn } from "@/lib/utils";
-import { listTeams, listTeamSubmissions } from "@/lib/api/teams";
+import { getTeam, listTeams, listTeamSubmissions } from "@/lib/api/teams";
+import { listEventMatches } from "@/lib/api/events";
+import { useMatchStrategy } from "@/lib/match-strategy-store";
+import { CURRENT_EVENT_KEY, OUR_TEAM, getAllianceColor } from "@/lib/schedule";
 import {
   MISSING,
   buildChartMatches,
@@ -15,6 +26,42 @@ import {
   humanizeKey,
   formatCell,
 } from "@/lib/match-analytics";
+
+const ROBOT_DATA_STORAGE_KEY = "robotData.displayedTeams.v1";
+
+function loadDisplayedFromStorage() {
+  try {
+    const raw = localStorage.getItem(ROBOT_DATA_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((t) => typeof t === "string");
+  } catch {
+    return [];
+  }
+}
+
+function saveDisplayedToStorage(teams) {
+  try {
+    localStorage.setItem(ROBOT_DATA_STORAGE_KEY, JSON.stringify(teams));
+  } catch {
+    // localStorage may be unavailable (private mode, quota) — ignore.
+  }
+}
+
+function teamMatches(matches, team) {
+  return matches.filter(
+    (m) => m.red.includes(team) || m.blue.includes(team)
+  );
+}
+
+function teamStrategies(strategies, team) {
+  return strategies.filter((s) => {
+    const ours = s.data?.ourAlliance ?? [];
+    const opp = s.data?.opponentAlliance ?? [];
+    return ours.includes(team) || opp.includes(team);
+  });
+}
 
 function teamRecordToCard(t) {
   const data = t.data ?? {};
@@ -75,21 +122,107 @@ function buildAnalytics(card, byType) {
   };
 }
 
+// Single-team analytics loader. Used by RobotData (multi-card) and Home
+// (embedded "Our Robot" block). Pulls the team record, the four submission
+// types, the event schedule, and reuses the in-context strategies store.
+export function useTeamAnalytics(teamNumber) {
+  const { strategies } = useMatchStrategy();
+  const [card, setCard] = useState(null);
+  const [byType, setByType] = useState(null);
+  const [allMatches, setAllMatches] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (teamNumber == null) return undefined;
+    let cancelled = false;
+    setLoaded(false);
+    (async () => {
+      try {
+        const [team, match, subjective, pit, brk, schedule] = await Promise.all([
+          getTeam(teamNumber).catch(() => null),
+          listTeamSubmissions(teamNumber, { type: "match", limit: 1000 }),
+          listTeamSubmissions(teamNumber, { type: "subjective", limit: 1000 }),
+          listTeamSubmissions(teamNumber, { type: "pit", limit: 1000 }),
+          listTeamSubmissions(teamNumber, { type: "break", limit: 1000 }),
+          listEventMatches(CURRENT_EVENT_KEY).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setCard(
+          team
+            ? teamRecordToCard(team)
+            : {
+                team: String(teamNumber),
+                name: `Team ${teamNumber}`,
+                drivetrain: null,
+                image: null,
+              }
+        );
+        setByType({ match, subjective, pit, break: brk });
+        setAllMatches(schedule);
+        setLoaded(true);
+      } catch {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [teamNumber]);
+
+  const robot = useMemo(() => {
+    if (!card || !byType) return null;
+    return buildAnalytics(card, byType);
+  }, [card, byType]);
+
+  const matches = useMemo(
+    () => teamMatches(allMatches, String(teamNumber)),
+    [allMatches, teamNumber]
+  );
+  const strategiesForTeam = useMemo(
+    () => teamStrategies(strategies, String(teamNumber)),
+    [strategies, teamNumber]
+  );
+
+  return { robot, matches, strategies: strategiesForTeam, loaded };
+}
+
 export default function RobotData() {
   const [searchParams] = useSearchParams();
   const targetTeam = searchParams.get("team");
+  const { strategies } = useMatchStrategy();
+  const [matches, setMatches] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listEventMatches(CURRENT_EVENT_KEY)
+      .then((rows) => {
+        if (!cancelled) setMatches(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setMatches([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [pool, setPool] = useState([]);
   const [poolLoaded, setPoolLoaded] = useState(false);
   const [analyticsByTeam, setAnalyticsByTeam] = useState({});
 
-  const [displayedTeams, setDisplayedTeams] = useState(() =>
-    targetTeam ? [targetTeam] : []
-  );
+  const [displayedTeams, setDisplayedTeams] = useState(() => {
+    if (targetTeam) return [targetTeam];
+    return loadDisplayedFromStorage();
+  });
 
   useEffect(() => {
     if (targetTeam) setDisplayedTeams([targetTeam]);
   }, [targetTeam]);
+
+  // Persist the board to localStorage so it survives navigation away and back.
+  useEffect(() => {
+    saveDisplayedToStorage(displayedTeams);
+  }, [displayedTeams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -201,7 +334,7 @@ export default function RobotData() {
         <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
           <header className="mb-3 sm:mb-6">
             <h1 className="text-xl sm:text-4xl lg:text-5xl font-semibold text-on-surface tracking-tight">
-              Robot Analytics
+              Robot Data
             </h1>
           </header>
 
@@ -217,6 +350,8 @@ export default function RobotData() {
                 <RobotAnalyticsCard
                   key={robot.team}
                   robot={robot}
+                  matches={teamMatches(matches, robot.team)}
+                  strategies={teamStrategies(strategies, robot.team)}
                   onRemove={() => removeRobot(robot.team)}
                 />
               ))}
@@ -254,9 +389,6 @@ function AddAnotherRobotCard({ onClick }) {
 function EmptyState({ onAddRobot }) {
   return (
     <div className="border border-dashed border-outline-variant/60 rounded sm:rounded-lg py-8 sm:py-14 px-3 sm:px-5 text-center">
-      <div className="w-12 h-12 rounded-full bg-secondary-container/60 text-primary-container flex items-center justify-center mx-auto mb-4">
-        <Plus className="w-5 h-5" strokeWidth={2.4} />
-      </div>
       <p className="text-on-surface font-semibold">
         No robots on the board yet.
       </p>
@@ -330,22 +462,6 @@ function AnalyticsTopBar({
         >
           <Plus className="w-5 h-5" strokeWidth={2.5} />
         </button>
-        <button
-          type="button"
-          onClick={onAddRobot}
-          className="hidden sm:inline-flex items-center gap-2.5 h-11 sm:h-12 px-5 sm:px-6 rounded-full bg-primary-container text-on-primary font-semibold hover:opacity-95 active:scale-[0.98] transition shadow-warm-sm"
-        >
-          <span className="w-5 h-5 rounded-full bg-on-primary/15 flex items-center justify-center">
-            <Plus className="w-4 h-4" strokeWidth={2.5} />
-          </span>
-          Add Robot
-        </button>
-
-        <AvatarPrimitive.Root className="hidden sm:flex ml-1 relative h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-primary-container/20">
-          <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center bg-primary-container text-on-primary text-xs font-bold">
-            BR
-          </AvatarPrimitive.Fallback>
-        </AvatarPrimitive.Root>
       </div>
     </header>
   );
@@ -396,7 +512,7 @@ function SuggestionsPanel({ query, suggestions, onPick }) {
   );
 }
 
-function RobotAnalyticsCard({ robot, onRemove }) {
+export function RobotAnalyticsCard({ robot, matches, strategies, onRemove }) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -421,10 +537,284 @@ function RobotAnalyticsCard({ robot, onRemove }) {
               <StatGrid stats={robot.stats} />
             </div>
           </div>
+          {robot.team === OUR_TEAM ? (
+            <MatchTileGrid
+              team={robot.team}
+              matches={matches}
+              strategies={strategies}
+            />
+          ) : (
+            <ScheduleAndStrategies
+              team={robot.team}
+              upcoming={matches[0] ?? null}
+              matches={matches}
+              strategies={strategies}
+            />
+          )}
           <MatchDataTable rows={robot.rows} />
         </>
       )}
     </article>
+  );
+}
+
+function MatchTileGrid({ team, matches, strategies }) {
+  const navigate = useNavigate();
+  const { createStrategy } = useMatchStrategy();
+  const [creatingKey, setCreatingKey] = useState(null);
+
+  const strategyByMatch = useMemo(() => {
+    const out = {};
+    for (const s of strategies) {
+      if (s.event_key && s.match_number != null) {
+        out[`${s.event_key}::${s.match_number}`] = s;
+      }
+    }
+    return out;
+  }, [strategies]);
+
+  const handleClick = async (match) => {
+    const eventKey = CURRENT_EVENT_KEY;
+    const key = `${eventKey}::${match.number}`;
+    const existing = strategyByMatch[key];
+    if (existing) {
+      navigate(`/match-strategy/${existing.id}`);
+      return;
+    }
+    setCreatingKey(key);
+    try {
+      const teamStr = String(team);
+      const ourSide = match.red.includes(teamStr) ? "red" : "blue";
+      const ourAlliance = ourSide === "red" ? match.red : match.blue;
+      const opponentAlliance = ourSide === "red" ? match.blue : match.red;
+      const id = await createStrategy({
+        title: `${match.type} ${match.number}`,
+        event: eventKey,
+        matchNumber: match.number,
+        ourAlliance,
+        opponentAlliance,
+      });
+      navigate(`/match-strategy/${id}`);
+    } catch (e) {
+      console.error("createStrategy failed", e);
+      setCreatingKey(null);
+    }
+  };
+
+  return (
+    <div className="p-3 sm:p-5 border-b border-outline-variant/40">
+      <SectionHeading>Match Strategies</SectionHeading>
+      {matches.length === 0 ? (
+        <EmptySectionNote>No scheduled matches for {team}.</EmptySectionNote>
+      ) : (
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          {matches.map((m) => {
+            const eventKey = CURRENT_EVENT_KEY;
+            const key = `${eventKey}::${m.number}`;
+            return (
+              <MatchTile
+                key={m.id}
+                match={m}
+                team={team}
+                hasStrategy={key in strategyByMatch}
+                creating={creatingKey === key}
+                onClick={() => handleClick(m)}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MatchTile({ match, team, hasStrategy, creating, onClick }) {
+  const color = getAllianceColor(match, team);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={creating}
+      className={cn(
+        "group text-left rounded-md border bg-surface-container-low px-2.5 py-2 transition-all disabled:opacity-60 disabled:cursor-progress",
+        hasStrategy
+          ? "border-primary-container/40 hover:border-primary-container hover:bg-primary-container/5"
+          : "border-dashed border-outline-variant/60 hover:border-primary-container hover:bg-primary-container/5"
+      )}
+    >
+      <div className="flex items-center justify-between gap-1">
+        <span className="text-sm font-semibold text-primary-container leading-tight group-hover:underline underline-offset-4 decoration-2 decoration-primary-container/40">
+          {match.type} {match.number}
+        </span>
+        {color && (
+          <span
+            className={cn(
+              "w-1.5 h-1.5 rounded-full shrink-0",
+              color === "red" ? "bg-red-600" : "bg-blue-600"
+            )}
+          />
+        )}
+      </div>
+      <div className="mt-0.5 text-[10px] sm:text-[11px] font-mono text-on-surface-variant truncate">
+        {creating
+          ? "Creating…"
+          : match.scheduledAt ?? (hasStrategy ? "Open" : "Plan")}
+      </div>
+    </button>
+  );
+}
+
+function SectionHeading({ children }) {
+  return (
+    <h4 className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-2 sm:mb-3">
+      {children}
+    </h4>
+  );
+}
+
+function EmptySectionNote({ children }) {
+  return <p className="text-sm text-on-surface-variant">{children}</p>;
+}
+
+// Non-OUR_TEAM teams keep the original three-section layout:
+// Upcoming Match | All Matches | Linked Strategies.
+function ScheduleAndStrategies({ team, upcoming, matches, strategies }) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 border-b border-outline-variant/40 lg:divide-x divide-outline-variant/40">
+      <div className="p-3 sm:p-5 border-b lg:border-b-0 border-outline-variant/40">
+        <SectionHeading>Upcoming Match</SectionHeading>
+        {upcoming ? (
+          <UpcomingMatchCard match={upcoming} team={team} />
+        ) : (
+          <EmptySectionNote>No upcoming match for {team}.</EmptySectionNote>
+        )}
+      </div>
+      <div className="p-3 sm:p-5 border-b lg:border-b-0 border-outline-variant/40">
+        <SectionHeading>All Matches</SectionHeading>
+        {matches.length === 0 ? (
+          <EmptySectionNote>No scheduled matches for {team}.</EmptySectionNote>
+        ) : (
+          <ul className="space-y-1.5 max-h-56 overflow-y-auto scrollbar-warm pr-1">
+            {matches.map((m) => (
+              <li key={m.id}>
+                <MatchRow match={m} team={team} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="p-3 sm:p-5">
+        <SectionHeading>Linked Strategies</SectionHeading>
+        {strategies.length === 0 ? (
+          <EmptySectionNote>
+            No strategies reference team {team} yet.
+          </EmptySectionNote>
+        ) : (
+          <ul className="space-y-1.5 max-h-56 overflow-y-auto scrollbar-warm pr-1">
+            {strategies.map((s) => (
+              <li key={s.id}>
+                <Link
+                  to={`/match-strategy/${s.id}`}
+                  className="flex items-baseline justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-primary-container/5 transition-colors"
+                >
+                  <span className="text-sm text-on-surface font-medium truncate">
+                    {s.title}
+                  </span>
+                  {s.event_key && (
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant shrink-0">
+                      {s.event_key}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function UpcomingMatchCard({ match, team }) {
+  const color = getAllianceColor(match, team);
+  return (
+    <div className="rounded-md bg-surface-container-low border border-outline-variant/40 px-3 py-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-semibold text-on-surface">
+          {match.type} {match.number}
+        </span>
+        <AllianceBadge color={color} />
+      </div>
+      <div className="mt-0.5 text-xs text-on-surface-variant">
+        {match.scheduledAt} · {match.startsInLabel}
+      </div>
+      <div className="mt-2 space-y-1 text-xs">
+        <AllianceLine label="Red" color="red" teams={match.red} highlight={team} />
+        <AllianceLine label="Blue" color="blue" teams={match.blue} highlight={team} />
+      </div>
+    </div>
+  );
+}
+
+function MatchRow({ match, team }) {
+  const color = getAllianceColor(match, team);
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-primary-container/5 transition-colors">
+      <div className="flex items-center gap-2 min-w-0">
+        <span
+          className={cn(
+            "w-1.5 h-1.5 rounded-full shrink-0",
+            color === "red" ? "bg-red-600" : "bg-blue-600"
+          )}
+        />
+        <span className="text-sm font-medium text-on-surface">
+          {match.type} {match.number}
+        </span>
+      </div>
+      <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant shrink-0">
+        {match.scheduledAt}
+      </span>
+    </div>
+  );
+}
+
+function AllianceBadge({ color }) {
+  if (!color) return null;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-white",
+        color === "red" ? "bg-red-600" : "bg-blue-600"
+      )}
+    >
+      {color}
+    </span>
+  );
+}
+
+function AllianceLine({ label, color, teams, highlight }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={cn(
+          "text-[9px] font-bold uppercase tracking-widest w-7",
+          color === "red" ? "text-red-700" : "text-blue-700"
+        )}
+      >
+        {label}
+      </span>
+      <span className="font-mono text-on-surface">
+        {teams.map((t, i) => (
+          <span
+            key={t}
+            className={cn(t === highlight && "font-bold text-primary-container")}
+          >
+            {t}
+            {i < teams.length - 1 && " · "}
+          </span>
+        ))}
+      </span>
+    </div>
   );
 }
 
@@ -643,15 +1033,55 @@ function isNumeric(value) {
 
 function MatchDataTable({ rows = [] }) {
   const [filter, setFilter] = useState("all");
+  // { col, dir: "asc"|"desc" } — click header to cycle asc → desc → null.
+  // Defaults to match_number asc so the table reads in match order.
+  const [sort, setSort] = useState({ col: "match_number", dir: "asc" });
+
+  const filteredRows = useMemo(
+    () => (filter === "all" ? rows : rows.filter((r) => r._type === filter)),
+    [rows, filter]
+  );
 
   const visibleRows = useMemo(() => {
-    const filtered = filter === "all" ? rows : rows.filter((r) => r._type === filter);
-    return [...filtered].sort(
-      (a, b) => (a.match_number ?? 0) - (b.match_number ?? 0)
-    );
-  }, [rows, filter]);
+    if (!sort) return filteredRows;
+    const { col, dir } = sort;
+    const getter =
+      col === "_type"
+        ? (r) => r._type ?? ""
+        : (r) => {
+            const v = r[col];
+            // Coerce booleans → 0/1 so they sort with numerics.
+            if (typeof v === "boolean") return v ? 1 : 0;
+            return v;
+          };
+    return [...filteredRows].sort((a, b) => {
+      const av = getter(a);
+      const bv = getter(b);
+      const aMissing = av === null || av === undefined || av === "";
+      const bMissing = bv === null || bv === undefined || bv === "";
+      if (aMissing && bMissing) return 0;
+      if (aMissing) return 1;
+      if (bMissing) return -1;
+      if (av < bv) return dir === "asc" ? -1 : 1;
+      if (av > bv) return dir === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [filteredRows, sort]);
+
+  const pitRows = useMemo(
+    () => (filter === "pit" ? filteredRows : rows.filter((r) => r._type === "pit")),
+    [filter, filteredRows, rows]
+  );
 
   const columns = useMemo(() => deriveColumns(visibleRows), [visibleRows]);
+
+  const cycleSort = (col) => {
+    setSort((prev) => {
+      if (!prev || prev.col !== col) return { col, dir: "asc" };
+      if (prev.dir === "asc") return { col, dir: "desc" };
+      return null;
+    });
+  };
 
   return (
     <div>
@@ -666,7 +1096,9 @@ function MatchDataTable({ rows = [] }) {
           </FilterPill>
         ))}
       </div>
-      {visibleRows.length === 0 ? (
+      {filter === "pit" ? (
+        <PitScoutPanel rows={pitRows} />
+      ) : visibleRows.length === 0 ? (
         <div className="px-6 py-10 text-center text-sm text-on-surface-variant">
           -
         </div>
@@ -675,16 +1107,20 @@ function MatchDataTable({ rows = [] }) {
           <table className="w-full border-collapse text-xs sm:text-sm">
             <thead className="bg-surface-container-low border-b border-outline-variant/40">
               <tr>
-                <th className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">
+                <SortableHeaderCell
+                  active={sort?.col === "_type" ? sort.dir : null}
+                  onClick={() => cycleSort("_type")}
+                >
                   Type
-                </th>
+                </SortableHeaderCell>
                 {columns.map((c) => (
-                  <th
+                  <SortableHeaderCell
                     key={c.id}
-                    className="px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap"
+                    active={sort?.col === c.id ? sort.dir : null}
+                    onClick={() => cycleSort(c.id)}
                   >
                     {c.header}
-                  </th>
+                  </SortableHeaderCell>
                 ))}
               </tr>
             </thead>
@@ -721,6 +1157,87 @@ function MatchDataTable({ rows = [] }) {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+function SortableHeaderCell({ active, onClick, children }) {
+  return (
+    <th
+      className={cn(
+        "px-3 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap transition-colors",
+        active &&
+          "bg-primary-container/15 text-primary-container shadow-[inset_0_-2px_0_0_var(--color-primary-container)]"
+      )}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "group/sort inline-flex items-center gap-1 hover:text-primary-container transition-colors",
+          active && "text-primary-container"
+        )}
+      >
+        <span>{children}</span>
+        {active === "asc" ? (
+          <ArrowUp className="w-3 h-3 text-primary-container" />
+        ) : active === "desc" ? (
+          <ArrowDown className="w-3 h-3 text-primary-container" />
+        ) : (
+          <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/sort:opacity-60 transition-opacity" />
+        )}
+      </button>
+    </th>
+  );
+}
+
+function PitScoutPanel({ rows }) {
+  if (rows.length === 0) {
+    return (
+      <div className="px-6 py-10 text-center text-sm text-on-surface-variant">
+        No pit scout data yet.
+      </div>
+    );
+  }
+
+  // Pit scout is a single document per team — render as a vertical key/value
+  // sheet rather than a wide table. If multiple submissions exist (e.g. the
+  // team was re-scouted), each becomes its own value column.
+  const fields = deriveColumns(rows);
+
+  return (
+    <div className="overflow-x-auto scrollbar-warm">
+      <table className="w-full border-collapse text-xs sm:text-sm">
+        <tbody className="divide-y divide-outline-variant/30">
+          {fields.map((c) => (
+            <tr key={c.id} className="hover:bg-primary-container/3">
+              <th
+                scope="row"
+                className="bg-surface-container-low px-3 sm:px-6 py-2 text-left text-[10px] sm:text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap align-top w-1/3 max-w-xs"
+              >
+                {c.header}
+              </th>
+              {rows.map((row, i) => {
+                const raw = row[c.id];
+                const numeric = isNumeric(raw);
+                const empty = raw === undefined || raw === null || raw === "";
+                return (
+                  <td
+                    key={row.id ?? i}
+                    className={cn(
+                      "px-3 sm:px-6 py-2 align-top",
+                      numeric && "font-mono",
+                      empty ? "text-on-surface-variant" : "text-on-surface"
+                    )}
+                  >
+                    {formatCell(raw)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

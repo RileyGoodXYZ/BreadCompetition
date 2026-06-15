@@ -396,7 +396,9 @@ function SortableTh({ className = "", onSort, info, children }) {
   return (
     <th
       className={cn(
-        "px-3 py-2.5 text-left text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
+        "px-3 py-2.5 text-left text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap transition-colors",
+        info &&
+          "bg-primary-container/15 text-primary-container shadow-[inset_0_-2px_0_0_var(--color-primary-container)]",
         className
       )}
     >
@@ -419,7 +421,9 @@ function SortableDataTh({ className = "", onSort, info, children }) {
   return (
     <th
       className={cn(
-        "px-2 py-2.5 text-center text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap",
+        "px-2 py-2.5 text-center text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap transition-colors",
+        info &&
+          "bg-primary-container/15 text-primary-container shadow-[inset_0_-2px_0_0_var(--color-primary-container)]",
         className
       )}
     >

@@ -32,7 +32,7 @@ import random
 import statistics
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -392,7 +392,7 @@ def _dumps(obj: dict[str, Any]) -> str:
 
 
 def _insert_submission(conn, *, type_: str, scout: str, team: int, data: dict[str, Any],
-                       match_number: int | None, client_uuid: str) -> None:
+                       match_number: Optional[int], client_uuid: str) -> None:
     conn.execute(
         """
         INSERT INTO submissions
@@ -459,13 +459,53 @@ def seed_teams(conn, real: dict[str, Any]) -> None:
         )
 
 
-def seed_match_submissions(conn, rows: list[dict[str, Any]]) -> None:
-    for i, row in enumerate(rows):
-        _insert_submission(
-            conn, type_="match", scout=SCOUTS[i % len(SCOUTS)],
-            team=row["team"], data=row["data"], match_number=row["match_number"],
-            client_uuid=f"seed-match-{EVENT_KEY}-m{row['match_number']}-t{row['team']}",
+def seed_matches(conn) -> None:
+    """Seed the qual schedule into the `matches` table.
+
+    The UI renders scheduledAt / startsInLabel / field as opaque strings; we
+    don't have real timestamps yet, so synthesize plausible display text from
+    the match number (matches roughly 12 min apart, starting 9:00 AM).
+    """
+    for match_number, red, blue in _parse_schedule():
+        total_minutes = 9 * 60 + (match_number - 1) * 12
+        hour_24 = (total_minutes // 60) % 24
+        minute = total_minutes % 60
+        am_pm = "AM" if hour_24 < 12 else "PM"
+        hour_12 = ((hour_24 + 11) % 12) + 1
+        scheduled_at = f"{hour_12}:{minute:02d} {am_pm}"
+        starts_in = "live" if match_number == 1 else f"+{(match_number - 1) * 12} min"
+
+        data = {
+            "scheduledAt": scheduled_at,
+            "startsInLabel": starts_in,
+            "field": "Archimedes",
+        }
+        conn.execute(
+            """
+            INSERT INTO matches (event_key, comp_level, match_number,
+                                 red_alliance, blue_alliance, data)
+            VALUES (?, 'qm', ?, ?, ?, ?)
+            ON CONFLICT(event_key, comp_level, match_number) DO UPDATE SET
+              red_alliance  = excluded.red_alliance,
+              blue_alliance = excluded.blue_alliance,
+              data          = excluded.data,
+              updated_at    = datetime('now')
+            """,
+            (EVENT_KEY, match_number, _dumps(red), _dumps(blue), _dumps(data)),
         )
+
+
+def seed_match_submissions(conn, rng: random.Random, tiers: dict[int, float]) -> None:
+    for match_number, red, blue in _parse_schedule():
+        for alliance, lineup in (("Red", red), ("Blue", blue)):
+            for idx, team in enumerate(lineup):
+                scout = SCOUTS[(match_number * 6 + idx) % len(SCOUTS)]
+                data = _build_match_data(rng, tiers[team], alliance, str(idx + 1))
+                _insert_submission(
+                    conn, type_="match", scout=scout, team=team, data=data,
+                    match_number=match_number,
+                    client_uuid=f"seed-match-{EVENT_KEY}-m{match_number}-t{team}",
+                )
 
 
 def seed_pit_submissions(conn, real: dict[str, Any],
@@ -617,6 +657,7 @@ def reset(conn) -> None:
     conn.execute("DELETE FROM submissions WHERE client_uuid LIKE 'seed-%'")
     conn.execute("DELETE FROM picklists WHERE id LIKE 'seed-%'")
     conn.execute("DELETE FROM strategies WHERE id LIKE 'seed-%'")
+    conn.execute("DELETE FROM matches WHERE event_key = ?", (EVENT_KEY,))
     conn.execute("DELETE FROM event_teams WHERE event_key = ?", (EVENT_KEY,))
     conn.execute("DELETE FROM events WHERE event_key = ?", (EVENT_KEY,))
 
@@ -649,15 +690,16 @@ def main() -> None:
     with get_conn() as conn:
         if args.reset:
             reset(conn)
-        seed_event(conn, real["event"])
-        seed_teams(conn, real)
-        seed_match_submissions(conn, rows)
-        seed_pit_submissions(conn, real, percentiles, climbs)
-        seed_subjective_and_break(conn, real["quals"], percentiles)
-        seed_picklists(conn, real)
-        seed_strategies(conn, real)
+        seed_event(conn)
+        seed_teams(conn, rng)
+        seed_matches(conn)
+        seed_match_submissions(conn, rng, tiers)
+        seed_pit_submissions(conn, rng, tiers)
+        seed_subjective_and_break(conn, rng)
+        seed_picklists(conn)
+        seed_strategies(conn)
 
-        for table in ("events", "teams", "event_teams", "submissions", "picklists", "strategies"):
+        for table in ("events", "teams", "event_teams", "matches", "submissions", "picklists", "strategies"):
             count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
             print(f"{table}: {count}")
 

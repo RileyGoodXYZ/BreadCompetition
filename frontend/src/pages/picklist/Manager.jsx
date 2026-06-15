@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Lock, Pencil, Plus, Sliders, Star, Trash2 } from "lucide-react";
+import { Check, Lock, Pencil, Plus, Sliders, Star, Trash2 } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { TopBar } from "@/components/TopBar";
 import { RobotCard } from "@/components/picklist/RobotCard";
@@ -175,21 +175,25 @@ export default function Manager() {
     setColumnPrefs(d.columnPrefs ?? []);
   }, [picklist, eventTeamsLoaded, poolByNumber]);
 
+  const buildSavePayload = useCallback(
+    () => ({
+      ...(picklistRef.current?.data ?? {}),
+      slots: slots.map((r) => r?.team ?? null),
+      rowNotes,
+      rankings: rankOrder,
+      blackedOut: [...blackedOut],
+      columnPrefs,
+    }),
+    [slots, rowNotes, rankOrder, blackedOut, columnPrefs]
+  );
+
   // Debounced autosave whenever persistable state changes.
   useEffect(() => {
     if (!picklist) return;
     if (!hydratedFor.current?.startsWith(`${picklist.id}:`)) return;
     if (picklist.data?.locked === true) return;
     const t = setTimeout(() => {
-      const latest = picklistRef.current;
-      saveData(picklist.id, {
-        ...(latest?.data ?? {}),
-        slots: slots.map((r) => r?.team ?? null),
-        rowNotes,
-        rankings: rankOrder,
-        blackedOut: [...blackedOut],
-        columnPrefs,
-      });
+      saveData(picklist.id, buildSavePayload());
     }, SAVE_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [
@@ -201,7 +205,28 @@ export default function Manager() {
     blackedOut,
     columnPrefs,
     saveData,
+    buildSavePayload,
+    picklist,
   ]);
+
+  // "idle" | "saving" | "saved"
+  const [saveState, setSaveState] = useState("idle");
+  const savedTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(savedTimerRef.current), []);
+
+  const handleManualSave = useCallback(async () => {
+    if (!picklist) return;
+    if (picklist.data?.locked === true) return;
+    clearTimeout(savedTimerRef.current);
+    setSaveState("saving");
+    try {
+      await saveData(picklist.id, buildSavePayload());
+      setSaveState("saved");
+      savedTimerRef.current = setTimeout(() => setSaveState("idle"), 1500);
+    } catch {
+      setSaveState("idle");
+    }
+  }, [picklist, saveData, buildSavePayload]);
 
   const { columns: statColumns, byTeam: statsByTeam } = useMemo(
     () => aggregateEventStats(eventSubmissions),
@@ -447,7 +472,16 @@ export default function Manager() {
           </span>
         }
         onSync={() => {}}
-        onSave={() => {}}
+        onSave={handleManualSave}
+        saveDisabled={locked || saveState === "saving"}
+        saveLabel={
+          saveState === "saving" ? "Saving…" : saveState === "saved" ? (
+            <span className="inline-flex items-center gap-1">
+              <Check className="w-4 h-4" />
+              Saved
+            </span>
+          ) : "Save"
+        }
         extras={
           <PicklistActions
             picklist={picklist}

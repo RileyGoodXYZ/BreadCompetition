@@ -20,7 +20,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from ..db import get_conn
-from ..models import EventTeamRegister, EventUpsert
+from ..models import EventTeamRegister, EventUpsert, MatchScheduleBulkUpsert
 
 router = APIRouter(prefix="/api/events", tags=["events"])
 
@@ -242,31 +242,131 @@ def unregister_event_team(event_key: str, team_number: int) -> Response:
 
 
 # ---------------------------------------------------------------------------
-# Match schedule (stub)
+# Match schedule
+#
+# Clauded code just for schedules to exist. Subject to change after TBA integration.
+#
+# Reads the `matches` table. Write side is a bulk PUT (full-replace for
+# the event) so a TBA sync job or the seed script can push the whole
+# schedule in one round-trip without per-match diffing.
 # ---------------------------------------------------------------------------
 
-@router.get("/{event_key}/matches")
-def list_event_matches(event_key: str) -> list[dict[str, Any]]:
-    """Match schedule for an event.
+COMP_LEVEL_LABEL = {"qm": "Qual", "qf": "Quarter", "sf": "Semi", "f": "Final"}
 
-    NOT IMPLEMENTED — stub. Returns an empty list so the UI can wire to
-    it without 404ing.
 
-    TODO(impl):
-      - This is the read that powers `lib/schedule.js::UPCOMING_MATCHES`.
-        Shape expected by the UI:
-          {id, number, type, scheduledAt, startsInLabel, field, red[3], blue[3]}
-      - Two reasonable approaches:
-          a) Add a `matches` table and a sync job that pulls from TBA
-             (`/event/{key}/matches/simple`) on a schedule. Pros: works
-             offline, single source of truth, can attach our own metadata
-             (notes, photos). Cons: cache invalidation + a sync job.
-          b) Proxy TBA on each request with a short in-process cache
-             (60s). Pros: no schema, always fresh. Cons: needs TBA API
-             key in env, brittle without internet, can't extend.
-        Pick (a) when we need offline support, (b) until then.
-      - Match-strategy Library currently sorts by `updated_at`. Once
-        this exists, the Library should sort upcoming strategies by
-        match `scheduledAt` to read like a real schedule.
+def _match_row_to_dict(row) -> dict[str, Any]:
+    """Shape one DB row into the format the frontend renders directly.
+
+    Keep the field names in sync with `frontend/src/pages/picklist/RobotData.jsx`
+    and `frontend/src/pages/Home.jsx` so the UI can consume the response
+    with zero adaptation. `data` holds the display fields the UI shows
+    verbatim (scheduledAt, field, startsInLabel) — until we have real
+    timestamps the seed script writes them as strings.
     """
-    return []
+    data = json.loads(row["data"]) if row["data"] else {}
+    comp_level = row["comp_level"]
+    return {
+        "id": f"{comp_level}-{row['match_number']}",
+        "comp_level": comp_level,
+        "number": row["match_number"],
+        "type": COMP_LEVEL_LABEL.get(comp_level, comp_level.upper()),
+        "scheduledAt": data.get("scheduledAt"),
+        "startsInLabel": data.get("startsInLabel"),
+        "field": data.get("field"),
+        "red": [str(n) for n in json.loads(row["red_alliance"])],
+        "blue": [str(n) for n in json.loads(row["blue_alliance"])],
+    }
+
+
+@router.get("/{event_key}/matches")
+def list_event_matches(
+    event_key: str,
+    team: Optional[int] = Query(default=None, description="Filter to matches a team is playing in"),
+) -> list[dict[str, Any]]:
+    """Match schedule for an event, ordered by play order.
+
+    `?team=` filters server-side to matches a team is playing in (either
+    alliance). Frontend RobotData uses this to ask "what's the next match
+    for team N at this event."
+    """
+    sql = (
+        "SELECT * FROM matches WHERE event_key = ? "
+        "ORDER BY CASE comp_level WHEN 'qm' THEN 0 WHEN 'qf' THEN 1 "
+        "WHEN 'sf' THEN 2 WHEN 'f' THEN 3 END, match_number ASC"
+    )
+    with get_conn() as conn:
+        rows = conn.execute(sql, (event_key,)).fetchall()
+
+    matches = [_match_row_to_dict(r) for r in rows]
+    if team is not None:
+        needle = str(team)
+        matches = [m for m in matches if needle in m["red"] or needle in m["blue"]]
+    return matches
+
+
+@router.put("/{event_key}/matches", status_code=status.HTTP_200_OK)
+def upsert_event_matches(
+    event_key: str, payload: MatchScheduleBulkUpsert
+) -> dict[str, Any]:
+    """Replace the schedule for one event in a single round-trip.
+
+    Bulk by design — a TBA sync job or seed script wants to push 76 quals
+    + playoffs at once. Existing rows are upserted on (event_key,
+    comp_level, match_number); rows not in the payload are deleted so
+    re-running the seed converges on the canonical schedule.
+
+    Privileged write — lock this down with the rest when auth lands.
+    """
+    with get_conn() as conn:
+        exists = conn.execute(
+            "SELECT 1 FROM events WHERE event_key = ?", (event_key,)
+        ).fetchone()
+        if exists is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="event not found"
+            )
+
+        keep = {(m.comp_level, m.match_number) for m in payload.matches}
+        existing_keys = {
+            (row["comp_level"], row["match_number"])
+            for row in conn.execute(
+                "SELECT comp_level, match_number FROM matches WHERE event_key = ?",
+                (event_key,),
+            ).fetchall()
+        }
+        to_delete = existing_keys - keep
+        if to_delete:
+            conn.executemany(
+                "DELETE FROM matches WHERE event_key = ? AND comp_level = ? AND match_number = ?",
+                [(event_key, cl, mn) for cl, mn in to_delete],
+            )
+
+        conn.executemany(
+            """
+            INSERT INTO matches (event_key, comp_level, match_number,
+                                 red_alliance, blue_alliance, data, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(event_key, comp_level, match_number) DO UPDATE SET
+              red_alliance  = excluded.red_alliance,
+              blue_alliance = excluded.blue_alliance,
+              data          = excluded.data,
+              updated_at    = datetime('now')
+            """,
+            [
+                (
+                    event_key,
+                    m.comp_level,
+                    m.match_number,
+                    json.dumps(m.red_alliance, separators=(",", ":")),
+                    json.dumps(m.blue_alliance, separators=(",", ":")),
+                    json.dumps(m.data, sort_keys=True, separators=(",", ":")),
+                )
+                for m in payload.matches
+            ],
+        )
+
+        count = conn.execute(
+            "SELECT COUNT(*) FROM matches WHERE event_key = ?", (event_key,)
+        ).fetchone()[0]
+
+    return {"event_key": event_key, "match_count": count}
