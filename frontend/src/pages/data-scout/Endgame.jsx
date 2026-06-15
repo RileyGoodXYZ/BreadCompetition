@@ -60,9 +60,6 @@ function Endgame() {
 
   const handleStatusSelect = (status) => {
     setClimbStatus(status);
-    if (status !== 'Success') {
-      setClimbLevel(null);
-    }
     persistClimb(status, status === 'Success' ? climbLevel : null, climbType);
   };
 
@@ -149,7 +146,7 @@ function Endgame() {
 
       {climbLevel && climbLevel != "Not Attempted" &&(
         <div style={{ marginTop: '1rem', marginBottom: '0.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', width: '100%' }}>
-          <button style={{ background: climbStatus === "Failed" ? '#d7b3fb' : '#e0e0e0', color: '#2f1404', opacity: 1}} onClick={() => handleStatusSelect('Failed')}>Failed</button>
+          <button style={{ background: climbStatus === "Failed" ? '#d7b3fb' : '#e0e0e0', color: '#2f1404', opacity: climbStatus === "Failed" ? 0.7 : 1}} onClick={() => handleStatusSelect(climbStatus === 'Failed' ? 'Success' : 'Failed')}>Failed</button>
         </div>
       )}
 
